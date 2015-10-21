@@ -20,7 +20,7 @@
 **/release.properties
 **/dependency-reduced-pom.xml
 **/buildNumber.properties
-
+**/.mvn
 #Mac
 **/.DS_Store
 
