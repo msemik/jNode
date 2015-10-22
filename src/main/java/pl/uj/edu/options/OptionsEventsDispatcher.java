@@ -1,10 +1,16 @@
 package pl.uj.edu.options;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import static pl.uj.edu.options.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
 //import org.springframework.context.event.EventListener;
+
 /**
  * Created by michal on 21.10.15.
  */
@@ -32,7 +38,7 @@ public class OptionsEventsDispatcher {
                 eventPublisher.publishEvent(new ExecuteJarsOptionEvent(this));
 
         } catch (ParseException e) {
-            eventPublisher.publishEvent(new UnparsableArgumentsEvent(this, e));
+            eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e));
         }
 
     }

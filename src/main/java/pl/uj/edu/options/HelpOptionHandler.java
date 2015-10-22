@@ -1,10 +1,10 @@
 package pl.uj.edu.options;
 
-import org.apache.commons.cli.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import static pl.uj.edu.options.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
 
 /**
  * Created by michal on 21.10.15.
@@ -20,9 +20,10 @@ public class HelpOptionHandler {
     }
 
     @EventListener
-    public void onApplicationEvent(UnparsableArgumentsEvent event) {
-        ParseException exception = event.getException();
-        System.out.println("Error:" + exception.getMessage());
+    public void onApplicationEvent(ApplicationShutdownEvent event) {
+        if (event.getShutdownReason() != UNPARSABLE_OPTIONS)
+            return;
+        System.out.println("Error:" + ((Exception) event.getCargo()).getMessage());
         jNodeOptions.printHelp();
     }
 }

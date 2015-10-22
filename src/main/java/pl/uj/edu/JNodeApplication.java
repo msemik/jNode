@@ -27,6 +27,7 @@ public class JNodeApplication {
         jNodeApplication.diTest.sayHello(args);
     }
 
+
     @Component
     private static class DependencyInjectionTest {
         Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
