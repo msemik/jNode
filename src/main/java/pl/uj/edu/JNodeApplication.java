@@ -10,13 +10,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import pl.uj.edu.options.OptionsEventsDispatcher;
 
+
 @Configuration
 @ComponentScan
 public class JNodeApplication {
 
     @Autowired
     private DependencyInjectionTest diTest;
-
 
     public static void main(String[] args) {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
@@ -25,8 +25,6 @@ public class JNodeApplication {
         OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
         optionsEventsDispatcher.dispatchOptionsEvents(args);
         jNodeApplication.diTest.sayHello(args);
-
-
     }
 
     @Component

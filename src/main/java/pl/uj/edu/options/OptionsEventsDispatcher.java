@@ -25,13 +25,15 @@ public class OptionsEventsDispatcher {
         CommandLine cmd = null;
         try {
             cmd = parser.parse(jNodeOptions.getOptions(), args);
+
+            if (cmd.hasOption("h"))
+                eventPublisher.publishEvent(new HelpOptionEvent(this));
+            if (cmd.hasOption("j"))
+                eventPublisher.publishEvent(new ExecuteJarsOptionEvent(this));
+
         } catch (ParseException e) {
             eventPublisher.publishEvent(new UnparsableArgumentsEvent(this, e));
         }
-        if (cmd.hasOption("h"))
-            eventPublisher.publishEvent(new HelpOptionEvent(this));
-        if (cmd.hasOption("j"))
-            eventPublisher.publishEvent(new ExecuteJarsOptionEvent(this));
 
     }
 
