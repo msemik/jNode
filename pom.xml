@@ -106,30 +106,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!--            <plugin>
-                            <artifactId>maven-resources-plugin</artifactId>
-                            <version>2.7</version>
-                            <executions>
-                                <execution>
-                                    <id>copy-resources</id>
-                                    <phase>validate</phase>
-                                    <goals>
-                                        <goal>copy-resources</goal>
-                                    </goals>
-                                    <configuration>
-                                        <outputDirecotry>${applicationDir}</outputDirecotry>
-                                        <resources>
-                                            <resource>
-                                                <directory>${project.basedir}</directory>
-                                                <includes>
-                                                    <include>${project.basedir}/jNode.sh</include>
-                                                </includes>
-                                            </resource>
-                                        </resources>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>-->
         </plugins>
         <resources>
             <resource>
@@ -138,6 +114,9 @@
                 <includes>
                     <include>jNode.sh</include>
                 </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
             </resource>
         </resources>
     </build>
