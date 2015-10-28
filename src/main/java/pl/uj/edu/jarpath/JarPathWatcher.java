@@ -149,7 +149,7 @@ public class JarPathWatcher extends Thread {
                 continue;
             }
             if (kinds.size() == 3) {
-                if (watchEvent.kind() == ENTRY_MODIFY)
+                if (watchEvent.kind() == ENTRY_CREATE)
                     reducedEvents.add(watchEvent);
                 continue;
             }
