@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.uj.edu.options.ApplicationShutdownEvent;
+import pl.uj.edu.ApplicationShutdownEvent;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;

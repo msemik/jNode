@@ -3,8 +3,9 @@ package pl.uj.edu.options;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.uj.edu.ApplicationShutdownEvent;
 
-import static pl.uj.edu.options.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
+import static pl.uj.edu.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
 
 /**
  * Created by michal on 21.10.15.

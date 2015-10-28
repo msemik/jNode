@@ -7,8 +7,9 @@ import org.apache.commons.cli.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import pl.uj.edu.ApplicationShutdownEvent;
 
-import static pl.uj.edu.options.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
+import static pl.uj.edu.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
 //import org.springframework.context.event.EventListener;
 
 /**
@@ -35,7 +36,7 @@ public class OptionsEventsDispatcher {
             if (cmd.hasOption("h"))
                 eventPublisher.publishEvent(new HelpOptionEvent(this));
             if (cmd.hasOption("j"))
-                eventPublisher.publishEvent(new ExecuteJarsOptionEvent(this));
+                eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
 
         } catch (ParseException e) {
             eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e));
