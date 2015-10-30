@@ -8,7 +8,19 @@ import java.nio.file.Path;
  * Created by michal on 22.10.15.
  */
 public class JarDeletedEvent extends ApplicationEvent {
-    public JarDeletedEvent(Path path, Object source) {
+
+    private Path jarPath;
+
+    public JarDeletedEvent(Object source, Path jarPath) {
         super(source);
+        this.jarPath = jarPath;
+    }
+
+    public Path getJarPath() {
+        return jarPath;
+    }
+
+    public void setJarPath(Path jarPath) {
+        this.jarPath = jarPath;
     }
 }

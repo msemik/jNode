@@ -30,7 +30,7 @@ public class JarPathWatcher extends Thread {
     private JarPathServices jarServices;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private JarPathManager jarPathManager;
 
     private Path path;
 
@@ -86,24 +86,15 @@ public class JarPathWatcher extends Thread {
 
                             logger.info("File created: " + eventPath);
                             if (jarServices.isJar(eventPath))
-                                eventPublisher.publishEvent(new JarReceivedEvent(eventPath, this));
+                                jarPathManager.onCreateJar(eventPath);
 
                         } else if (ENTRY_DELETE == kind) {
                             if (!eventPath.toString().endsWith(".jar") && !eventPath.toString().endsWith(".properties"))
                                 continue;
                             logger.info("File deleted: " + eventPath);
 
-                            if (jarServices.isJar(eventPath))
-                                eventPublisher.publishEvent(new JarDeletedEvent(eventPath, this));
-                            else if (jarServices.isProperties(path)) {
-                                Optional<Path> jarForProperty = jarServices.getJarForProperty(path);
-                                if (!jarForProperty.isPresent())
-                                    continue;
-
-                                jarServices.validateReadWriteAccess(jarForProperty.get());
-
-                                eventPublisher.publishEvent(new JarPropertiesDeletedEvent(path, this));
-                            }
+                            if (eventPath.toString().endsWith(".jar"))
+                                jarPathManager.onDeleteJar(eventPath);
 
                         }
                     }

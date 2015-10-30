@@ -39,7 +39,8 @@ public class OptionsEventsDispatcher {
                 eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
 
         } catch (ParseException e) {
-            eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e));
+            eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS,
+                    e.getMessage()));
         }
 
     }

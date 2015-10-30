@@ -25,6 +25,14 @@ public class JarPathServices {
         return Optional.empty();
     }
 
+    public Path getPropertyForJar(Path jarPath) {
+        String s = jarPath.toString();
+        if (!s.endsWith(".jar"))
+            throw new IllegalArgumentException("not a jar file '" + jarPath + "'");
+        String propertiesFileName = s.substring(0, s.length() - ".jar".length()) + ".properties";
+        return Paths.get(propertiesFileName);
+    }
+
     public boolean isProperties(Path path) {
         return Files.isRegularFile(path) && path.toString().endsWith(".properties");
     }

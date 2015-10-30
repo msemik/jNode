@@ -24,7 +24,6 @@ public class HelpOptionHandler {
     public void onApplicationEvent(ApplicationShutdownEvent event) {
         if (event.getShutdownReason() != UNPARSABLE_OPTIONS)
             return;
-        System.out.println("Error:" + ((Exception) event.getCargo()).getMessage());
         jNodeOptions.printHelp();
     }
 }

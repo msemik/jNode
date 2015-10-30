@@ -6,10 +6,11 @@ import org.springframework.context.ApplicationEvent;
  * Created by michal on 21.10.15.
  */
 public class ApplicationShutdownEvent extends ApplicationEvent {
+    private String message;
+
     public enum ShutdownReason {UNPARSABLE_OPTIONS, WATCHER_SERVICE_ERROR, INVALID_JAR_FILE;}
 
     private ShutdownReason shutdownReason;
-    private Object cargo;
 
 
     public ApplicationShutdownEvent(Object source, ShutdownReason reason) {
@@ -17,18 +18,14 @@ public class ApplicationShutdownEvent extends ApplicationEvent {
         this.shutdownReason = reason;
     }
 
-    public ApplicationShutdownEvent(Object source, ShutdownReason reason, Object cargo) {
+    public ApplicationShutdownEvent(Object source, ShutdownReason reason, String message) {
         super(source);
-        this.cargo = cargo;
+        this.message = message;
         this.shutdownReason = reason;
     }
 
-    public Object getCargo() {
-        return cargo;
-    }
-
-    public void setCargo(Object cargo) {
-        this.cargo = cargo;
+    public String getMessage() {
+        return message;
     }
 
     public ShutdownReason getShutdownReason() {

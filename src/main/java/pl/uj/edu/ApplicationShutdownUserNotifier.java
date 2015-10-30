@@ -11,6 +11,9 @@ public class ApplicationShutdownUserNotifier {
 
     @EventListener
     public void onApplicationShutdown(ApplicationShutdownEvent event) {
-        System.out.println("application closed: " + event.getShutdownReason().toString().toLowerCase().replace("_", " "));
+        if (event.getMessage() != null)
+            System.out.println("application closed:" + event.getMessage());
+        else
+            System.out.println("application closed: " + event.getShutdownReason().toString().toLowerCase().replace("_", " "));
     }
 }
