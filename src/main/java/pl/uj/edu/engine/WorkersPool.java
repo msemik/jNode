@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import pl.uj.edu.jarpath.JarDeletedEvent;
 import pl.uj.edu.jarpath.JarStateChangedEvent;
 
+import java.nio.file.Path;
+
 /**
  * Created by michal on 31.10.15.
  */
@@ -16,7 +18,12 @@ public class WorkersPool {
 
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
-        logger.error("Got jar " + event.getPath() + " with properties " + event.getProperties() + " perhaps we can start a job if executionState is not started?");
+        Path path = event.getPath();
+        logger.error("Got jar " + path + " with properties " + event.getProperties() + " perhaps we can start a job if executionState is not started?");
+
+        JarLauncher loader = new JarLauncher(path);
+        loader.launchMain();
+
     }
 
     @EventListener
