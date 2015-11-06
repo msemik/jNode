@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import pl.uj.edu.jarpath.JarDeletedEvent;
 import pl.uj.edu.jarpath.JarStateChangedEvent;
+import pl.uj.edu.userlib.Callback;
+import pl.uj.edu.userlib.Task;
 
 @Component
 @Aspect
@@ -41,5 +43,12 @@ public class TaskCoordinator {
 	@EventListener
 	public void onNewTaskCreated(NewTaskCreatedEvent event) {
 		logger.error("New task has been created");
+		
+		Task task = event.getTask();
+		Callback callback = event.getCallback();
+		
+		callbackStorage.putIfAbsent(task, callback);
+		
+		
 	}
 }

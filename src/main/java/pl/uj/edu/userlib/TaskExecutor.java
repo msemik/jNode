@@ -13,8 +13,6 @@ public class TaskExecutor {
 	private ApplicationEventPublisher eventPublisher;
 	
 	public void doAsync(Task task, Callback callback) {
-		System.out.println("jNode");
-		
 		eventPublisher.publishEvent(new NewTaskCreatedEvent(this, task, callback));
 	}
 }
