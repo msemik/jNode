@@ -7,33 +7,36 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.stereotype.Component;
+
 import pl.uj.edu.options.OptionsEventsDispatcher;
 
-
 @Configuration
+@EnableAspectJAutoProxy
+@EnableSpringConfigured
 @ComponentScan
 public class JNodeApplication {
 
-    @Autowired
-    private DependencyInjectionTest diTest;
+	@Autowired
+	private DependencyInjectionTest diTest;
 
-    public static void main(String[] args) {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
-        JNodeApplication jNodeApplication = applicationContext.getBean(JNodeApplication.class);
+	public static void main(String[] args) {
+		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
+		JNodeApplication jNodeApplication = applicationContext.getBean(JNodeApplication.class);
 
-        OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
-        optionsEventsDispatcher.dispatchOptionsEvents(args);
-        jNodeApplication.diTest.sayHello(args);
-    }
+		OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
+		optionsEventsDispatcher.dispatchOptionsEvents(args);
+		jNodeApplication.diTest.sayHello(args);
+	}
 
+	@Component
+	private static class DependencyInjectionTest {
+		Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
 
-    @Component
-    private static class DependencyInjectionTest {
-        Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
-
-        public void sayHello(String[] args) {
-            logger.error("hellą world, args:" + String.join(" ", args));
-        }
-    }
+		public void sayHello(String[] args) {
+			logger.error("jNode application has started, args:" + String.join(" ", args));
+		}
+	}
 }
