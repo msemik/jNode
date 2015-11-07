@@ -1,43 +1,37 @@
 package pl.uj.edu.engine;
 
-import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 
-import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import pl.uj.edu.jarpath.JarDeletedEvent;
-import pl.uj.edu.jarpath.JarStateChangedEvent;
+import pl.uj.edu.ApplicationShutdownEvent;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
 @Component
-@Aspect
-public class TaskCoordinator {
+public class TaskCoordinator extends Thread {
+	private static final long SCAN_PERIOD = 1000; // 1 second
+
+	private boolean shutdown = false;
+
 	Logger logger = LoggerFactory.getLogger(TaskCoordinator.class);
-	
+
 	@Autowired
 	private WorkerPool workerPool;
+
+	@Autowired
+	private TaskQueue taskQueue;
 	
 	@Autowired
 	private CallbackStorage callbackStorage;
 
 	@EventListener
-	public void onJarStateChanged(JarStateChangedEvent event) {
-		Path path = event.getPath();
-		logger.error("Got jar " + path + " with properties " + event.getProperties()
-				+ " perhaps we can start a job if executionState is not started?");
-
-		JarLauncher loader = new JarLauncher(path);
-		loader.launchMain();
-	}
-	
-	@EventListener
-	public void onJarDeleted(JarDeletedEvent event) {
-		logger.error("Deleted jar " + event.getJarPath() + " we may removed job if exists");
+	public void onApplicationShutdown(ApplicationShutdownEvent e) {
+		shutdown = true;
 	}
 	
 	@EventListener
@@ -48,7 +42,24 @@ public class TaskCoordinator {
 		Callback callback = event.getCallback();
 		
 		callbackStorage.putIfAbsent(task, callback);
-		
-		
+		taskQueue.offer(task);
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				if (shutdown)
+					return;
+
+				if (!taskQueue.isEmpty() && workerPool.isInactiveWorker()) {
+					workerPool.submitTask(taskQueue.poll());
+				}
+
+				Thread.sleep(SCAN_PERIOD);
+			} catch (InterruptedException | ExecutionException e) {
+				logger.error(e.getMessage());
+			}
+		}
 	}
 }

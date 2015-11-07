@@ -6,6 +6,19 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import pl.uj.edu.engine.NewTaskCreatedEvent;
 
+/**
+ * This is a version of class TaskExecutor loaded by jNode.
+ * 
+ * User should have a version without any dependencies and with
+ * one empty (without any implementation) method:
+ * public void doAsync(Task task, Callback callback) {}
+ * 
+ * Because build-time weaving is enabled, TaskExecutor instances
+ * created with 'new' keyword in user's code will be treated
+ * as beans in jNode, so autowiring will work.
+ * 
+ * @author alanhawrot
+ */
 @Configurable
 public class TaskExecutor {
 	

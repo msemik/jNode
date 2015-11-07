@@ -6,7 +6,6 @@ import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
 public class NewTaskCreatedEvent extends ApplicationEvent {
-	
 	private Task task;
 	private Callback callback;
 

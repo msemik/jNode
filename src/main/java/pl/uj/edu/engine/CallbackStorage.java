@@ -1,6 +1,7 @@
 package pl.uj.edu.engine;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
@@ -9,8 +10,7 @@ import pl.uj.edu.userlib.Task;
 
 @Component
 public class CallbackStorage {
-	
-	private HashMap<Task, Callback> taskCallbackHashMap = new HashMap<>();
+	private Map<Task, Callback> taskCallbackHashMap = new ConcurrentHashMap<>();
 	
 	public void putIfAbsent(Task task, Callback callback) {
 		taskCallbackHashMap.putIfAbsent(task, callback);
