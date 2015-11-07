@@ -23,16 +23,23 @@ public class WorkerPool {
 
 	@Autowired
 	private ThreadPoolTaskExecutor taskExecutor;
+	
+	@Autowired
+	private CallbackStorage callbackStorage;
+	
+	@Autowired
+	private EventLoopStorage eventLoopStorage;
 
-	public Future<TaskResult> submitTask(Task task) throws InterruptedException, ExecutionException {
-		logger.info("Task is executed");
+	public void submitTask(Task task) throws InterruptedException, ExecutionException {
+		logger.info("Task is being executed");
 
 		Future<TaskResult> taskResult = taskExecutor.submit(task);
-		return taskResult;
+		
+		eventLoopStorage.getCallbackResultTaskMap().putIfAbsent(callbackStorage.remove(task), taskResult);
 	}
 
 	public boolean isInactiveWorker() {
-		return taskExecutor.getPoolSize() - taskExecutor.getActiveCount() > 0;
+		return taskExecutor.getMaxPoolSize() - taskExecutor.getActiveCount() > 0;
 	}
 
 	@EventListener

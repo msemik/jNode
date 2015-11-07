@@ -16,12 +16,12 @@ public class TaskQueue {
 	private Queue<Task> queue = new ConcurrentLinkedQueue<>();
 	
 	public boolean offer(Task task) {
-		logger.info("Task added to queue");
+		logger.info("Task has been added to queue");
 		return queue.offer(task);
 	}
 
 	public Task poll() {
-		logger.info("Task removed from queue");
+		logger.info("Task has been removed from queue");
 		return queue.poll();
 	}
 	

@@ -2,6 +2,8 @@ package pl.uj.edu.engine;
 
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +15,12 @@ import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
 @Component
-public class TaskCoordinator extends Thread {
+public class TaskCoordinatorThread extends Thread {
 	private static final long SCAN_PERIOD = 1000; // 1 second
 
 	private boolean shutdown = false;
 
-	Logger logger = LoggerFactory.getLogger(TaskCoordinator.class);
+	Logger logger = LoggerFactory.getLogger(TaskCoordinatorThread.class);
 
 	@Autowired
 	private WorkerPool workerPool;
@@ -28,6 +30,11 @@ public class TaskCoordinator extends Thread {
 	
 	@Autowired
 	private CallbackStorage callbackStorage;
+	
+	@PostConstruct
+	public void startThread() {
+		start();
+	}
 
 	@EventListener
 	public void onApplicationShutdown(ApplicationShutdownEvent e) {
@@ -47,6 +54,8 @@ public class TaskCoordinator extends Thread {
 
 	@Override
 	public void run() {
+		logger.info("TaskCoordinator is observing TaskQueue");
+		
 		while (true) {
 			try {
 				if (shutdown)
