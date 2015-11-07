@@ -36,7 +36,7 @@ public class TaskCoordinator extends Thread {
 	
 	@EventListener
 	public void onNewTaskCreated(NewTaskCreatedEvent event) {
-		logger.error("New task has been created");
+		logger.info("New task has been created");
 		
 		Task task = event.getTask();
 		Callback callback = event.getCallback();
