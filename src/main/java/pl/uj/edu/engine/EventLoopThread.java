@@ -1,5 +1,8 @@
 package pl.uj.edu.engine;
 
+import java.util.Map;
+import java.util.concurrent.Future;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -9,6 +12,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import pl.uj.edu.ApplicationShutdownEvent;
+import pl.uj.edu.userlib.Callback;
+import pl.uj.edu.userlib.TaskResult;
 
 @Component
 public class EventLoopThread extends Thread {
@@ -19,7 +24,7 @@ public class EventLoopThread extends Thread {
 	Logger logger = LoggerFactory.getLogger(EventLoopThread.class);
 
 	@Autowired
-	private EventLoopStorage eventLoopStorage;
+	private Map<Callback, Future<TaskResult>> eventLoopStorage;
 
 	@PostConstruct
 	public void startThread() {
@@ -34,18 +39,18 @@ public class EventLoopThread extends Thread {
 	@Override
 	public void run() {
 		logger.info("EventLoopThread is waiting for finished tasks");
-		
+
 		while (true) {
 			try {
 				if (shutdown)
 					return;
 
-				if (!eventLoopStorage.getCallbackResultTaskMap().isEmpty()) {
-					eventLoopStorage.getCallbackResultTaskMap().forEach((callback, futureResultTask) -> {
+				if (!eventLoopStorage.isEmpty()) {
+					eventLoopStorage.forEach((callback, futureResultTask) -> {
 						if (futureResultTask.isDone()) {
 							try {
-								callback.doCallback(futureResultTask.get());
-								eventLoopStorage.getCallbackResultTaskMap().remove(callback);
+								callback.onSuccess(futureResultTask.get());
+								eventLoopStorage.remove(callback);
 
 								logger.info("Callback has been finished");
 							} catch (Exception e) {

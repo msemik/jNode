@@ -1,5 +1,6 @@
 package pl.uj.edu.engine;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -11,6 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import pl.uj.edu.ApplicationShutdownEvent;
+import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 import pl.uj.edu.userlib.TaskResult;
 
@@ -28,14 +30,14 @@ public class WorkerPool {
 	private CallbackStorage callbackStorage;
 	
 	@Autowired
-	private EventLoopStorage eventLoopStorage;
+	private Map<Callback, Future<TaskResult>> eventLoopStorage;
 
 	public void submitTask(Task task) throws InterruptedException, ExecutionException {
 		logger.info("Task is being executed");
 
 		Future<TaskResult> taskResult = taskExecutor.submit(task);
 		
-		eventLoopStorage.getCallbackResultTaskMap().putIfAbsent(callbackStorage.remove(task), taskResult);
+		eventLoopStorage.putIfAbsent(callbackStorage.remove(task), taskResult);
 	}
 
 	public boolean isInactiveWorker() {

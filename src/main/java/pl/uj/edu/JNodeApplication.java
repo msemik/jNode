@@ -1,5 +1,9 @@
 package pl.uj.edu;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +18,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import pl.uj.edu.options.OptionsEventsDispatcher;
+import pl.uj.edu.userlib.Callback;
+import pl.uj.edu.userlib.TaskResult;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -49,5 +55,10 @@ public class JNodeApplication {
 		taskExecutor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
 		
 		return taskExecutor;
+	}
+	
+	@Bean
+	public Map<Callback, Future<TaskResult>> eventLoopStorage() {
+		return new ConcurrentHashMap<Callback, Future<TaskResult>>();
 	}
 }

@@ -2,5 +2,7 @@ package pl.uj.edu.userlib;
 
 public interface Callback {
 	
-	void doCallback(TaskResult taskResult);
+	void onSuccess(TaskResult taskResult);
+	
+	void onFailure(TaskResult taskResult);
 }
