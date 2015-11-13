@@ -40,7 +40,7 @@ public class WorkerPool {
 		eventLoopStorage.putIfAbsent(callbackStorage.remove(task), taskResult);
 	}
 
-	public boolean isInactiveWorker() {
+	public boolean hasInactiveWorker() {
 		return taskExecutor.getMaxPoolSize() - taskExecutor.getActiveCount() > 0;
 	}
 

@@ -61,7 +61,7 @@ public class TaskCoordinatorThread extends Thread {
 				if (shutdown)
 					return;
 
-				if (!taskQueue.isEmpty() && workerPool.isInactiveWorker()) {
+				if (!taskQueue.isEmpty() && workerPool.hasInactiveWorker()) {
 					workerPool.submitTask(taskQueue.poll());
 				}
 
