@@ -1,30 +1,31 @@
 package pl.uj.edu.userlib;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.context.ApplicationEventPublisher;
-import pl.uj.edu.engine.NewTaskCreatedEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-/**
- * This is a version of class UserTaskReceiver loaded by jNode.
- * <p>
- * User should have a version without any dependencies and with
- * one empty (without any implementation) method:
- * public void doAsync(Task task, Callback callback) {}
- * <p>
- * Because build-time weaving is enabled, UserTaskReceiver instances
- * created with 'new' keyword in user's code will be treated
- * as beans in jNode, so autowiring will work.
- *
- * @author alanhawrot
- */
-@Configurable
-public class UserTaskReceiver {
+public final class UserTaskReceiver {
+    private Class<?> userTaskReceiverClass;
+    private Object userTaskReceiverInstance;
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private void createUserTaskReceiver() {
+        try {
+            userTaskReceiverClass = ClassLoader.getSystemClassLoader().loadClass("pl.uj.edu.engine.UserTaskReceiver");
+            userTaskReceiverInstance = userTaskReceiverClass.newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public UserTaskReceiver() {
+        createUserTaskReceiver();
+    }
 
     public void doAsync(Task task, Callback callback) {
-        eventPublisher.publishEvent(new NewTaskCreatedEvent(this, task, callback));
+        try {
+            Method doAsyncMethod = userTaskReceiverClass.getMethod("doAsync", Task.class, Callback.class);
+            doAsyncMethod.invoke(userTaskReceiverInstance, task, callback);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 }

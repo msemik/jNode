@@ -87,11 +87,6 @@ public class JarLauncher {
         jcl.getThreadLoader().setEnabled(true);
         jcl.getCurrentLoader().setEnabled(true);
 
-        jcl.getSystemLoader().setOrder(1); // Look in system class loader first
-        jcl.getLocalLoader().setOrder(2); // if not found look in local class loader
-        jcl.getParentLoader().setOrder(3); // if not found look in parent class loader
-        jcl.getThreadLoader().setOrder(4); // if not found look in thread context class loader
-        jcl.getCurrentLoader().setOrder(5); // if not found look in current class loader
         return jcl;
     }
 }
