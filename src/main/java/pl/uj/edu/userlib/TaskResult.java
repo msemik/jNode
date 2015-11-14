@@ -1,5 +1,4 @@
 package pl.uj.edu.userlib;
 
-public abstract class TaskResult {
-
+public interface TaskResult {
 }

@@ -4,6 +4,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.springframework.stereotype.Component;
+
 /**
  * Created by michal on 22.10.15.
  */

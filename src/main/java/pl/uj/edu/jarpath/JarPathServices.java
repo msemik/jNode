@@ -33,24 +33,16 @@ public class JarPathServices {
         return Paths.get(propertiesFileName);
     }
 
-    public boolean isProperties(Path path) {
-        return Files.isRegularFile(path) && path.toString().endsWith(".properties");
+    public boolean isJarOrProperty(Path path) {
+        return isJar(path) || isProperties(path);
     }
 
     public boolean isJar(Path path) {
         return Files.isRegularFile(path) && path.toString().endsWith(".jar");
     }
 
-    public boolean isJarOrProperty(Path path) {
-        return isJar(path) || isProperties(path);
-    }
-
-    public void validateReadWriteAccess(Path path) {
-        if (!Files.isReadable(path))
-            throw new IllegalStateException("Read access denied for path '" + path + "'");
-
-        if (!Files.isWritable(path))
-            throw new IllegalStateException("Write access denied for path '" + path + "'");
+    public boolean isProperties(Path path) {
+        return Files.isRegularFile(path) && path.toString().endsWith(".properties");
     }
 
     public Path getJarPath() {
@@ -69,5 +61,13 @@ public class JarPathServices {
             throw new IllegalArgumentException("Path: '" + path + "' is not a directory");
         validateReadWriteAccess(path);
         return path;
+    }
+
+    public void validateReadWriteAccess(Path path) {
+        if (!Files.isReadable(path))
+            throw new IllegalStateException("Read access denied for path '" + path + "'");
+
+        if (!Files.isWritable(path))
+            throw new IllegalStateException("Write access denied for path '" + path + "'");
     }
 }

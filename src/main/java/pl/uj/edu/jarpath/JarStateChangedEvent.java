@@ -8,8 +8,8 @@ import java.nio.file.Path;
  * Created by michal on 22.10.15.
  */
 public class JarStateChangedEvent extends ApplicationEvent {
-    private Path path;
     private final JarProperties properties;
+    private Path path;
 
     public JarStateChangedEvent(Object source, Path path, JarProperties properties) {
         super(source);

@@ -1,69 +1,61 @@
 package pl.uj.edu.engine;
 
-import java.util.Map;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import pl.uj.edu.ApplicationShutdownEvent;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.TaskResult;
 
+import javax.annotation.PostConstruct;
+
 @Component
 public class EventLoopThread extends Thread {
-	private static final long SCAN_PERIOD = 1000; // 1 second
+    private Logger logger = LoggerFactory.getLogger(EventLoopThread.class);
 
-	private boolean shutdown = false;
+    private boolean shutdown = false;
 
-	Logger logger = LoggerFactory.getLogger(EventLoopThread.class);
+    @Autowired
+    private EventLoopQueue eventLoopQueue;
 
-	@Autowired
-	private Map<Callback, Future<TaskResult>> eventLoopStorage;
+    @PostConstruct
+    public void startThread() {
+        start();
+    }
 
-	@PostConstruct
-	public void startThread() {
-		start();
-	}
+    @EventListener
+    public void onApplicationShutdown(ApplicationShutdownEvent e) {
+        shutdown = true;
+    }
 
-	@EventListener
-	public void onApplicationShutdown(ApplicationShutdownEvent e) {
-		shutdown = true;
-	}
+    @Override
+    public void run() {
+        logger.info("EventLoopThread is waiting for finished tasks");
 
-	@Override
-	public void run() {
-		logger.info("EventLoopThread is waiting for finished tasks");
+        while (true) {
+            if (shutdown)
+                return;
 
-		while (true) {
-			try {
-				if (shutdown)
-					return;
+            try {
+                EventLoopRespond eventLoopRespond = eventLoopQueue.take();
 
-				if (!eventLoopStorage.isEmpty()) {
-					eventLoopStorage.forEach((callback, futureResultTask) -> {
-						if (futureResultTask.isDone()) {
-							try {
-								callback.onSuccess(futureResultTask.get());
-								eventLoopStorage.remove(callback);
+                if (eventLoopRespond.getType() != EventLoopRespondType.POISON) {
+                    Callback callback = eventLoopRespond.getCallback();
+                    TaskResult taskResult = eventLoopRespond.getTaskResult();
 
-								logger.info("Callback has been finished");
-							} catch (Exception e) {
-								logger.error(e.getMessage());
-							}
-						}
-					});
-				}
+                    logger.info("EventLoopThread is doing a callback " + callback.toString());
 
-				Thread.sleep(SCAN_PERIOD);
-			} catch (InterruptedException e) {
-				logger.error(e.getMessage());
-			}
-		}
-	}
+                    if (eventLoopRespond.getType() == EventLoopRespondType.SUCCESS) {
+                        callback.onSuccess(taskResult);
+                    } else {
+                        callback.onFailure();
+                    }
+                }
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+        }
+    }
 }

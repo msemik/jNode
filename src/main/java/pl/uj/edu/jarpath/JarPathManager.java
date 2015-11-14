@@ -69,7 +69,7 @@ public class JarPathManager {
             JarProperties.fromJarPath(pathToJar, "NODE_ID_STUB")  //TODO: set real node identifier;
                     .store();
         }
-        eventPublisher.publishEvent(new JarStateChangedEvent(this, pathToJar, JarProperties.fromJarPath(pathToJar   )));
+        eventPublisher.publishEvent(new JarStateChangedEvent(this, pathToJar, JarProperties.fromJarPath(pathToJar)));
     }
 
     public void onDeleteJar(Path pathToJar) {

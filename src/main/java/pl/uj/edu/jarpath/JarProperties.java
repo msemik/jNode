@@ -22,34 +22,7 @@ public class JarProperties {
         executionState = JarExecutionState.NOT_STARTED;
     }
 
-    public JarExecutionState getExecutionState() {
-        return executionState;
-    }
-
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
-
-    public void setExecutionState(JarExecutionState executionState) {
-        this.executionState = executionState;
-    }
-
-    public void store() {
-        Properties p = new Properties();
-        p.setProperty("nodeId", nodeId);
-        p.setProperty("executionState", executionState.toString());
-        try {
-            p.store(Files.newOutputStream(jarPathToPropertiesPath(pathToJar)), "jar path properties");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public  static JarProperties fromJarPath(Path pathToJar, String nodeId) {
+    public static JarProperties fromJarPath(Path pathToJar, String nodeId) {
         return new JarProperties(pathToJar, nodeId);
     }
 
@@ -74,6 +47,32 @@ public class JarProperties {
         return Paths.get(s.substring(0, s.length() - 3) + "properties");
     }
 
+    public JarExecutionState getExecutionState() {
+        return executionState;
+    }
+
+    public void setExecutionState(JarExecutionState executionState) {
+        this.executionState = executionState;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public void store() {
+        Properties p = new Properties();
+        p.setProperty("nodeId", nodeId);
+        p.setProperty("executionState", executionState.toString());
+        try {
+            p.store(Files.newOutputStream(jarPathToPropertiesPath(pathToJar)), "jar path properties");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public String toString() {

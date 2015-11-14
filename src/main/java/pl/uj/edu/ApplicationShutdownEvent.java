@@ -7,16 +7,13 @@ import org.springframework.context.ApplicationEvent;
  */
 public class ApplicationShutdownEvent extends ApplicationEvent {
     private String message;
-
-    public enum ShutdownReason {UNPARSABLE_OPTIONS, WATCHER_SERVICE_ERROR, INVALID_JAR_FILE;}
-
     private ShutdownReason shutdownReason;
-
 
     public ApplicationShutdownEvent(Object source, ShutdownReason reason) {
         super(source);
         this.shutdownReason = reason;
     }
+
 
     public ApplicationShutdownEvent(Object source, ShutdownReason reason, String message) {
         super(source);
@@ -36,4 +33,5 @@ public class ApplicationShutdownEvent extends ApplicationEvent {
         this.shutdownReason = shutdownReason;
     }
 
+    public enum ShutdownReason {UNPARSABLE_OPTIONS, WATCHER_SERVICE_ERROR, INVALID_JAR_FILE;}
 }

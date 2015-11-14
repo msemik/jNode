@@ -1,8 +1,8 @@
 package pl.uj.edu.userlib;
 
 public interface Callback {
-	
-	void onSuccess(TaskResult taskResult);
-	
-	void onFailure(TaskResult taskResult);
+
+    void onSuccess(TaskResult taskResult);
+
+    void onFailure();
 }
