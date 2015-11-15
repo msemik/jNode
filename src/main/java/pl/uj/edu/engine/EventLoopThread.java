@@ -41,17 +41,19 @@ public class EventLoopThread extends Thread {
             try {
                 EventLoopRespond eventLoopRespond = eventLoopQueue.take();
 
-                if (eventLoopRespond.getType() != EventLoopRespondType.POISON) {
-                    Callback callback = eventLoopRespond.getCallback();
+                if (eventLoopRespond.getType() == EventLoopRespondType.POISON)
+                    return;
+
+                Callback callback = eventLoopRespond.getCallback();
+
+                if (eventLoopRespond.getType() == EventLoopRespondType.SUCCESS) {
                     TaskResult taskResult = eventLoopRespond.getTaskResult();
 
-                    logger.info("EventLoopThread is doing a callback " + callback.toString());
+                    callback.onSuccess(taskResult);
+                } else {
+                    Throwable exception = eventLoopRespond.getException();
 
-                    if (eventLoopRespond.getType() == EventLoopRespondType.SUCCESS) {
-                        callback.onSuccess(taskResult);
-                    } else {
-                        callback.onFailure();
-                    }
+                    callback.onFailure(exception);
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());

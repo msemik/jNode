@@ -10,9 +10,16 @@ public class EventLoopRespond {
     private EventLoopRespondType type;
     private Callback callback;
     private TaskResult taskResult;
+    private Throwable exception;
 
     public EventLoopRespond(EventLoopRespondType type) {
         this.type = type;
+    }
+
+    public EventLoopRespond(EventLoopRespondType type, Callback callback, Throwable exception) {
+        this.type = type;
+        this.callback = callback;
+        this.exception = exception;
     }
 
     public EventLoopRespond(EventLoopRespondType type, Callback callback, TaskResult taskResult) {
@@ -43,5 +50,13 @@ public class EventLoopRespond {
 
     public void setTaskResult(TaskResult taskResult) {
         this.taskResult = taskResult;
+    }
+
+    public Throwable getException() {
+        return exception;
+    }
+
+    public void setException(Throwable exception) {
+        this.exception = exception;
     }
 }

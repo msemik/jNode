@@ -38,9 +38,10 @@ public class WorkerPool {
             public void onFailure(Throwable ex) {
                 logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
 
-                callbackStorage.remove(task);
+                Callback callback = callbackStorage.remove(task);
+
                 try {
-                    eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.FAILURE));
+                    eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.FAILURE, callback, ex));
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
                 }
@@ -48,10 +49,11 @@ public class WorkerPool {
 
             @Override
             public void onSuccess(TaskResult result) {
-                try {
-                    logger.info("Execution of task " + task.toString() + " has been accomplished");
+                logger.info("Execution of task " + task.toString() + " has been accomplished");
 
-                    Callback callback = callbackStorage.remove(task);
+                Callback callback = callbackStorage.remove(task);
+
+                try {
                     eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.SUCCESS, callback, result));
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());

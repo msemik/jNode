@@ -4,5 +4,5 @@ public interface Callback {
 
     void onSuccess(TaskResult taskResult);
 
-    void onFailure();
+    void onFailure(Throwable ex);
 }
