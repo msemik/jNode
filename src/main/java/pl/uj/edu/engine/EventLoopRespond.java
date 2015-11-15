@@ -1,7 +1,6 @@
 package pl.uj.edu.engine;
 
 import pl.uj.edu.userlib.Callback;
-import pl.uj.edu.userlib.TaskResult;
 
 /**
  * Created by alanhawrot on 14.11.2015.
@@ -9,7 +8,7 @@ import pl.uj.edu.userlib.TaskResult;
 public class EventLoopRespond {
     private EventLoopRespondType type;
     private Callback callback;
-    private TaskResult taskResult;
+    private Object taskResult;
     private Throwable exception;
 
     public EventLoopRespond(EventLoopRespondType type) {
@@ -22,7 +21,7 @@ public class EventLoopRespond {
         this.exception = exception;
     }
 
-    public EventLoopRespond(EventLoopRespondType type, Callback callback, TaskResult taskResult) {
+    public EventLoopRespond(EventLoopRespondType type, Callback callback, Object taskResult) {
         this.type = type;
         this.callback = callback;
         this.taskResult = taskResult;
@@ -44,11 +43,11 @@ public class EventLoopRespond {
         this.callback = callback;
     }
 
-    public TaskResult getTaskResult() {
+    public Object getTaskResult() {
         return taskResult;
     }
 
-    public void setTaskResult(TaskResult taskResult) {
+    public void setTaskResult(Object taskResult) {
         this.taskResult = taskResult;
     }
 

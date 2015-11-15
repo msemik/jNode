@@ -11,7 +11,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.uj.edu.ApplicationShutdownEvent;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
-import pl.uj.edu.userlib.TaskResult;
 
 /**
  * Created by michal on 31.10.15.
@@ -32,8 +31,8 @@ public class WorkerPool {
     public void submitTask(Task task) {
         logger.info("Task " + task.toString() + " is being executed");
 
-        ListenableFuture<TaskResult> taskResultFuture = taskExecutor.submitListenable(task);
-        taskResultFuture.addCallback(new ListenableFutureCallback<TaskResult>() {
+        ListenableFuture<Object> taskResultFuture = taskExecutor.submitListenable(task);
+        taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
             @Override
             public void onFailure(Throwable ex) {
                 logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
@@ -48,7 +47,7 @@ public class WorkerPool {
             }
 
             @Override
-            public void onSuccess(TaskResult result) {
+            public void onSuccess(Object result) {
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
 
                 Callback callback = callbackStorage.remove(task);

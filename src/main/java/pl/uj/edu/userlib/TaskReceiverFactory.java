@@ -27,7 +27,7 @@ public class TaskReceiverFactory {
 
         public void doAsync(Task task, Callback callback) {
             try {
-                Method doAsyncMethod = userTaskReceiverClass.getMethod("doAsync", Task.class, Callback.class);
+                Method doAsyncMethod = userTaskReceiverClass.getMethod("doAsync", Object.class, Object.class);
                 doAsyncMethod.invoke(userTaskReceiverInstance, task, callback);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();

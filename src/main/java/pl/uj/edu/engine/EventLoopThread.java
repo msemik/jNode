@@ -7,7 +7,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.uj.edu.ApplicationShutdownEvent;
 import pl.uj.edu.userlib.Callback;
-import pl.uj.edu.userlib.TaskResult;
 
 import javax.annotation.PostConstruct;
 
@@ -47,7 +46,7 @@ public class EventLoopThread extends Thread {
                 Callback callback = eventLoopRespond.getCallback();
 
                 if (eventLoopRespond.getType() == EventLoopRespondType.SUCCESS) {
-                    TaskResult taskResult = eventLoopRespond.getTaskResult();
+                    Object taskResult = eventLoopRespond.getTaskResult();
 
                     callback.onSuccess(taskResult);
                 } else {
