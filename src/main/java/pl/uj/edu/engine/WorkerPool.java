@@ -41,7 +41,7 @@ public class WorkerPool {
                 logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
 
                 Callback callback = callbackStorage.remove(task);
-                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.getQueue(taskJarRegistry.getJarName(task));
+                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.get(taskJarRegistry.remove(task));
 
                 try {
                     eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.FAILURE, callback, ex));
@@ -55,7 +55,7 @@ public class WorkerPool {
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
 
                 Callback callback = callbackStorage.remove(task);
-                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.getQueue(taskJarRegistry.getJarName(task));
+                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.get(taskJarRegistry.remove(task));
 
                 try {
                     eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.SUCCESS, callback, result));

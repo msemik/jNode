@@ -18,7 +18,11 @@ public class TaskJarRegistry {
         map.putIfAbsent(task, jarName);
     }
 
-    public String getJarName(Task task) {
+    public String get(Task task) {
         return map.get(task);
+    }
+
+    public String remove(Task task) {
+        return map.remove(task);
     }
 }

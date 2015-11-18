@@ -17,7 +17,11 @@ public class JarEventLoopQueueRegistry {
         map.putIfAbsent(jarName, queue);
     }
 
-    public EventLoopQueue getQueue(String jarName) {
+    public EventLoopQueue get(String jarName) {
         return map.get(jarName);
+    }
+
+    public EventLoopQueue remove(String jarName) {
+        return map.remove(jarName);
     }
 }
