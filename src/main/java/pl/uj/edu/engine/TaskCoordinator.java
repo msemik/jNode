@@ -19,11 +19,11 @@ public class TaskCoordinator {
     private CallbackStorage callbackStorage;
 
     @EventListener
-    public void onNewTaskCreated(NewTaskCreatedEvent event) {
-        logger.info("New task has been created");
-
+    public void onNewTaskCreated(NewTaskReceivedEvent event) {
         Task task = event.getTask();
         Callback callback = event.getCallback();
+
+        logger.info("New task has been received: " + task);
 
         callbackStorage.putIfAbsent(task, callback);
         workerPool.submitTask(task);

@@ -1,5 +1,7 @@
 package pl.uj.edu.engine;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.uj.edu.ApplicationShutdownEvent;
@@ -11,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Created by alanhawrot on 14.11.2015.
  */
 @Component
+@Scope("prototype")
 public class EventLoopQueue {
     private BlockingQueue<EventLoopRespond> eventLoopResponds = new LinkedBlockingQueue<>();
 

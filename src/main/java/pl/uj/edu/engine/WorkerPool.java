@@ -26,7 +26,10 @@ public class WorkerPool {
     private CallbackStorage callbackStorage;
 
     @Autowired
-    private EventLoopQueue eventLoopQueue;
+    private TaskJarRegistry taskJarRegistry;
+
+    @Autowired
+    private JarEventLoopQueueRegistry jarEventLoopQueueRegistry;
 
     public void submitTask(Task task) {
         logger.info("Task " + task.toString() + " is being executed");
@@ -38,6 +41,7 @@ public class WorkerPool {
                 logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
 
                 Callback callback = callbackStorage.remove(task);
+                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.getQueue(taskJarRegistry.getJarName(task));
 
                 try {
                     eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.FAILURE, callback, ex));
@@ -51,6 +55,7 @@ public class WorkerPool {
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
 
                 Callback callback = callbackStorage.remove(task);
+                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.getQueue(taskJarRegistry.getJarName(task));
 
                 try {
                     eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.SUCCESS, callback, result));
