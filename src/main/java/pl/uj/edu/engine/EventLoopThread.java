@@ -40,7 +40,7 @@ public class EventLoopThread extends Thread {
 
     @Override
     public void run() {
-        logger.info("EventLoopThread is waiting for finished tasks");
+        logger.info("Started to listen for tasks results");
 
         while (true) {
             if (shutdown)
@@ -49,15 +49,19 @@ public class EventLoopThread extends Thread {
             try {
                 EventLoopRespond eventLoopRespond = eventLoopQueue.take();
 
-                if (eventLoopRespond.getType() == EventLoopRespondType.POISON)
+                if (eventLoopRespond.getType() == EventLoopRespondType.POISON) {
+                    logger.info("Received poison, aborting.");
                     return;
+                }
 
                 Callback callback = eventLoopRespond.getCallback();
 
                 if (eventLoopRespond.getType() == EventLoopRespondType.SUCCESS) {
+                    logger.info("Received task result, executing callback");
                     Object taskResult = eventLoopRespond.getTaskResult();
                     callback.onSuccess(taskResult);
                 } else {
+                    logger.info("Received task exception, executing callback");
                     Throwable exception = eventLoopRespond.getException();
                     callback.onFailure(exception);
                 }

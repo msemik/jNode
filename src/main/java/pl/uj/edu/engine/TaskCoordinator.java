@@ -23,7 +23,7 @@ public class TaskCoordinator {
         Task task = event.getTask();
         Callback callback = event.getCallback();
 
-        logger.info("New task has been received: " + task);
+        logger.info("Submitting newly received task to pool and saving callback in storage " + task);
 
         callbackStorage.putIfAbsent(task, callback);
         workerPool.submitTask(task);
