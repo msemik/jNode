@@ -18,5 +18,6 @@ public class EmptyCallback implements Callback {
     @Override
     public void onFailure(Throwable ex) {
         logger.debug("Unsuccessful task execution, exception: " + ex);
+        ex.printStackTrace();
     }
 }

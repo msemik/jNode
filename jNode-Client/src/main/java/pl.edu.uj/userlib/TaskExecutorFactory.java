@@ -18,7 +18,7 @@ public class TaskExecutorFactory {
 
         public UserTaskReceiver() {
             try {
-                userTaskReceiverClass = ClassLoader.getSystemClassLoader().loadClass("pl.uj.edu.engine.DefaultTaskReceiver");
+                userTaskReceiverClass = ClassLoader.getSystemClassLoader().loadClass("pl.edu.uj.engine.DefaultTaskReceiver");
                 userTaskReceiverInstance = userTaskReceiverClass.newInstance();
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();

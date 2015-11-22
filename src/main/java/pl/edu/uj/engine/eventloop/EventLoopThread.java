@@ -68,8 +68,8 @@ public class EventLoopThread extends Thread {
                 Object taskResult = eventLoopResponse.getTaskResult();
                 callback.onSuccess(taskResult);
             } else {
-                logger.info("Received task exception, executing callback");
                 Throwable exception = eventLoopResponse.getException();
+                logger.info("Received task exception, executing callback", exception);
                 callback.onFailure(exception);
             }
 
@@ -114,7 +114,6 @@ public class EventLoopThread extends Thread {
         shutdown = true;
         eventLoopQueue.poison();
         interrupt();
-
     }
 
     @Override

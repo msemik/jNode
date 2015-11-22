@@ -54,11 +54,13 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-        logger.info("Deleted jar " + event.getJarPath() + " we may removed job if exists");
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(event.getJarPath());
-        if (!eventLoopThread.isPresent())
+        Path jarFileName = event.getJarPath().getFileName();
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(jarFileName);
+        if (!eventLoopThread.isPresent()) {
+            logger.debug("Deleted jar " + jarFileName + " but there was no eventLoopThread for the jar " + eventLoopThreadRegistry);
             return;
+        }
         eventLoopThread.get().shutDown();
     }
 
