@@ -1,6 +1,5 @@
 package pl.edu.uj.engine.eventloop;
 
-import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.InvalidJarFileException;
 import pl.edu.uj.engine.JarLauncher;
+import pl.edu.uj.engine.UserApplicationException;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
@@ -71,12 +71,14 @@ public class EventLoopThread extends Thread {
                 callback.onSuccess(taskResult);
             } else {
                 Throwable exception = eventLoopResponse.getException();
-                if(exception instanceof InvalidJarFileException){
+                if (exception instanceof InvalidJarFileException) {
                     System.out.println(getJarName() + ": Invalid jar file: " + exception.getMessage());
                     break;
                 }
                 logger.info("Received task exception, executing callback", exception);
-                callback.onFailure(exception);
+                if (exception instanceof UserApplicationException)
+                    exception = exception.getCause();
+                callback.onFailure(exception.getCause());
             }
 
             if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {

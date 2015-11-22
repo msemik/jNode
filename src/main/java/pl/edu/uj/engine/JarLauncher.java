@@ -74,8 +74,7 @@ public class JarLauncher {
             String message = "Declared main class doesn't exist:" + e.getMessage();
             throw new InvalidJarFileException(message, e);
         } catch (InvocationTargetException e) {
-            String message = "Main method has thrown exception: " + e;
-            throw new InvalidJarFileException(message, e);
+            throw new UserApplicationException(e.getCause());
         } catch (NoSuchMethodException e) {
             String message = "Declared main class doesn't have proper main method:" + e.getMessage();
             throw new InvalidJarFileException(message, e);
