@@ -1,6 +1,7 @@
 package pl.edu.uj.engine;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.xeustechnologies.jcl.JarClassLoader;
@@ -29,6 +30,9 @@ public class JarLauncher {
     @Autowired
     JarPathServices jarPathServices;
 
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
+
     public JarLauncher() {
     }
 
@@ -49,7 +53,7 @@ public class JarLauncher {
                     return (String) mainAttributes.get(attribute);
             }
 
-            throw new IllegalArgumentException("Jar " + pathToJar + " doesn't contain Main-Class attribute");
+            throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -57,6 +61,7 @@ public class JarLauncher {
     }
 
     public Object launchMain() {
+        Path fileName = path.getFileName();
         try {
             ClassLoader classLoader = getClassLoader();
             String mainClassName = getMainClass(path);
@@ -66,13 +71,17 @@ public class JarLauncher {
             String[] args = new String[0];
             return main.invoke(null, new Object[]{args});
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            String message = "Declared main class doesn't exist:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            String message = "Main method has thrown exception: " + e;
+            throw new InvalidJarFileException(message, e);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            String message = "Declared main class doesn't have proper main method:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            String message = "Declared main class is not accessible:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
         }
     }
 

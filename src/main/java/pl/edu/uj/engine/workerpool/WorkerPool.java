@@ -34,7 +34,7 @@ public class WorkerPool {
         taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
             @Override
             public void onFailure(Throwable ex) {
-                logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
+                logger.info("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
 
                 Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
                 if (!eventLoopThread.isPresent()) {

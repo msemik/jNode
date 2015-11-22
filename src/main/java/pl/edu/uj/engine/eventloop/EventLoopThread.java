@@ -1,5 +1,6 @@
 package pl.edu.uj.engine.eventloop;
 
+import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.engine.InvalidJarFileException;
 import pl.edu.uj.engine.JarLauncher;
+import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
@@ -42,7 +44,7 @@ public class EventLoopThread extends Thread {
 
     @EventListener
     public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        shutdown = true;
+        shutDown();
     }
 
     @Override
@@ -69,11 +71,15 @@ public class EventLoopThread extends Thread {
                 callback.onSuccess(taskResult);
             } else {
                 Throwable exception = eventLoopResponse.getException();
+                if(exception instanceof InvalidJarFileException){
+                    System.out.println(getJarName() + ": Invalid jar file: " + exception.getMessage());
+                    break;
+                }
                 logger.info("Received task exception, executing callback", exception);
                 callback.onFailure(exception);
             }
 
-            if(callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
+            if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
                 logger.info("No more callbacks to execute, shutting down");
                 break;
             }

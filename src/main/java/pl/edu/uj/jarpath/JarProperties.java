@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import static java.nio.file.Files.notExists;
+import static pl.edu.uj.jarpath.JarExecutionState.NOT_STARTED;
 
 /**
  * Created by michal on 30.10.15.
@@ -19,7 +20,7 @@ public class JarProperties {
     private JarProperties(Path pathToJar, String nodeId) {
         this.nodeId = nodeId;
         this.pathToJar = pathToJar;
-        executionState = JarExecutionState.NOT_STARTED;
+        executionState = NOT_STARTED;
     }
 
     public static JarProperties fromJarPath(Path pathToJar, String nodeId) {
@@ -38,7 +39,8 @@ public class JarProperties {
             throw new RuntimeException(e);
         }
         JarProperties jarProperties = new JarProperties(pathToJar, p.getProperty("nodeId"));
-        jarProperties.setExecutionState(JarExecutionState.CANCELLED.valueOf(p.getProperty("executionState")));
+        String executionState = p.getProperty("executionState");
+        jarProperties.setExecutionState(executionState == null? NOT_STARTED : JarExecutionState.valueOf(executionState));
         return jarProperties;
     }
 
