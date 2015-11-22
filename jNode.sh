@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-JAR_FILENAME="jnode-0.0.1-SNAPSHOT.jar"
+JAR_FILENAME="jnode-platform-0.0.1-SNAPSHOT.jar"
 
 if [  -f $CWD"/"$JAR_FILENAME ] ; then
     JNODE_JAR=$CWD"/"$JAR_FILENAME
