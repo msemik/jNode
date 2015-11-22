@@ -1,20 +1,18 @@
 package pl.uj.edu.userlib;
 
-import pl.uj.edu.engine.workerpool.WorkerPoolTask;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
  * Created by alanhawrot on 15.11.2015.
  */
-public class TaskReceiverFactory {
+public class TaskExecutorFactory {
 
-    public static TaskReceiver createTaskReceiver() {
+    public static TaskExecutor createTaskExecutor() {
         return new UserTaskReceiver();
     }
 
-    private static class UserTaskReceiver implements TaskReceiver {
+    private static class UserTaskReceiver implements TaskExecutor {
         private Class<?> userTaskReceiverClass;
         private Object userTaskReceiverInstance;
 
@@ -27,7 +25,7 @@ public class TaskReceiverFactory {
             }
         }
 
-        public void doAsync(WorkerPoolTask task, Callback callback) {
+        public void doAsync(Task task, Callback callback) {
             try {
                 Method doAsyncMethod = userTaskReceiverClass.getMethod("doAsync", Object.class, Object.class);
                 doAsyncMethod.invoke(userTaskReceiverInstance, task, callback);
