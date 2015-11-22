@@ -16,6 +16,8 @@ import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.file.Path;
 
 @Component
@@ -68,17 +70,51 @@ public class EventLoopThread extends Thread {
             if (eventLoopResponse.getType() == EventLoopResponseType.SUCCESS) {
                 logger.info("Received task result, executing callback");
                 Object taskResult = eventLoopResponse.getTaskResult();
-                callback.onSuccess(taskResult);
+                try {
+                    callback.onSuccess(taskResult);
+                } catch (RuntimeException ex) {
+                    Throwable e = ex;
+                    System.out.println("Error in " + getJarName() + " while executing onSuccess, aborting jar jobs");
+
+                    //Seeking user exception
+                    if (e instanceof UndeclaredThrowableException)
+                        e = e.getCause();
+                    if (e instanceof InvocationTargetException)
+                        e = e.getCause();
+
+                    e.printStackTrace();
+                    break;
+                }
             } else {
                 Throwable exception = eventLoopResponse.getException();
                 if (exception instanceof InvalidJarFileException) {
                     System.out.println(getJarName() + " is invalid jar file: " + exception.getMessage());
                     break;
                 }
-                logger.info("Received task exception, executing callback", exception);
+
+                //Seeking user exception
+                if (exception instanceof UndeclaredThrowableException)
+                    exception = exception.getCause();
+                if (exception instanceof InvocationTargetException)
+                    exception = exception.getCause();
                 if (exception instanceof UserApplicationException)
                     exception = exception.getCause();
-                callback.onFailure(exception.getCause());
+                logger.info("Received task exception(" + exception.getClass().getSimpleName() + ": " + exception.getMessage() + "), executing callback");
+                try {
+                    callback.onFailure(exception.getCause());
+                } catch (RuntimeException ex) {
+                    Throwable e = ex;
+                    System.out.println("Error in " + getJarName() + " while executing onFailure, aborting jar jobs");
+
+                    //Seeking user exception
+                    if (e instanceof UndeclaredThrowableException)
+                        e = e.getCause();
+                    if (e instanceof InvocationTargetException)
+                        e = e.getCause();
+
+                    e.printStackTrace();
+                    break;
+                }
             }
 
             if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {

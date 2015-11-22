@@ -58,7 +58,7 @@ public class TaskCoordinator {
         Path jarFileName = event.getJarPath().getFileName();
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(jarFileName);
         if (!eventLoopThread.isPresent()) {
-            logger.debug("Deleted jar " + jarFileName + " but there was no eventLoopThread for the jar " + eventLoopThreadRegistry);
+            logger.debug("Deleted jar " + jarFileName + " but there, there was no eventLoopThread for the jar " + eventLoopThreadRegistry);
             return;
         }
         eventLoopThread.get().shutDown();
