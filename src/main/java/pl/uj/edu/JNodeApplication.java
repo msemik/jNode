@@ -6,7 +6,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import pl.uj.edu.engine.JarLauncher;
 import pl.uj.edu.options.OptionsEventsDispatcher;
+
+import java.nio.file.Path;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -23,6 +26,8 @@ public class JNodeApplication {
 
         Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
         logger.info("jNode application has started, args:" + String.join(" ", args));
+
+
     }
 
     @Bean
@@ -33,4 +38,5 @@ public class JNodeApplication {
 
         return taskExecutor;
     }
+
 }

@@ -1,6 +1,11 @@
 package pl.uj.edu.engine;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.xeustechnologies.jcl.JarClassLoader;
+import pl.uj.edu.jarpath.JarPathServices;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -16,15 +21,16 @@ import java.util.jar.Manifest;
  * Created by michal on 31.10.15.
  */
 
+@Component
+@Scope("prototype")
 public class JarLauncher {
     private Path path;
-    private String mainClass;
     private JarClassLoader jcl;
 
-    public JarLauncher(Path pathToJar) {
-        this.path = pathToJar;
-        validatePathIsReadable();
-        mainClass = getMainClass(pathToJar);
+    @Autowired
+    JarPathServices jarPathServices;
+
+    public JarLauncher() {
     }
 
     private void validatePathIsReadable() {
@@ -51,14 +57,15 @@ public class JarLauncher {
         }
     }
 
-    public void launchMain() {
+    public Object launchMain() {
         try {
             ClassLoader classLoader = getClassLoader();
-            Class<?> mainClass = classLoader.loadClass(this.mainClass);
+            String mainClassName = getMainClass(path);
+            Class<?> mainClass = classLoader.loadClass(mainClassName);
 
             Method main = mainClass.getMethod("main", String[].class);
             String[] args = new String[0];
-            main.invoke(null, new Object[]{args});
+            return main.invoke(null, new Object[]{args});
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -88,5 +95,13 @@ public class JarLauncher {
         jcl.getCurrentLoader().setEnabled(true);
 
         return jcl;
+    }
+
+    public void setPath(Path path) {
+        if (path.isAbsolute())
+            this.path = path;
+        else
+            this.path = jarPathServices.getJarPath().resolve(path);
+        validatePathIsReadable();
     }
 }

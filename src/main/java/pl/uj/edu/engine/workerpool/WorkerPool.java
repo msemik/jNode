@@ -1,4 +1,4 @@
-package pl.uj.edu.engine;
+package pl.uj.edu.engine.workerpool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.uj.edu.ApplicationShutdownEvent;
-import pl.uj.edu.userlib.Callback;
-import pl.uj.edu.userlib.Task;
+import pl.uj.edu.engine.eventloop.EventLoopThread;
+import pl.uj.edu.engine.eventloop.EventLoopThreadRegistry;
+
+import java.util.Optional;
 
 /**
  * Created by michal on 31.10.15.
@@ -23,15 +25,9 @@ public class WorkerPool {
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
-    private CallbackStorage callbackStorage;
+    private EventLoopThreadRegistry eventLoopThreadRegistry;
 
-    @Autowired
-    private TaskJarRegistry taskJarRegistry;
-
-    @Autowired
-    private JarEventLoopQueueRegistry jarEventLoopQueueRegistry;
-
-    public void submitTask(Task task) {
+    public void submitTask(WorkerPoolTask task) {
         logger.info("Task " + task.toString() + " is being executed");
 
         ListenableFuture<Object> taskResultFuture = taskExecutor.submitListenable(task);
@@ -40,28 +36,24 @@ public class WorkerPool {
             public void onFailure(Throwable ex) {
                 logger.error("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
 
-                Callback callback = callbackStorage.remove(task);
-                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.get(taskJarRegistry.remove(task));
-
-                try {
-                    eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.FAILURE, callback, ex));
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+                if (!eventLoopThread.isPresent()) {
+                    logger.error("Event loop thread missing for given task: " + task);
+                    return;
                 }
+                eventLoopThread.get().submitTaskFailure(task, ex);
             }
 
             @Override
             public void onSuccess(Object result) {
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
 
-                Callback callback = callbackStorage.remove(task);
-                EventLoopQueue eventLoopQueue = jarEventLoopQueueRegistry.get(taskJarRegistry.remove(task));
-
-                try {
-                    eventLoopQueue.put(new EventLoopRespond(EventLoopRespondType.SUCCESS, callback, result));
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+                if (!eventLoopThread.isPresent()) {
+                    logger.error("Event loop thread missing for given task: " + task);
+                    return;
                 }
+                eventLoopThread.get().submitTaskResult(task, result);
             }
         });
     }

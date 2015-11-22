@@ -1,5 +1,7 @@
 package pl.uj.edu.userlib;
 
+import pl.uj.edu.engine.workerpool.WorkerPoolTask;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -25,7 +27,7 @@ public class TaskReceiverFactory {
             }
         }
 
-        public void doAsync(Task task, Callback callback) {
+        public void doAsync(WorkerPoolTask task, Callback callback) {
             try {
                 Method doAsyncMethod = userTaskReceiverClass.getMethod("doAsync", Object.class, Object.class);
                 doAsyncMethod.invoke(userTaskReceiverInstance, task, callback);

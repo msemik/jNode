@@ -6,21 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.xeustechnologies.jcl.JclUtils;
+import pl.uj.edu.engine.workerpool.UserDoAsyncWorkerPoolTask;
+import pl.uj.edu.engine.workerpool.WorkerPoolTask;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
-import pl.uj.edu.userlib.TaskReceiver;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Configurable
-public class DefaultTaskReceiver implements TaskReceiver {
+public class DefaultTaskReceiver {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    private TaskJarRegistry taskJarRegistry;
 
     private Logger logger = LoggerFactory.getLogger(DefaultTaskReceiver.class);
 
@@ -29,25 +30,27 @@ public class DefaultTaskReceiver implements TaskReceiver {
         URL resource = taskClass.getResource('/' + taskClass.getName().replace('.', '/') + ".class");
 
         if (resource == null) {
-            logger.info("null resource occurred");
+            logger.error("null resource occurred");
             return; // event, log
         }
 
         String[] resourcePartition = resource.toString().split("!");
-        if(resourcePartition == null || resourcePartition.length != 2)
+        if (resourcePartition == null || resourcePartition.length != 2)
             throw new IllegalStateException("Unexpected jar resource format occurred:" + resource);
 
-        String jarName = Paths.get(resourcePartition[0]).getFileName().toString();
+        Path jarName = null;
+        try {
+            jarName = Paths.get(URLDecoder.decode(resourcePartition[0], "utf-8")).getFileName();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Decoded path has unexpected format " + resourcePartition[0], e);
+        }
         logger.info("Discovered jar filename from task:" + jarName);
         Task taskToDo = JclUtils.cast(task, Task.class);
         Callback callbackToDo = JclUtils.cast(callback, Callback.class);
 
-        taskJarRegistry.putIfAbsent(taskToDo, jarName);
-
-        doAsync(taskToDo, callbackToDo);
+        WorkerPoolTask workerPoolTask = new UserDoAsyncWorkerPoolTask(taskToDo, jarName);
+        NewTaskReceivedEvent event = new NewTaskReceivedEvent(this, workerPoolTask, callbackToDo);
+        eventPublisher.publishEvent(event);
     }
 
-    public void doAsync(Task task, Callback callback) {
-        eventPublisher.publishEvent(new NewTaskReceivedEvent(this, task, callback));
-    }
 }
