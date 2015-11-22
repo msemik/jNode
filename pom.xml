@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>pl.uj.edu</groupId>
+            <groupId>pl.edu.uj</groupId>
             <artifactId>jnode</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
