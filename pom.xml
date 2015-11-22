@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>pl.uj.edu</groupId>
+    <groupId>pl.edu.uj</groupId>
     <artifactId>jnode-platform</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -119,7 +119,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>pl.uj.edu.JNodeApplication</mainClass>
+                            <mainClass>pl.edu.uj.JNodeApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
