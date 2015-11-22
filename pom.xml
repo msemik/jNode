@@ -9,7 +9,9 @@
     <packaging>jar</packaging>
 
     <name>jNode</name>
-    <description>Platform for asynchronous procedure execution on cluster</description>
+    <description>
+        Platform for asynchronous procedure execution on cluster.
+    </description>
 
 
     <properties>

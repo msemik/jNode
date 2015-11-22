@@ -7,6 +7,10 @@
     <groupId>pl.uj.edu</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>jnode</artifactId>
+    <description>
+        Platform for asynchronous procedure execution on cluster.
+        This module is supposed to be used by user to execute asynchronous tasks.
+    </description>
     <build>
         <plugins>
             <plugin>
