@@ -72,7 +72,7 @@ public class EventLoopThread extends Thread {
             } else {
                 Throwable exception = eventLoopResponse.getException();
                 if (exception instanceof InvalidJarFileException) {
-                    System.out.println(getJarName() + ": Invalid jar file: " + exception.getMessage());
+                    System.out.println(getJarName() + " is invalid jar file: " + exception.getMessage());
                     break;
                 }
                 logger.info("Received task exception, executing callback", exception);
