@@ -45,8 +45,8 @@ public class DefaultTaskReceiver {
             throw new IllegalStateException("Decoded path has unexpected format " + resourcePartition[0], e);
         }
         logger.info("Discovered jar filename from task:" + jarName);
-        Task taskToDo = JclUtils.cast(task, Task.class);
-        Callback callbackToDo = JclUtils.cast(callback, Callback.class);
+        Task taskToDo = Task.class.cast(task);
+        Callback callbackToDo = Callback.class.cast(callback);
 
         WorkerPoolTask workerPoolTask = new UserDoAsyncWorkerPoolTask(taskToDo, jarName);
         NewTaskReceivedEvent event = new NewTaskReceivedEvent(this, workerPoolTask, callbackToDo);

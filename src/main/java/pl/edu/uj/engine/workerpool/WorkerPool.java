@@ -13,6 +13,7 @@ import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.jarpath.JarDeletedEvent;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
@@ -36,8 +37,9 @@ public class WorkerPool {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-        List<Future<Object>> futures = executingTasks.removeAll(event.getJarPath().getFileName());
-        logger.debug("Cancelling " + futures.size() + " tasks");
+        Path fileName = event.getJarPath().getFileName();
+        List<Future<Object>> futures = executingTasks.removeAll(fileName);
+        logger.debug("Cancelling " + futures.size() + " tasks for " + fileName + " all tasks: " + futures);
         for (Future<Object> future : futures) {
             if (!future.isCancelled() && !future.isDone())
                 if (!future.cancel(true))

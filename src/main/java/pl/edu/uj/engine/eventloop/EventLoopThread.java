@@ -44,10 +44,6 @@ public class EventLoopThread extends Thread {
         callbackStorage = context.getBean(CallbackStorage.class);
     }
 
-    @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        shutDown();
-    }
 
     @Override
     public void run() {
@@ -72,6 +68,7 @@ public class EventLoopThread extends Thread {
                 Object taskResult = eventLoopResponse.getTaskResult();
                 try {
                     callback.onSuccess(taskResult);
+                    logger.info("Callback execution finished successfully");
                 } catch (RuntimeException ex) {
                     Throwable e = ex;
                     System.out.println("Error in " + getJarName() + " while executing onSuccess, aborting jar jobs");

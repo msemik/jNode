@@ -3,6 +3,7 @@ package pl.edu.uj.engine.eventloop;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.util.Optional.ofNullable;
 
 @Component
-public class EventLoopThreadRegistry {
+public class EventLoopThreadRegistry implements Iterable<EventLoopThread>{
 
     private Map<Path, EventLoopThread> map = new ConcurrentHashMap<>();
 
@@ -30,5 +31,10 @@ public class EventLoopThreadRegistry {
     @Override
     public String toString() {
         return "EventLoopThreadRegistry{" + map + '}';
+    }
+
+    @Override
+    public Iterator<EventLoopThread> iterator() {
+        return map.values().iterator();
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
@@ -61,6 +62,7 @@ public class TaskCoordinator {
             logger.debug("Deleted jar " + jarFileName + " but there, there was no eventLoopThread for the jar " + eventLoopThreadRegistry);
             return;
         }
+        logger.info("Forcing eventLoopThread " + jarFileName + " to shutdown");
         eventLoopThread.get().shutDown();
     }
 
@@ -69,7 +71,7 @@ public class TaskCoordinator {
         WorkerPoolTask task = event.getTask();
         Callback callback = event.getCallback();
 
-        logger.info("Submitting newly received task to pool and saving callback in storage " + task);
+        logger.info("Submitting newly received task to pool and saving callback in EventLoopThread " + task);
 
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
         if (!eventLoopThread.isPresent()) {
@@ -78,5 +80,12 @@ public class TaskCoordinator {
         }
         eventLoopThread.get().registerTask(task, callback);
         workerPool.submitTask(task);
+    }
+
+    @EventListener
+    public void onApplicationShutdown(ApplicationShutdownEvent e) {
+        for (EventLoopThread eventLoopThread : eventLoopThreadRegistry) {
+            eventLoopThread.shutDown();
+        }
     }
 }
