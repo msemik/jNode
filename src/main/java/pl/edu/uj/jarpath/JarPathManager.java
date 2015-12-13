@@ -103,18 +103,28 @@ public class JarPathManager {
 
     @EventListener
     public void onJobExecutionStartedEvent(JarJobsExecutionStartedEvent event) {
-        Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
-        JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
-        jarProperties.setExecutionState(JarExecutionState.RUNNING);
-        jarProperties.store();
+        try {
+            Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
+            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
+            jarProperties.setExecutionState(JarExecutionState.RUNNING);
+            jarProperties.store();
+        } catch (Throwable e) {
+            if (!(e instanceof IllegalStateException)) //When properties file is missing
+                e.printStackTrace();
+        }
     }
 
     @EventListener
     public void onJarExecutionCompletedEvent(JarJobsCompletedEvent event) {
-        Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
-        JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
-        jarProperties.setExecutionState(JarExecutionState.COMPLETED);
-        jarProperties.store();
+        try {
+            Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
+            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
+            jarProperties.setExecutionState(JarExecutionState.COMPLETED);
+            jarProperties.store();
+        } catch (Throwable e) {
+            if (!(e instanceof IllegalStateException)) //When properties file is missing
+                e.printStackTrace();
+        }
     }
 
     public void onDeleteProperties(Path propertiesPath) {
