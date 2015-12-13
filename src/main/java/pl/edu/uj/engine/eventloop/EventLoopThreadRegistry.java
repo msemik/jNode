@@ -7,10 +7,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
-import pl.edu.uj.engine.ShutdownJarJobsEvent;
+import pl.edu.uj.engine.CancelJarJobsEvent;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
@@ -39,18 +42,27 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
     }
 
     @EventListener
-    public void onShutdownJarJobsEvent(ShutdownJarJobsEvent event) {
+    public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
+        try {
+            Path jarFileName = event.getJarFileName();
+            Optional<EventLoopThread> optEventLoopThread = forJarName(jarFileName);
 
-        Path jarFileName = event.getJarFileName();
-        Optional<EventLoopThread> eventLoopThread = forJarName(jarFileName);
+            if (!optEventLoopThread.isPresent()) {
+                logger.info("There was no EventLoopThread for the jar " + jarFileName + ",  " + toString());
+                return;
+            }
 
-        if (!eventLoopThread.isPresent()) {
-            logger.info("Shutting down jobs for " + jarFileName + ", there was no eventLoopThread for the jar " + toString());
-            return;
+            logger.info("Forcing EventLoopThread " + jarFileName + " to shutdown");
+            EventLoopThread eventLoopThread = optEventLoopThread.get();
+            if (eventLoopThread.equals(event.getSource())) {
+                //if EventLoopThread pushed that event, we don't need to shutdown it as it is already done.
+                return;
+            }
+            eventLoopThread.shutDown();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw t;
         }
-
-        logger.info("Forcing eventLoopThread " + jarFileName + " to shutdown");
-        eventLoopThread.get().shutDown();
     }
 
     @EventListener

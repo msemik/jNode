@@ -13,6 +13,7 @@ import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarDeletedEvent;
+import pl.edu.uj.jarpath.JarPropertiesDeletedEvent;
 import pl.edu.uj.jarpath.JarStateChangedEvent;
 import pl.uj.edu.userlib.Callback;
 
@@ -39,13 +40,16 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
-        Path path = event.getPath();
-        logger.info("Got jar " + path + " with properties " + event.getProperties());
+        Path jarName = event.getPath();
+        logger.info("Got jar " + jarName + " with properties " + event.getProperties());
 
-        Path jarName = path.getFileName();
 
         if (event.getProperties().getExecutionState() != NOT_STARTED)
             return;
+        startJarJob(jarName);
+    }
+
+    private void startJarJob(Path jarName) {
         logger.info("Launching main class for jar " + jarName);
 
         EventLoopThread eventLoopThread = eventLoopThreadRegistry.createEventLoopThread(jarName);
@@ -57,7 +61,16 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-        eventPublisher.publishEvent(new ShutdownJarJobsEvent(this, event.getJarPath().getFileName()));
+        eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJarPath()));
+    }
+
+    @EventListener
+    public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
+        Path jarFileName = event.getJarFileName();
+        if (eventLoopThreadRegistry.forJarName(jarFileName).isPresent())
+            eventPublisher.publishEvent(new CancelJarJobsEvent(this, jarFileName));
+        else
+            startJarJob(jarFileName);
     }
 
     @EventListener

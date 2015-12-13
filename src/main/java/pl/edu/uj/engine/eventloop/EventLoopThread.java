@@ -4,11 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.engine.InvalidJarFileException;
-import pl.edu.uj.engine.JarLauncher;
-import pl.edu.uj.engine.UserApplicationException;
+import pl.edu.uj.engine.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
@@ -29,6 +28,9 @@ public class EventLoopThread extends Thread {
     @Autowired
     private EventLoopThreadRegistry eventLoopThreadRegistry;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     private CallbackStorage callbackStorage;
     private EventLoopQueue eventLoopQueue;
     private Path jarName;
@@ -45,7 +47,7 @@ public class EventLoopThread extends Thread {
     public void run() {
         logger.info("Started to listen for tasks results");
         while (true) {
-
+            eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJarName()));
             EventLoopResponse eventLoopResponse = eventLoopQueue.take();
 
             if (eventLoopResponse.getType() == EventLoopResponseType.POISON) {
@@ -73,12 +75,14 @@ public class EventLoopThread extends Thread {
                         e = e.getCause();
 
                     e.printStackTrace();
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
                     break;
                 }
             } else {
                 Throwable exception = eventLoopResponse.getException();
                 if (exception instanceof InvalidJarFileException) {
                     System.out.println(getJarName() + " is invalid jar file: " + exception.getMessage());
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
                     break;
                 }
 
@@ -103,12 +107,14 @@ public class EventLoopThread extends Thread {
                         e = e.getCause();
 
                     e.printStackTrace();
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
                     break;
                 }
             }
 
             if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
                 logger.info("No more callbacks to execute, shutting down");
+                eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJarName()));
                 break;
             }
         }

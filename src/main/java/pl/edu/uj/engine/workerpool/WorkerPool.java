@@ -9,15 +9,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.ApplicationShutdownEvent;
-import pl.edu.uj.engine.ShutdownJarJobsEvent;
+import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 
 import static java.lang.String.format;
 
@@ -38,7 +36,7 @@ public class WorkerPool {
     private ExecutingTasks executingTasks;
 
     @EventListener
-    public void onShutdownJarJobsEvent(ShutdownJarJobsEvent event) {
+    public void onShutdownJarJobsEvent(CancelJarJobsEvent event) {
         Path fileName = event.getJarFileName();
         int cancelledJobs = executingTasks.cancelAllRunningJobs(fileName);
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));

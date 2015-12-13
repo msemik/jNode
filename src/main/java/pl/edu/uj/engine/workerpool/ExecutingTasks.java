@@ -51,7 +51,7 @@ public class ExecutingTasks {
     public synchronized int cancelAllRunningJobs(Path fileName) {
         int cancelledJobs = 0;
         List<Future<Object>> futures = removeAll(fileName);
-        logger.debug("Cancelling " + futures.size() + " tasks for " + fileName + " all tasks: " + futures);
+        logger.debug("Cancelling " + futures.size() + " tasks for " + fileName + " all tasks: " + futures.size());
         for (Future<Object> future : futures) {
             if (!future.isCancelled() && !future.isDone())
                 if (!future.cancel(true))

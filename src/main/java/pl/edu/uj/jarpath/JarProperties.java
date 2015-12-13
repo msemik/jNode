@@ -29,6 +29,7 @@ public class JarProperties {
 
     public static JarProperties fromJarPath(Path pathToJar) {
         Path propertiesPath = jarPathToPropertiesPath(pathToJar);
+
         if (notExists(propertiesPath) || !Files.isReadable(propertiesPath))
             throw new IllegalStateException("Can't read properties: " + propertiesPath);
 

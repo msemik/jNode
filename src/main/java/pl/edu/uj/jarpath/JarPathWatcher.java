@@ -94,6 +94,8 @@ public class JarPathWatcher extends Thread {
 
                             if (eventPath.toString().endsWith(".jar"))
                                 jarPathManager.onDeleteJar(eventPath);
+                            else
+                                jarPathManager.onDeleteProperties(eventPath);
 
                         }
                     }
@@ -141,7 +143,7 @@ public class JarPathWatcher extends Thread {
                 reducedEvents.add(watchEvent);
                 continue;
             }
-            if (kinds.size() == 3) {
+            if (kinds.size() == 3 || kinds.size() == 2) {
                 if (watchEvent.kind() == ENTRY_MODIFY)
                     reducedEvents.add(watchEvent);
                 continue;

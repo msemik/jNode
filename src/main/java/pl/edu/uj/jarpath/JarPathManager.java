@@ -5,6 +5,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.engine.CancelJarJobsEvent;
+import pl.edu.uj.engine.JarJobsCompletedEvent;
+import pl.edu.uj.engine.JarJobsExecutionStartedEvent;
 import pl.edu.uj.options.JarOptionEvent;
 
 import java.io.IOException;
@@ -12,6 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -69,7 +73,7 @@ public class JarPathManager {
             JarProperties.fromJarPath(pathToJar, "NODE_ID_STUB")  //TODO: set real node identifier;
                     .store();
         }
-        eventPublisher.publishEvent(new JarStateChangedEvent(this, pathToJar, JarProperties.fromJarPath(pathToJar)));
+        eventPublisher.publishEvent(new JarStateChangedEvent(this, pathToJar.getFileName(), JarProperties.fromJarPath(pathToJar)));
     }
 
     public void onDeleteJar(Path pathToJar) {
@@ -80,7 +84,45 @@ public class JarPathManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        eventPublisher.publishEvent(new JarDeletedEvent(this, pathToJar));
+        eventPublisher.publishEvent(new JarDeletedEvent(this, pathToJar.getFileName()));
 
+    }
+
+    @EventListener
+    public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
+        try {
+            Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarFileName());
+            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
+            jarProperties.setExecutionState(JarExecutionState.CANCELLED);
+            jarProperties.store();
+        } catch (Throwable e) {
+            if (!(e instanceof IllegalStateException)) //When properties file is missing
+                e.printStackTrace();
+        }
+    }
+
+    @EventListener
+    public void onJobExecutionStartedEvent(JarJobsExecutionStartedEvent event) {
+        Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
+        JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
+        jarProperties.setExecutionState(JarExecutionState.RUNNING);
+        jarProperties.store();
+    }
+
+    @EventListener
+    public void onJarExecutionCompletedEvent(JarJobsCompletedEvent event) {
+        Path pathToJar = jarPathServices.getJarPath().resolve(event.getJarName());
+        JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
+        jarProperties.setExecutionState(JarExecutionState.COMPLETED);
+        jarProperties.store();
+    }
+
+    public void onDeleteProperties(Path propertiesPath) {
+        Optional<Path> jarPath = jarPathServices.getJarForProperty(propertiesPath);
+        if (!jarPath.isPresent())
+            return;
+        JarProperties jarProperties = JarProperties.fromJarPath(jarPath.get(), "UNKNOWN");
+        jarProperties.store();
+        eventPublisher.publishEvent(new JarPropertiesDeletedEvent(this, propertiesPath.getFileName(), jarPath.get().getFileName()));
     }
 }
