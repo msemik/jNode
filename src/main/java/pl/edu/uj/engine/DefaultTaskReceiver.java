@@ -26,8 +26,8 @@ public class DefaultTaskReceiver {
     private Logger logger = LoggerFactory.getLogger(DefaultTaskReceiver.class);
 
     public void doAsync(Object task, Object callback) {
-        Class taskClass = task.getClass();
-        URL resource = taskClass.getResource('/' + taskClass.getName().replace('.', '/') + ".class");
+        Class callbackClass = callback.getClass();
+        URL resource = callbackClass.getResource('/' + callbackClass.getName().replace('.', '/') + ".class");
 
         if (resource == null) {
             logger.error("null resource occurred");
