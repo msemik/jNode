@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
@@ -34,6 +34,9 @@ public class TaskCoordinator {
     @Autowired
     private ApplicationContext context;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
         Path path = event.getPath();
@@ -45,8 +48,7 @@ public class TaskCoordinator {
             return;
         logger.info("Launching main class for jar " + jarName);
 
-        EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
-        eventLoopThread.startLoop(jarName);
+        EventLoopThread eventLoopThread = eventLoopThreadRegistry.createEventLoopThread(jarName);
         LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(eventLoopThread);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
@@ -55,15 +57,7 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-
-        Path jarFileName = event.getJarPath().getFileName();
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(jarFileName);
-        if (!eventLoopThread.isPresent()) {
-            logger.debug("Deleted jar " + jarFileName + " but there, there was no eventLoopThread for the jar " + eventLoopThreadRegistry);
-            return;
-        }
-        logger.info("Forcing eventLoopThread " + jarFileName + " to shutdown");
-        eventLoopThread.get().shutDown();
+        eventPublisher.publishEvent(new ShutdownJarJobsEvent(this, event.getJarPath().getFileName()));
     }
 
     @EventListener
@@ -80,12 +74,5 @@ public class TaskCoordinator {
         }
         eventLoopThread.get().registerTask(task, callback);
         workerPool.submitTask(task);
-    }
-
-    @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        for (EventLoopThread eventLoopThread : eventLoopThreadRegistry) {
-            eventLoopThread.shutDown();
-        }
     }
 }

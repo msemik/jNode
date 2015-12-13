@@ -5,9 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.InvalidJarFileException;
 import pl.edu.uj.engine.JarLauncher;
 import pl.edu.uj.engine.UserApplicationException;
@@ -24,8 +22,6 @@ import java.nio.file.Path;
 @Scope("prototype")
 public class EventLoopThread extends Thread {
     private Logger logger = LoggerFactory.getLogger(EventLoopThread.class);
-
-    private boolean shutdown = false;
 
     @Autowired
     private ApplicationContext context;
@@ -48,10 +44,7 @@ public class EventLoopThread extends Thread {
     @Override
     public void run() {
         logger.info("Started to listen for tasks results");
-        eventLoopThreadRegistry.register(jarName, this);
         while (true) {
-            if (shutdown)
-                break;
 
             EventLoopResponse eventLoopResponse = eventLoopQueue.take();
 
@@ -121,7 +114,7 @@ public class EventLoopThread extends Thread {
         }
 
         eventLoopThreadRegistry.unregister(jarName);
-        logger.info(getJarName() + " shutdown successfully");
+        logger.info(getJarName() + " loop shutdown successfully");
     }
 
     public void startLoop(Path jarName) {
@@ -129,6 +122,7 @@ public class EventLoopThread extends Thread {
         this.jarLauncher = context.getBean(JarLauncher.class);
         jarLauncher.setPath(jarName);
         start();
+        eventLoopThreadRegistry.register(jarName, this);
     }
 
     public JarLauncher getJarLauncher() {
@@ -152,16 +146,18 @@ public class EventLoopThread extends Thread {
     }
 
     public void shutDown() {
-        shutdown = true;
-        eventLoopQueue.poison();
         interrupt();
+        yield();
+        if (isAlive()) {
+            eventLoopThreadRegistry.unregister(jarName);
+            stop();
+        }
+        logger.info(getJarName() + " shutdown() method execution finished");
+
     }
 
     @Override
     public String toString() {
-        return "EventLoopThread{" +
-                "jarName=" + jarName +
-                ", shutdown=" + shutdown +
-                '}';
+        return "EventLoopThread{" + jarName + '}';
     }
 }

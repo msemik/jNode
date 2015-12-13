@@ -78,7 +78,7 @@ public class JarPathWatcher extends Thread {
                         Path eventPath = ((WatchEvent<Path>) watchEvent).context();
                         eventPath = path.resolve(eventPath);
 
-                        if (ENTRY_CREATE == kind) {
+                        if (ENTRY_MODIFY == kind) {
                             if (!jarServices.isJarOrProperty(eventPath))
                                 continue;
                             jarServices.validateReadWriteAccess(eventPath);
@@ -114,11 +114,14 @@ public class JarPathWatcher extends Thread {
     }
 
     /**
-     * WatchService returns variable amount of events per path.
-     * These may contain duplicate events, mix of events.
-     * When you create a file there is a mix of create + edit events, function will reduce it to create event
-     * When you delete file there is only a delete event, function will return delete event
-     * When you override file, i couldn't find any pattern. Various things happened. create event will be returned.
+     * WatchService returns variable amount of events per paths.
+     * These may contain duplicate events, or mix of events like CREATE, MODIFY.
+     * When you create a file there is single CREATE event(in that time file is empty)
+     * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
+     * When you delete file there is only a delete event, function will return DELETE event
+     * <p/>
+     * This function should reduce pain to analise all these combinations in later stages.
+     * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY event.
      */
     private List<WatchEvent<?>> reducePathsToOnlySingleEventForPath(WatchKey key) {
         List<WatchEvent<?>> watchEvents = key.pollEvents();
@@ -134,17 +137,15 @@ public class JarPathWatcher extends Thread {
             Path path = (Path) watchEvent.context();
             Set<Kind<Path>> kinds = pathEventKinds.get(path);
             logger.debug(path + " with event kinds: " + kinds);
-            if (kinds.size() == 1) {
+            if (kinds.size() == 1 && watchEvent.kind() != ENTRY_CREATE) {
                 reducedEvents.add(watchEvent);
                 continue;
             }
             if (kinds.size() == 3) {
-                if (watchEvent.kind() == ENTRY_CREATE)
+                if (watchEvent.kind() == ENTRY_MODIFY)
                     reducedEvents.add(watchEvent);
                 continue;
             }
-            if (watchEvent.kind() != ENTRY_MODIFY)
-                reducedEvents.add(watchEvent);
         }
 
         return reducedEvents;

@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Component
 @Scope("prototype")
 public class EventLoopQueue {
+    public static final EventLoopResponse POISON = new EventLoopResponse(EventLoopResponseType.POISON);
     private BlockingQueue<EventLoopResponse> eventLoopResponses = new LinkedBlockingQueue<>();
 
     public void put(EventLoopResponse eventLoopResponse) {
@@ -32,18 +33,9 @@ public class EventLoopQueue {
             try {
                 return eventLoopResponses.take();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return POISON;
             }
         }
-    }
-
-    @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        poison();
-    }
-
-    public void poison() {
-        eventLoopResponses.add(new EventLoopResponse(EventLoopResponseType.POISON));
     }
 
     public boolean isEmpty() {
