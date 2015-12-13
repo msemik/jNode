@@ -32,7 +32,8 @@ public class EventLoopQueue {
         while (true) {
             try {
                 return eventLoopResponses.take();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | IllegalMonitorStateException e) {;
+                //IllegalMonitorStateException may be thrown due to usage of Thread.stop() method which releases all locks.
                 return POISON;
             }
         }
