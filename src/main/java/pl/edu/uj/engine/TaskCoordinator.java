@@ -9,6 +9,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
+import pl.edu.uj.engine.workerpool.BaseWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
@@ -39,7 +40,6 @@ public class TaskCoordinator {
     public void onJarStateChanged(JarStateChangedEvent event) {
         Path jarName = event.getPath();
         logger.info("Got jar " + jarName + " with properties " + event.getProperties());
-
 
         if (event.getProperties().getExecutionState() != NOT_STARTED)
             return;
@@ -84,5 +84,30 @@ public class TaskCoordinator {
         }
         eventLoopThread.get().registerTask(task, callback);
         workerPool.submitTask(task);
+    }
+
+    @EventListener
+    public void onTaskFinished(TaskFinishedEvent event) {
+        WorkerPoolTask task = event.getTask();
+
+        if (!(task instanceof BaseWorkerPoolTask)) {
+            return;
+        }
+
+        if (event.getStatus() == TaskFinishedEvent.TaskCompletionStatus.SUCCESS) {
+            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+            if (!eventLoopThread.isPresent()) {
+                logger.error("Event loop thread missing for given task: " + task);
+                return;
+            }
+            eventLoopThread.get().submitTaskResult(task, event.getTaskResult());
+        } else {
+            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+            if (!eventLoopThread.isPresent()) {
+                logger.error("Event loop thread missing for given task: " + task);
+                return;
+            }
+            eventLoopThread.get().submitTaskFailure(task, event.getException());
+        }
     }
 }

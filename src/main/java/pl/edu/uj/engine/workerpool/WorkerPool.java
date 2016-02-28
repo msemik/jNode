@@ -3,6 +3,7 @@ package pl.edu.uj.engine.workerpool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.CancelJarJobsEvent;
+import pl.edu.uj.engine.TaskFinishedEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 
@@ -27,10 +29,10 @@ public class WorkerPool {
     private Logger logger = LoggerFactory.getLogger(WorkerPool.class);
 
     @Autowired
-    private ThreadPoolTaskExecutor taskExecutor;
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    private EventLoopThreadRegistry eventLoopThreadRegistry;
+    private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
     private ExecutingTasks executingTasks;
@@ -58,26 +60,14 @@ public class WorkerPool {
                 if (ex instanceof CancellationException)
                     return;
                 logger.info("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
-
-                Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
-                if (!eventLoopThread.isPresent()) {
-                    logger.error("Event loop thread missing for given task: " + task);
-                    return;
-                }
-                eventLoopThread.get().submitTaskFailure(task, ex);
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskCompletionStatus.FAILURE, task, ex));
             }
 
             @Override
             public void onSuccess(Object result) {
                 executingTasks.remove(task.getJarName(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
-
-                Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
-                if (!eventLoopThread.isPresent()) {
-                    logger.error("Event loop thread missing for given task: " + task);
-                    return;
-                }
-                eventLoopThread.get().submitTaskResult(task, result);
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskCompletionStatus.SUCCESS, task, result));
             }
         });
     }
