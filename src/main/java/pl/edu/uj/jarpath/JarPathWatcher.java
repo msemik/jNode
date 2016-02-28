@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.crosscuting.OSValidator;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -31,9 +32,13 @@ public class JarPathWatcher extends Thread {
     @Autowired
     private JarPathManager jarPathManager;
 
+    @Autowired
+    private OSValidator osValidator;
+
     private Path path;
 
     private boolean shutDown = false;
+    private Kind<Path> eventForFileCreatedWithContent;
 
     @PostConstruct
     public void watch() {
@@ -78,7 +83,8 @@ public class JarPathWatcher extends Thread {
                         Path eventPath = ((WatchEvent<Path>) watchEvent).context();
                         eventPath = path.resolve(eventPath);
 
-                        if (ENTRY_MODIFY == kind) {
+                        Kind<Path> createdFileWithContent = getEventAppearingWhenCopyingFileHasFinished();
+                        if (createdFileWithContent == kind) {
                             if (!jarServices.isJarOrProperty(eventPath))
                                 continue;
                             jarServices.validateReadWriteAccess(eventPath);
@@ -118,7 +124,8 @@ public class JarPathWatcher extends Thread {
     /**
      * WatchService returns variable amount of events per paths.
      * These may contain duplicate events, or mix of events like CREATE, MODIFY.
-     * When you create a file there is single CREATE event(in that time file is empty)
+     * When you create a file in Ubuntu there is single CREATE event(in that time file is empty).
+     * When you create file in mac, there is single CREATE event and file has already content in it.
      * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
      * When you delete file there is only a delete event, function will return DELETE event
      * <p/>
@@ -139,10 +146,13 @@ public class JarPathWatcher extends Thread {
             Path path = (Path) watchEvent.context();
             Set<Kind<Path>> kinds = pathEventKinds.get(path);
             logger.debug(path + " with event kinds: " + kinds);
-            if (kinds.size() == 1 && watchEvent.kind() != ENTRY_CREATE) {
+            if (kinds.size() == 1) {
+                if (osValidator.isUnix() && watchEvent.kind() == ENTRY_CREATE) //ignore empty file on linux
+                    continue;
                 reducedEvents.add(watchEvent);
                 continue;
             }
+
             if (kinds.size() == 3 || kinds.size() == 2) {
                 if (watchEvent.kind() == ENTRY_MODIFY)
                     reducedEvents.add(watchEvent);
@@ -165,5 +175,11 @@ public class JarPathWatcher extends Thread {
             pathEventKinds.putIfAbsent(path, kinds);
         }
         return pathEventKinds;
+    }
+
+    public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
+        if (osValidator.isUnix())
+            return ENTRY_MODIFY;
+        return ENTRY_CREATE;
     }
 }
