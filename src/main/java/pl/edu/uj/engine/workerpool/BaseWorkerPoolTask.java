@@ -13,16 +13,6 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     }
 
     @Override
-    public int getTaskId() {
-        return System.identityHashCode(this);
-    }
-
-    @Override
-    public Path getJarName() {
-        return this.jarName;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (o == null || !(o instanceof WorkerPoolTask))
             return false;
@@ -37,5 +27,20 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
                 " jarName=" + getJarName() +
                 ", taskId=" + getTaskId() +
                 '}';
+    }
+
+    @Override
+    public Path getJarName() {
+        return this.jarName;
+    }
+
+    @Override
+    public int getTaskId() {
+        return System.identityHashCode(this);
+    }
+
+    @Override
+    public boolean isExternal() {
+        return false;
     }
 }

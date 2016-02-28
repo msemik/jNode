@@ -13,4 +13,5 @@ public interface WorkerPoolTask extends Task {
 
     int getTaskId();
 
+    boolean isExternal();
 }
