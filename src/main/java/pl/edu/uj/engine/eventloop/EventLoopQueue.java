@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Component
 @Scope("prototype")
 public class EventLoopQueue {
-    public static final EventLoopResponse POISON = new EventLoopResponse(EventLoopResponseType.POISON);
+    public static final EventLoopResponse POISON = new EventLoopResponse(EventLoopResponse.Type.POISON);
     private BlockingQueue<EventLoopResponse> eventLoopResponses = new LinkedBlockingQueue<>();
 
     public void put(EventLoopResponse eventLoopResponse) {

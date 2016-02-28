@@ -33,9 +33,6 @@ public class TaskCoordinator {
     private EventLoopThreadRegistry eventLoopThreadRegistry;
 
     @Autowired
-    private ApplicationContext context;
-
-    @Autowired
     private ApplicationEventPublisher eventPublisher;
 
     @EventListener

@@ -7,28 +7,28 @@ import pl.uj.edu.userlib.Task;
  * Created by alanhawrot on 14.11.2015.
  */
 public class EventLoopResponse {
-    private EventLoopResponseType type;
+    private Type type;
     private WorkerPoolTask task;
     private Object taskResult;
     private Throwable exception;
 
-    public EventLoopResponse(EventLoopResponseType type) {
+    public EventLoopResponse(Type type) {
         this.type = type;
     }
 
-    public EventLoopResponse(EventLoopResponseType type, WorkerPoolTask task, Throwable exception) {
+    public EventLoopResponse(Type type, WorkerPoolTask task, Throwable exception) {
         this.type = type;
         this.exception = exception;
         this.task = task;
     }
 
-    public EventLoopResponse(EventLoopResponseType type, WorkerPoolTask task, Object taskResult) {
+    public EventLoopResponse(Type type, WorkerPoolTask task, Object taskResult) {
         this.type = type;
         this.taskResult = taskResult;
         this.task = task;
     }
 
-    public EventLoopResponseType getType() {
+    public Type getType() {
         return type;
     }
 
@@ -45,5 +45,9 @@ public class EventLoopResponse {
 
     public Task getTask() {
         return task;
+    }
+
+    public enum Type {
+        SUCCESS, FAILURE, POISON
     }
 }

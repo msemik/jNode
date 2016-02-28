@@ -42,8 +42,6 @@ public class WorkerPool {
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
     }
 
-
-
     public long jobsInPool() {
         return executingTasks.size();
     }

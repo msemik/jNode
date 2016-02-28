@@ -42,7 +42,6 @@ public class EventLoopThread extends Thread {
         callbackStorage = context.getBean(CallbackStorage.class);
     }
 
-
     @Override
     public void run() {
         logger.info("Started to listen for tasks results");
@@ -50,7 +49,7 @@ public class EventLoopThread extends Thread {
             eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJarName()));
             EventLoopResponse eventLoopResponse = eventLoopQueue.take();
 
-            if (eventLoopResponse.getType() == EventLoopResponseType.POISON) {
+            if (eventLoopResponse.getType() == EventLoopResponse.Type.POISON) {
                 logger.info("Received poison, aborting.");
                 break;
             }
@@ -58,7 +57,7 @@ public class EventLoopThread extends Thread {
             Task task = eventLoopResponse.getTask();
             Callback callback = callbackStorage.remove(task);
 
-            if (eventLoopResponse.getType() == EventLoopResponseType.SUCCESS) {
+            if (eventLoopResponse.getType() == EventLoopResponse.Type.SUCCESS) {
                 logger.info("Received task result, executing callback");
                 Object taskResult = eventLoopResponse.getTaskResult();
                 try {
@@ -123,6 +122,15 @@ public class EventLoopThread extends Thread {
         logger.info(getJarName() + " loop shutdown successfully");
     }
 
+    public Path getJarName() {
+        return jarName;
+    }
+
+    @Override
+    public String toString() {
+        return "EventLoopThread{" + jarName + '}';
+    }
+
     public void startLoop(Path jarName) {
         this.jarName = jarName;
         this.jarLauncher = context.getBean(JarLauncher.class);
@@ -140,15 +148,11 @@ public class EventLoopThread extends Thread {
     }
 
     public void submitTaskResult(WorkerPoolTask task, Object taskResult) {
-        eventLoopQueue.put(new EventLoopResponse(EventLoopResponseType.SUCCESS, task, taskResult));
+        eventLoopQueue.put(new EventLoopResponse(EventLoopResponse.Type.SUCCESS, task, taskResult));
     }
 
     public void submitTaskFailure(WorkerPoolTask task, Throwable ex) {
-        eventLoopQueue.put(new EventLoopResponse(EventLoopResponseType.FAILURE, task, ex));
-    }
-
-    public Path getJarName() {
-        return jarName;
+        eventLoopQueue.put(new EventLoopResponse(EventLoopResponse.Type.FAILURE, task, ex));
     }
 
     public void shutDown() {
@@ -159,11 +163,5 @@ public class EventLoopThread extends Thread {
             stop();
         }
         logger.info(getJarName() + " shutdown() method execution finished");
-
-    }
-
-    @Override
-    public String toString() {
-        return "EventLoopThread{" + jarName + '}';
     }
 }
