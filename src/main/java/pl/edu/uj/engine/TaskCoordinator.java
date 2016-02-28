@@ -90,7 +90,7 @@ public class TaskCoordinator {
     public void onTaskFinished(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
 
-        if (!(task.isExternal())) {
+        if (task.isExternal()) {
             return;
         }
 
