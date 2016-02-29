@@ -40,7 +40,7 @@ public class DelegatedTask implements WorkerPoolTask {
 
     @Override
     public boolean isExternal() {
-        return true;
+        return false;
     }
 
     @Override
