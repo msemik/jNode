@@ -88,24 +88,17 @@ public class TaskCoordinator {
     public void onTaskFinished(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
 
-        if (task.isExternal()) {
+        if (task.isExternal()) return;
+
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+        if (!eventLoopThread.isPresent()) {
+            logger.error("Event loop thread missing for given task: " + task);
             return;
         }
 
-        if (event.getStatus() == TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS) {
-            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
-            if (!eventLoopThread.isPresent()) {
-                logger.error("Event loop thread missing for given task: " + task);
-                return;
-            }
+        if (event.getStatus() == TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS)
             eventLoopThread.get().submitTaskResult(task, event.getTaskResult());
-        } else {
-            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
-            if (!eventLoopThread.isPresent()) {
-                logger.error("Event loop thread missing for given task: " + task);
-                return;
-            }
+        else
             eventLoopThread.get().submitTaskFailure(task, event.getException());
-        }
     }
 }
