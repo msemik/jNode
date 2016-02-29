@@ -51,6 +51,10 @@ public class WorkerPool {
     public void submitTask(WorkerPoolTask task) {
         logger.info("Task " + task.toString() + " is being executed");
 
+        if (taskExecutor.getCorePoolSize() - taskExecutor.getActiveCount() == 0) {
+            eventPublisher.publishEvent(new WorkerPoolOverflowEvent(this));
+        }
+
         final ListenableFuture<Object> taskResultFuture = taskExecutor.submitListenable(task);
         executingTasks.put(task.getJarName(), taskResultFuture);
         taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
