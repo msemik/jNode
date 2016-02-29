@@ -3,13 +3,11 @@ package pl.edu.uj.engine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
-import pl.edu.uj.engine.workerpool.BaseWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
@@ -94,7 +92,7 @@ public class TaskCoordinator {
             return;
         }
 
-        if (event.getStatus() == TaskFinishedEvent.TaskCompletionStatus.SUCCESS) {
+        if (event.getStatus() == TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS) {
             Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
             if (!eventLoopThread.isPresent()) {
                 logger.error("Event loop thread missing for given task: " + task);

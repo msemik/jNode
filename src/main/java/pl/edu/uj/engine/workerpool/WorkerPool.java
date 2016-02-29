@@ -12,11 +12,8 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
-import pl.edu.uj.engine.eventloop.EventLoopThread;
-import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.concurrent.CancellationException;
 
 import static java.lang.String.format;
@@ -64,14 +61,14 @@ public class WorkerPool {
                 if (ex instanceof CancellationException)
                     return;
                 logger.info("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
-                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskCompletionStatus.FAILURE, task, ex));
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.FAILURE, task, ex));
             }
 
             @Override
             public void onSuccess(Object result) {
                 executingTasks.remove(task.getJarName(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
-                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskCompletionStatus.SUCCESS, task, result));
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS, task, result));
             }
         });
     }
