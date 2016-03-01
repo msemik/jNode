@@ -20,16 +20,8 @@ public class ExternalTask implements WorkerPoolTask {
         return task;
     }
 
-    public void setTask(WorkerPoolTask task) {
-        this.task = task;
-    }
-
     public String getSourceNodeId() {
         return sourceNodeId;
-    }
-
-    public void setSourceNodeId(String sourceNodeId) {
-        this.sourceNodeId = sourceNodeId;
     }
 
     @Override
