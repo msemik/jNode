@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
-import java.io.Serializable;
+import pl.edu.uj.cluster.Distributor;
 
-public class Redirect implements Serializable {
+import java.io.Serializable;
+import java.util.Optional;
+
+public class Redirect implements Serializable, Distributable {
     private String destinationNodeId;
     private long taskId;
 
@@ -17,5 +20,10 @@ public class Redirect implements Serializable {
 
     public long getTaskId() {
         return taskId;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onRedirect(sourceNodeId, this.destinationNodeId, taskId);
     }
 }

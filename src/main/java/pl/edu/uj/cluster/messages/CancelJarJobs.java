@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
-import java.io.Serializable;
+import pl.edu.uj.cluster.Distributor;
 
-public class CancelJarJobs implements Serializable {
+import java.io.Serializable;
+import java.util.Optional;
+
+public class CancelJarJobs implements Serializable, Distributable {
     private String jarPath;
 
     public CancelJarJobs(String jarPath) {
@@ -11,5 +14,10 @@ public class CancelJarJobs implements Serializable {
 
     public String getJarPath() {
         return jarPath;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onCancelJarJobs(sourceNodeId, jarPath);
     }
 }

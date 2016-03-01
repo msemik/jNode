@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
-import java.io.Serializable;
+import pl.edu.uj.cluster.Distributor;
 
-public class JarDelivery implements Serializable {
+import java.io.Serializable;
+import java.util.Optional;
+
+public class JarDelivery implements Serializable, Distributable {
     private byte[] jar;
     private String fileName;
 
@@ -17,5 +20,10 @@ public class JarDelivery implements Serializable {
 
     public String getFileName() {
         return fileName;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onJarDelivery(sourceNodeId, fileName, jar);
     }
 }

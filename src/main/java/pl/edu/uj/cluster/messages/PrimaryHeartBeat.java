@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
+import pl.edu.uj.cluster.Distributor;
 import java.io.Serializable;
+import java.util.Optional;
 
-public class PrimaryHeartBeat implements Serializable
+
+public class PrimaryHeartBeat implements Serializable, Distributable
 {
     private long threadsInPool;
     private long threadsInUse;
@@ -24,5 +27,10 @@ public class PrimaryHeartBeat implements Serializable
 
     public String getExpectedHeartBeatType() {
         return expectedHeartBeatType;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onPrimaryHeartBeat(sourceNodeId, this);
     }
 }

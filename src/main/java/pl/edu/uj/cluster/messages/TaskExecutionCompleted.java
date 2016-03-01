@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
-import java.io.Serializable;
+import pl.edu.uj.cluster.Distributor;
 
-public class TaskExecutionCompleted implements Serializable {
+import java.io.Serializable;
+import java.util.Optional;
+
+public class TaskExecutionCompleted implements Serializable, Distributable {
     private Object taskResult;
     private long taskId;
 
@@ -17,5 +20,10 @@ public class TaskExecutionCompleted implements Serializable {
 
     public long getTaskId() {
         return taskId;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onTaskExecutionCompleted(taskId, taskResult);
     }
 }

@@ -1,5 +1,6 @@
 package pl.edu.uj.cluster;
 
+import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
@@ -29,4 +30,13 @@ public interface Distributor {
     void onTaskCancelled(TaskCancelledEvent event);
 
     void onNodeGone(String nodeId);
+
+    void onCancelJarJobs(String sourceNodeId, String jarPath);
+
+    void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat);
+
+    void onJarRequest(String nodeId, String jarFileName);
+
+    void onJarDelivery(String nodeId, String jarFileName, byte[] jar);
+
 }

@@ -1,8 +1,11 @@
 package pl.edu.uj.cluster.messages;
 
-import java.io.Serializable;
+import pl.edu.uj.cluster.Distributor;
 
-public class Sry implements Serializable {
+import java.io.Serializable;
+import java.util.Optional;
+
+public class Sry implements Serializable, Distributable {
     private long taskId;
 
     public Sry(long taskId) {
@@ -11,5 +14,10 @@ public class Sry implements Serializable {
 
     public long getTaskId() {
         return taskId;
+    }
+
+    @Override
+    public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
+        distributor.onSry(sourceNodeId, taskId);
     }
 }
