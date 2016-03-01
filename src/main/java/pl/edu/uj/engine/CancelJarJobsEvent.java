@@ -7,7 +7,7 @@ import java.nio.file.Path;
 /**
  * Created by michal on 13.12.15.
  */
-public class CancelJarJobsEvent extends ApplicationEvent {
+public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event origin
     private Path jarFileName;
 
     public CancelJarJobsEvent(Object source, Path jarPath) {

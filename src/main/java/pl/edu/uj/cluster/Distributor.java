@@ -1,6 +1,7 @@
 package pl.edu.uj.cluster;
 
-import org.springframework.context.event.EventListener;
+import pl.edu.uj.engine.CancelJarJobsEvent;
+import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 
@@ -9,7 +10,6 @@ import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
  */
 public interface Distributor {
 
-    @EventListener
     void onWorkerPoolOverflow(WorkerPoolOverflowEvent event);
 
     void onTaskDelegation(ExternalTask externalTask);
@@ -18,10 +18,15 @@ public interface Distributor {
 
     void onSry(ExternalTask externalTask);
 
-    @EventListener
     void onTaskFinished(TaskFinishedEvent event);
 
     void onTaskExecutionCompleted(ExternalTask externalTask, Object taskResult);
 
     void onTaskExecutionCompleted(ExternalTask externalTask, Throwable exception);
+
+    void onCancelJarJobs(CancelJarJobsEvent event);
+
+    void onTaskCancelled(TaskCancelledEvent event);
+
+    void onNodeGone(NodeGoneEvent event);
 }
