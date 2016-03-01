@@ -14,19 +14,19 @@ public interface Distributor {
 
     void onTaskDelegation(ExternalTask externalTask);
 
-    void onRedirect(ExternalTask externalTask, String destinationNodeId);
+    void onRedirect(String currentNodeId, String destinationNodeId, long taskId);
 
-    void onSry(ExternalTask externalTask);
+    void onSry(String nodeId, long taskId);
 
     void onTaskFinished(TaskFinishedEvent event);
 
-    void onTaskExecutionCompleted(ExternalTask externalTask, Object taskResult);
+    void onTaskExecutionCompleted(long taskId, Object taskResult);
 
-    void onTaskExecutionCompleted(ExternalTask externalTask, Throwable exception);
+    void onTaskExecutionCompleted(long taskId, Throwable exception);
 
     void onCancelJarJobs(CancelJarJobsEvent event);
 
     void onTaskCancelled(TaskCancelledEvent event);
 
-    void onNodeGone(NodeGoneEvent event);
+    void onNodeGone(String nodeId);
 }
