@@ -1,28 +1,38 @@
-package pl.edu.uj.cluster.messages;
+package pl.edu.uj.cluster;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.Distributor;
-import pl.edu.uj.cluster.ExternalTask;
-import pl.edu.uj.cluster.JGroups;
-import pl.edu.uj.cluster.MessageGateway;
+import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
+import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 
-import javax.annotation.PostConstruct;
-
+/**
+ * Created by alanhawrot on 01.03.2016.
+ */
 @Component
-public class EmptyDistributor implements Distributor {
-
+public class DefaultDistributor implements Distributor {
+    private Logger logger = LoggerFactory.getLogger(DefaultDistributor.class);
+    @Autowired
+    private DelegatedTaskRegistry delegatedTaskRegistry;
+    @Autowired
+    private ExternalTaskRegistry externalTaskRegistry;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private WorkerPool workerPool;
+    @Autowired
+    private NodeQueue nodeQueue;
     @Autowired
     private MessageGateway messageGateway;
 
     @Override
-    public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
-
+    public synchronized void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
     }
 
     @Override

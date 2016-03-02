@@ -14,6 +14,7 @@ import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 
 import java.nio.file.Path;
+import java.util.Queue;
 import java.util.concurrent.CancellationException;
 
 import static java.lang.String.format;
@@ -39,6 +40,10 @@ public class WorkerPool {
         Path fileName = event.getJarFileName();
         int cancelledJobs = executingTasks.cancelAllRunningJobs(fileName);
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
+    }
+
+    public Queue<Runnable> getAwaitingTasks() {
+        return taskExecutor.getThreadPoolExecutor().getQueue();
     }
 
     public long jobsInPool() {

@@ -36,6 +36,7 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
+        // TODO: only local jars?
         Path jarName = event.getPath();
         logger.info("Got jar " + jarName + " with properties " + event.getProperties());
 
