@@ -2,6 +2,7 @@ package pl.edu.uj.cluster;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -9,7 +10,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * Created by alanhawrot on 02.03.2016.
  */
 @Component
-public class NodeQueue {
+public class NodePriorityQueue {
     private Queue<NodeInfo> priorityQueue = new PriorityBlockingQueue<>();
 
     public boolean add(NodeInfo nodeInfo) {
@@ -21,6 +22,8 @@ public class NodeQueue {
     }
 
     public NodeInfo[] toArray() {
-        return (NodeInfo[]) priorityQueue.toArray();
+        NodeInfo[] nodes = (NodeInfo[]) priorityQueue.toArray();
+        Arrays.sort(nodes);
+        return nodes;
     }
 }

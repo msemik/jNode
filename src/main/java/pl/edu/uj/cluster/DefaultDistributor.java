@@ -16,7 +16,6 @@ import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -35,7 +34,7 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private WorkerPool workerPool;
     @Autowired
-    private NodeQueue nodeQueue;
+    private NodePriorityQueue nodePriorityQueue;
     @Autowired
     private MessageGateway messageGateway;
 
@@ -44,8 +43,7 @@ public class DefaultDistributor implements Distributor {
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
 
         Queue<NodeInfo> selectedNodes = new LinkedList<>();
-        NodeInfo[] nodes = nodeQueue.toArray();
-        Arrays.sort(nodes);
+        NodeInfo[] nodes = nodePriorityQueue.toArray();
         long availableThreadsSum = 0;
         for (int i = 0; i < nodes.length && availableThreadsSum < awaitingTasks.size(); i++) {
             selectedNodes.add(nodes[i]);
@@ -84,7 +82,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
-
+        
     }
 
     @Override
