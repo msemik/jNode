@@ -6,11 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
+import pl.edu.uj.cluster.messages.Redirect;
+import pl.edu.uj.cluster.messages.Sry;
+import pl.edu.uj.cluster.messages.TaskDelegation;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
+import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -33,6 +41,45 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public synchronized void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
+        Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
+
+        Queue<NodeInfo> selectedNodes = new LinkedList<>();
+        NodeInfo[] nodes = nodeQueue.toArray();
+        Arrays.sort(nodes);
+        long availableThreadsSum = 0;
+        for (int i = 0; i < nodes.length && availableThreadsSum < awaitingTasks.size(); i++) {
+            selectedNodes.add(nodes[i]);
+            availableThreadsSum += nodes[i].getAvailableThreads();
+        }
+
+        for (NodeInfo selectedNode : selectedNodes) {
+            for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
+                WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
+                if (task == null) {
+                    return;
+                }
+                if (task.isExternal()) {
+                    ExternalTask externalTask = (ExternalTask) task;
+                    if (!externalTaskRegistry.remove(externalTask)) {
+                        logger.info("There is no entry for given " + externalTask);
+                        logger.info("Not sending any Sry or Redirect message for " + externalTask);
+                        continue;
+                    }
+
+                    if (externalTask.getSourceNodeId().compareTo(selectedNode.getNodeId()) == 0) {
+                        messageGateway.send(new Sry(externalTask.getTaskId()), selectedNode.getNodeId());
+                    } else {
+                        messageGateway.send(new Redirect(selectedNode.getNodeId(), externalTask.getTaskId()), externalTask.getSourceNodeId());
+                    }
+                } else {
+                    DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
+                    delegatedTaskRegistry.add(delegatedTask);
+
+                    ExternalTask externalTask = new ExternalTask(task, "MyNodeId"); // TODO: getSourceNodeId (local). Distributor has to know local node id.
+                    messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
+                }
+            }
+        }
     }
 
     @Override

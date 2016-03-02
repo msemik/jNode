@@ -43,4 +43,12 @@ public class ExternalTask implements WorkerPoolTask {
     public Object call() throws Exception {
         return task.call();
     }
+
+    @Override
+    public String toString() {
+        return "ExternalTask{" +
+                "task=" + task +
+                ", sourceNodeId='" + sourceNodeId + '\'' +
+                '}';
+    }
 }

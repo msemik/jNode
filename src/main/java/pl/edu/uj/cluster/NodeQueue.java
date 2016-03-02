@@ -12,5 +12,15 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class NodeQueue {
     private Queue<NodeInfo> priorityQueue = new PriorityBlockingQueue<>();
 
-    // TODO: add necessary methods
+    public boolean add(NodeInfo nodeInfo) {
+        return priorityQueue.add(nodeInfo);
+    }
+
+    public boolean remove(NodeInfo nodeInfo) {
+        return priorityQueue.remove(nodeInfo);
+    }
+
+    public NodeInfo[] toArray() {
+        return (NodeInfo[]) priorityQueue.toArray();
+    }
 }
