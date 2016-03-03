@@ -11,18 +11,18 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 @Component
 public class NodePriorityQueue {
-    private Queue<NodeInfo> priorityQueue = new PriorityBlockingQueue<>();
+    private Queue<Node> priorityQueue = new PriorityBlockingQueue<>();
 
-    public boolean add(NodeInfo nodeInfo) {
-        return priorityQueue.add(nodeInfo);
+    public boolean add(Node node) {
+        return priorityQueue.add(node);
     }
 
-    public boolean remove(NodeInfo nodeInfo) {
-        return priorityQueue.remove(nodeInfo);
+    public boolean remove(Node node) {
+        return priorityQueue.remove(node);
     }
 
-    public NodeInfo[] toArray() {
-        NodeInfo[] nodes = (NodeInfo[]) priorityQueue.toArray();
+    public Node[] toArray() {
+        Node[] nodes = (Node[]) priorityQueue.toArray();
         Arrays.sort(nodes);
         return nodes;
     }

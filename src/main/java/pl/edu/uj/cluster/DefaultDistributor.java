@@ -42,15 +42,15 @@ public class DefaultDistributor implements Distributor {
     public synchronized void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
 
-        Queue<NodeInfo> selectedNodes = new LinkedList<>();
-        NodeInfo[] nodes = nodePriorityQueue.toArray();
+        Queue<Node> selectedNodes = new LinkedList<>();
+        Node[] nodes = nodePriorityQueue.toArray();
         long availableThreadsSum = 0;
         for (int i = 0; i < nodes.length && availableThreadsSum < awaitingTasks.size(); i++) {
             selectedNodes.add(nodes[i]);
             availableThreadsSum += nodes[i].getAvailableThreads();
         }
 
-        for (NodeInfo selectedNode : selectedNodes) {
+        for (Node selectedNode : selectedNodes) {
             for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
                 WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
                 if (task == null) {

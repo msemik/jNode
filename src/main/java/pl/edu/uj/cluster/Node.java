@@ -3,12 +3,12 @@ package pl.edu.uj.cluster;
 /**
  * Created by alanhawrot on 02.03.2016.
  */
-public class NodeInfo implements Comparable<NodeInfo> {
+public class Node implements Comparable<Node> {
     private String nodeId;
     private int availableThreads;
     private double priority;
 
-    public NodeInfo(String nodeId, int availableWorkers, double priority) {
+    public Node(String nodeId, int availableWorkers, double priority) {
         this.nodeId = nodeId;
         this.availableThreads = availableWorkers;
         this.priority = priority;
@@ -27,7 +27,7 @@ public class NodeInfo implements Comparable<NodeInfo> {
     }
 
     @Override
-    public int compareTo(NodeInfo o) {
+    public int compareTo(Node o) {
         return priority < o.getPriority() ? -1 : priority > o.getPriority() ? 1 : 0;
     }
 
@@ -44,8 +44,8 @@ public class NodeInfo implements Comparable<NodeInfo> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NodeInfo nodeInfo = (NodeInfo) o;
+        Node node = (Node) o;
 
-        return nodeId.equals(nodeInfo.nodeId);
+        return nodeId.equals(node.nodeId);
     }
 }
