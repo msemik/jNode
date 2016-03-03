@@ -8,6 +8,11 @@ public class Node implements Comparable<Node> {
     private int availableThreads;
     private double priority;
 
+    public Node(String nodeId, int availableThreads) {
+        this.nodeId = nodeId;
+        this.availableThreads = availableThreads;
+    }
+
     public Node(String nodeId, int availableWorkers, double priority) {
         this.nodeId = nodeId;
         this.availableThreads = availableWorkers;
@@ -20,10 +25,6 @@ public class Node implements Comparable<Node> {
 
     public int getAvailableThreads() {
         return availableThreads;
-    }
-
-    public void setAvailableThreads(int availableThreads) {
-        this.availableThreads = availableThreads;
     }
 
     @Override
