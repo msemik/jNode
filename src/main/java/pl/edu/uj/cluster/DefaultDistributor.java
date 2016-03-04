@@ -16,7 +16,6 @@ import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
@@ -25,6 +24,7 @@ import java.util.Queue;
  */
 @Component
 public class DefaultDistributor implements Distributor {
+    private final Object workerPoolOverflowIsDuringExecutionLock = new Object();
     private Logger logger = LoggerFactory.getLogger(DefaultDistributor.class);
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
@@ -38,37 +38,60 @@ public class DefaultDistributor implements Distributor {
     private NodeList nodeList;
     @Autowired
     private MessageGateway messageGateway;
+    private boolean workerPoolOverflowIsDuringExecution = false;
 
     @Override
-    public synchronized void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
+    public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
+        synchronized (workerPoolOverflowIsDuringExecutionLock) {
+            if (workerPoolOverflowIsDuringExecution) {
+                return;
+            }
+            workerPoolOverflowIsDuringExecution = true;
+        }
+
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
-
-        List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks);
-        for (Node selectedNode : selectedNodes) {
-            for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
-                WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
-                if (task == null) {
-                    return;
+        while (workerPoolOverflowIsDuringExecution) {
+            List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks.size());
+            synchronized (workerPoolOverflowIsDuringExecutionLock) {
+                try {
+                    while (selectedNodes.size() == 0) {
+                        workerPoolOverflowIsDuringExecutionLock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
                 }
-                if (task.isExternal()) {
-                    ExternalTask externalTask = (ExternalTask) task;
-                    if (!externalTaskRegistry.remove(externalTask)) {
-                        logger.info("There is no entry for given " + externalTask);
-                        logger.info("Not sending any Sry or Redirect message for " + externalTask);
-                        continue;
+            }
+            for (Node selectedNode : selectedNodes) {
+                for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
+                    WorkerPoolTask task;
+                    synchronized (workerPoolOverflowIsDuringExecutionLock) {
+                        task = (WorkerPoolTask) awaitingTasks.poll();
+                        if (task == null) {
+                            workerPoolOverflowIsDuringExecution = false;
+                            return;
+                        }
                     }
+                    if (task.isExternal()) {
+                        ExternalTask externalTask = (ExternalTask) task;
+                        if (!externalTaskRegistry.remove(externalTask)) {
+                            logger.info("There is no entry for given " + externalTask);
+                            logger.info("Not sending any Sry or Redirect message for " + externalTask);
+                            i--;
+                            continue;
+                        }
 
-                    if (externalTask.getSourceNodeId().compareTo(selectedNode.getNodeId()) == 0) {
-                        messageGateway.send(new Sry(externalTask.getTaskId()), selectedNode.getNodeId());
+                        if (externalTask.getSourceNodeId().compareTo(selectedNode.getNodeId()) == 0) {
+                            messageGateway.send(new Sry(externalTask.getTaskId()), selectedNode.getNodeId());
+                        } else {
+                            messageGateway.send(new Redirect(selectedNode.getNodeId(), externalTask.getTaskId()), externalTask.getSourceNodeId());
+                        }
                     } else {
-                        messageGateway.send(new Redirect(selectedNode.getNodeId(), externalTask.getTaskId()), externalTask.getSourceNodeId());
-                    }
-                } else {
-                    DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
-                    delegatedTaskRegistry.add(delegatedTask);
+                        DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
+                        delegatedTaskRegistry.add(delegatedTask);
 
-                    ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
-                    messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
+                        ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
+                        messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
+                    }
                 }
             }
         }
@@ -76,7 +99,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
-        
+
     }
 
     @Override
@@ -126,7 +149,13 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
+        // TODO update NodeList
 
+        synchronized (workerPoolOverflowIsDuringExecutionLock) {
+            if (workerPoolOverflowIsDuringExecution) {
+                workerPoolOverflowIsDuringExecutionLock.notify();
+            }
+        }
     }
 
     @Override
