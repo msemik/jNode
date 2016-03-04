@@ -51,4 +51,8 @@ public class ExternalTask implements WorkerPoolTask {
                 ", sourceNodeId='" + sourceNodeId + '\'' +
                 '}';
     }
+
+    public boolean isOriginatedAt(Node selectedNode) {
+        return sourceNodeId.equals(selectedNode.getNodeId());
+    }
 }

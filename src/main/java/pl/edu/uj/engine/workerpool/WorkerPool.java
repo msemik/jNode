@@ -15,6 +15,7 @@ import pl.edu.uj.engine.TaskFinishedEvent;
 
 import java.nio.file.Path;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 
 import static java.lang.String.format;
@@ -42,7 +43,7 @@ public class WorkerPool {
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
     }
 
-    public Queue<Runnable> getAwaitingTasks() {
+    public BlockingQueue<Runnable> getAwaitingTasks() {
         return taskExecutor.getThreadPoolExecutor().getQueue();
     }
 
