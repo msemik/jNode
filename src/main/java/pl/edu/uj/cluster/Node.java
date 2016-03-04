@@ -49,4 +49,8 @@ public class Node implements Comparable<Node> {
 
         return nodeId.equals(node.nodeId);
     }
+
+    public boolean canTakeTasks() {
+        return getPriority() > 0;
+    }
 }

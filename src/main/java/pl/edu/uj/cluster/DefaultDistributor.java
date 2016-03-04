@@ -35,7 +35,7 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private WorkerPool workerPool;
     @Autowired
-    private NodeList nodeList;
+    private Nodes nodes;
     @Autowired
     private MessageGateway messageGateway;
     private boolean workerPoolOverflowIsDuringExecution = false;
@@ -51,7 +51,8 @@ public class DefaultDistributor implements Distributor {
 
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
         while (workerPoolOverflowIsDuringExecution) {
-            List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks.size());
+            int expectedFreeThreadsNumber = awaitingTasks.size();
+            List<Node> selectedNodes = nodes.getMinHaving(expectedFreeThreadsNumber);
             synchronized (workerPoolOverflowIsDuringExecutionLock) {
                 try {
                     while (selectedNodes.size() == 0) {
@@ -149,7 +150,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
-        // TODO update NodeList
+        // TODO update Nodes
 
         synchronized (workerPoolOverflowIsDuringExecutionLock) {
             if (workerPoolOverflowIsDuringExecution) {
