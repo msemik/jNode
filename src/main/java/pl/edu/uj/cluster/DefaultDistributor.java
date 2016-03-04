@@ -18,6 +18,7 @@ import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -39,6 +40,7 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private MessageGateway messageGateway;
     private AtomicBoolean workerPoolOverflow = new AtomicBoolean(false);
+    private Semaphore workerPoolOverflowSemaphore = new Semaphore(0);
 
     @Override
     public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
@@ -46,39 +48,40 @@ public class DefaultDistributor implements Distributor {
             return;
         }
 
-        delegateTasks();
-    }
-
-    private void delegateTasks() {
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
-        List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks);
-        for (Node selectedNode : selectedNodes) {
-            for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
-                WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
-                if (task == null) {
-                    workerPoolOverflow.set(false);
-                    return;
-                }
-                if (task.isExternal()) {
-                    ExternalTask externalTask = (ExternalTask) task;
-                    if (!externalTaskRegistry.remove(externalTask)) {
-                        logger.info("There is no entry for given " + externalTask);
-                        logger.info("Not sending any Sry or Redirect message for " + externalTask);
-                        i--;
-                        continue;
+        while (workerPoolOverflow.get()) {
+            List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks);
+            if (selectedNodes.size() == 0) {
+                workerPoolOverflowSemaphore.acquireUninterruptibly();
+            }
+            for (Node selectedNode : selectedNodes) {
+                for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
+                    WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
+                    if (task == null) {
+                        workerPoolOverflow.set(false);
+                        return;
                     }
+                    if (task.isExternal()) {
+                        ExternalTask externalTask = (ExternalTask) task;
+                        if (!externalTaskRegistry.remove(externalTask)) {
+                            logger.info("There is no entry for given " + externalTask);
+                            logger.info("Not sending any Sry or Redirect message for " + externalTask);
+                            i--;
+                            continue;
+                        }
 
-                    if (externalTask.getSourceNodeId().compareTo(selectedNode.getNodeId()) == 0) {
-                        messageGateway.send(new Sry(externalTask.getTaskId()), selectedNode.getNodeId());
+                        if (externalTask.getSourceNodeId().compareTo(selectedNode.getNodeId()) == 0) {
+                            messageGateway.send(new Sry(externalTask.getTaskId()), selectedNode.getNodeId());
+                        } else {
+                            messageGateway.send(new Redirect(selectedNode.getNodeId(), externalTask.getTaskId()), externalTask.getSourceNodeId());
+                        }
                     } else {
-                        messageGateway.send(new Redirect(selectedNode.getNodeId(), externalTask.getTaskId()), externalTask.getSourceNodeId());
-                    }
-                } else {
-                    DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
-                    delegatedTaskRegistry.add(delegatedTask);
+                        DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
+                        delegatedTaskRegistry.add(delegatedTask);
 
-                    ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
-                    messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
+                        ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
+                        messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
+                    }
                 }
             }
         }
@@ -139,7 +142,7 @@ public class DefaultDistributor implements Distributor {
         // TODO update NodeList
 
         if (workerPoolOverflow.get()) {
-            delegateTasks();
+            workerPoolOverflowSemaphore.release();
         }
     }
 
