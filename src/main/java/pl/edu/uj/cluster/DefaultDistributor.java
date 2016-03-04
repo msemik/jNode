@@ -18,14 +18,13 @@ import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by alanhawrot on 01.03.2016.
  */
 @Component
 public class DefaultDistributor implements Distributor {
+    private final Object workerPoolOverflowIsDuringExecutionLock = new Object();
     private Logger logger = LoggerFactory.getLogger(DefaultDistributor.class);
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
@@ -39,27 +38,38 @@ public class DefaultDistributor implements Distributor {
     private NodeList nodeList;
     @Autowired
     private MessageGateway messageGateway;
-    private AtomicBoolean workerPoolOverflow = new AtomicBoolean(false);
-    private Semaphore workerPoolOverflowSemaphore = new Semaphore(0);
+    private boolean workerPoolOverflowIsDuringExecution = false;
 
     @Override
     public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
-        if (workerPoolOverflow.getAndSet(true)) {
-            return;
+        synchronized (workerPoolOverflowIsDuringExecutionLock) {
+            if (workerPoolOverflowIsDuringExecution) {
+                return;
+            }
+            workerPoolOverflowIsDuringExecution = true;
         }
 
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
-        while (workerPoolOverflow.get()) {
+        while (workerPoolOverflowIsDuringExecution) {
             List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks.size());
-            if (selectedNodes.size() == 0) {
-                workerPoolOverflowSemaphore.acquireUninterruptibly();
+            synchronized (workerPoolOverflowIsDuringExecutionLock) {
+                try {
+                    while (selectedNodes.size() == 0) {
+                        workerPoolOverflowIsDuringExecutionLock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
             for (Node selectedNode : selectedNodes) {
                 for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
-                    WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
-                    if (task == null) {
-                        workerPoolOverflow.set(false);
-                        return;
+                    WorkerPoolTask task;
+                    synchronized (workerPoolOverflowIsDuringExecutionLock) {
+                        task = (WorkerPoolTask) awaitingTasks.poll();
+                        if (task == null) {
+                            workerPoolOverflowIsDuringExecution = false;
+                            return;
+                        }
                     }
                     if (task.isExternal()) {
                         ExternalTask externalTask = (ExternalTask) task;
@@ -141,8 +151,10 @@ public class DefaultDistributor implements Distributor {
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
         // TODO update NodeList
 
-        if (workerPoolOverflow.get()) {
-            workerPoolOverflowSemaphore.release();
+        synchronized (workerPoolOverflowIsDuringExecutionLock) {
+            if (workerPoolOverflowIsDuringExecution) {
+                workerPoolOverflowIsDuringExecutionLock.notify();
+            }
         }
     }
 
