@@ -37,8 +37,10 @@ public class NodeList {
         List<Node> selectedNodes = new LinkedList<>();
         long availableThreadsSum = 0;
         for (int i = 0; i < nodeList.size() && availableThreadsSum < awaitingTasks.size(); i++) {
-            selectedNodes.add(nodeList.get(i));
-            availableThreadsSum += nodeList.get(i).getAvailableThreads();
+            if (nodeList.get(i).getPriority() > 0) {
+                selectedNodes.add(nodeList.get(i));
+                availableThreadsSum += nodeList.get(i).getAvailableThreads();
+            }
         }
         return selectedNodes;
     }
