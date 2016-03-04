@@ -50,7 +50,7 @@ public class DefaultDistributor implements Distributor {
 
         Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
         while (workerPoolOverflow.get()) {
-            List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks);
+            List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks.size());
             if (selectedNodes.size() == 0) {
                 workerPoolOverflowSemaphore.acquireUninterruptibly();
             }

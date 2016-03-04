@@ -33,10 +33,10 @@ public class NodeList {
         }
     }
 
-    public synchronized List<Node> getMinNodeList(Queue awaitingTasks) {
+    public synchronized List<Node> getMinNodeList(long awaitingTasks) {
         List<Node> selectedNodes = new LinkedList<>();
         long availableThreadsSum = 0;
-        for (int i = 0; i < nodeList.size() && availableThreadsSum < awaitingTasks.size(); i++) {
+        for (int i = 0; i < nodeList.size() && availableThreadsSum < awaitingTasks; i++) {
             if (nodeList.get(i).getPriority() > 0) {
                 selectedNodes.add(nodeList.get(i));
                 availableThreadsSum += nodeList.get(i).getAvailableThreads();
