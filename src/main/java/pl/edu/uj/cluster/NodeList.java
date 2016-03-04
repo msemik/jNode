@@ -13,7 +13,7 @@ public class NodeList {
 
     public synchronized boolean add(Node node) {
         boolean hasChanged = nodeList.add(node);
-        Collections.sort(nodeList);
+        Collections.sort(nodeList, Collections.reverseOrder());
         return hasChanged;
     }
 
@@ -29,7 +29,7 @@ public class NodeList {
         int index = nodeList.indexOf(node);
         if (index != -1) {
             nodeList.set(index, node);
-            Collections.sort(nodeList);
+            Collections.sort(nodeList, Collections.reverseOrder());
         }
     }
 
