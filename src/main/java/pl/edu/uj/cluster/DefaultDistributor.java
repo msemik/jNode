@@ -6,15 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
-import pl.edu.uj.cluster.messages.Redirect;
-import pl.edu.uj.cluster.messages.Sry;
-import pl.edu.uj.cluster.messages.TaskDelegation;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
-import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -37,7 +33,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
-        taskDelegationHandler.handleOnWorkerPoolEvent();
+        taskDelegationHandler.handleDuringOnWorkerPoolEvent();
     }
 
 
@@ -94,7 +90,7 @@ public class DefaultDistributor implements Distributor {
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
         // TODO update Nodes
-        taskDelegationHandler.handleOnHeartBeat();
+        taskDelegationHandler.handleDuringOnHeartBeat();
     }
 
     @Override

@@ -31,7 +31,7 @@ public class TaskDelegationHandler {
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
 
-    public void handleOnWorkerPoolEvent() {
+    public void handleDuringOnWorkerPoolEvent() {
         synchronized (this) {
             if (delegationState == NO_DELEGATION)
                 delegationState = DURING_DELEGATION;
@@ -44,7 +44,7 @@ public class TaskDelegationHandler {
         delegateTasks();
     }
 
-    public void handleOnHeartBeat() {
+    public void handleDuringOnHeartBeat() {
 
         boolean shallDelegateTasks = false;
         synchronized (this) {
