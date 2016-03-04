@@ -67,7 +67,7 @@ public class DefaultDistributor implements Distributor {
                     DelegatedTask delegatedTask = new DelegatedTask(task, selectedNode.getNodeId());
                     delegatedTaskRegistry.add(delegatedTask);
 
-                    ExternalTask externalTask = new ExternalTask(task, "MyNodeId"); // TODO: getSourceNodeId (local). Distributor has to know local node id.
+                    ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
                     messageGateway.send(new TaskDelegation(externalTask), selectedNode.getNodeId());
                 }
             }

@@ -56,6 +56,11 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
         send(obj, null);
     }
 
+    @Override
+    public String getCurrentNodeId() {
+        return channel.getAddressAsString();
+    }
+
     private Address getAddressByNodeId(String destinationNodeId) {
         //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
         return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
