@@ -16,9 +16,9 @@ import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -38,16 +38,25 @@ public class DefaultDistributor implements Distributor {
     private NodeList nodeList;
     @Autowired
     private MessageGateway messageGateway;
+    private AtomicBoolean workerPoolOverflow = new AtomicBoolean(false);
 
     @Override
-    public synchronized void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
-        Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
+    public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
+        if (workerPoolOverflow.getAndSet(true)) {
+            return;
+        }
 
+        delegateTasks();
+    }
+
+    private void delegateTasks() {
+        Queue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
         List<Node> selectedNodes = nodeList.getMinNodeList(awaitingTasks);
         for (Node selectedNode : selectedNodes) {
             for (int i = 0; i < selectedNode.getAvailableThreads(); i++) {
                 WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
                 if (task == null) {
+                    workerPoolOverflow.set(false);
                     return;
                 }
                 if (task.isExternal()) {
@@ -55,6 +64,7 @@ public class DefaultDistributor implements Distributor {
                     if (!externalTaskRegistry.remove(externalTask)) {
                         logger.info("There is no entry for given " + externalTask);
                         logger.info("Not sending any Sry or Redirect message for " + externalTask);
+                        i--;
                         continue;
                     }
 
@@ -76,7 +86,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
-        
+
     }
 
     @Override
@@ -126,7 +136,11 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
+        // TODO update NodeList
 
+        if (workerPoolOverflow.get()) {
+            delegateTasks();
+        }
     }
 
     @Override
