@@ -7,13 +7,6 @@ public class Node implements Comparable<Node> {
     private String nodeId;
     private int availableThreads;
     private double priority;
-    /**
-     * This flag is used during returning thread to pool.
-     * Proper return of thread happens when we haven't received any updateAfterHeartBeat from HeartBeat after draining a Thread.
-     * Otherwise return of a thread is invalid and will be ignored.
-     */
-    private boolean drainedAnyThreadsAfterLastUpdate = false;
-
 
     public Node(String nodeId, int availableThreads) {
         this.nodeId = nodeId;
@@ -67,16 +60,13 @@ public class Node implements Comparable<Node> {
 
     public void drainThread() {
         --availableThreads;
-        drainedAnyThreadsAfterLastUpdate = true;
     }
 
     public void returnThread() {
-        if (drainedAnyThreadsAfterLastUpdate)
-            ++availableThreads;
+        ++availableThreads;
     }
 
     public void setAvailableThreads(int availableThreads) {
         this.availableThreads = availableThreads;
-        drainedAnyThreadsAfterLastUpdate = false;
     }
 }

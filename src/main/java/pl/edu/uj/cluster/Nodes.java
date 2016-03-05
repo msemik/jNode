@@ -62,6 +62,11 @@ public class Nodes {
         return of(firstNode);
     }
 
+    /**
+     * Proper return of a free thread happens when we haven't received any update from HeartBeat after draining a Thread.
+     * Luckily we update node by migrating object, so we won't change currently valid node with valid number of threads.
+     * If this semantics change in updateAfterHeartBeat, changes should be introduced in this method either.
+     */
     public synchronized void returnThread(Node node) {
         node.returnThread();
     }
