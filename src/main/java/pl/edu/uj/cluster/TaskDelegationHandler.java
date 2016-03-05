@@ -33,11 +33,12 @@ public class TaskDelegationHandler {
 
     public void handleDuringOnWorkerPoolEvent() {
         synchronized (this) {
-            if (delegationState == NO_DELEGATION)
+            if (delegationState == NO_DELEGATION) {
                 delegationState = DURING_DELEGATION;
-            else {
-                if (delegationState == DURING_DELEGATION)
+            } else {
+                if (delegationState == DURING_DELEGATION) {
                     delegationState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
+                }
                 return;
             }
         }
@@ -48,9 +49,9 @@ public class TaskDelegationHandler {
 
         boolean shallDelegateTasks = false;
         synchronized (this) {
-            if (delegationState == DURING_DELEGATION)                             //New threads may produce more delegations
+            if (delegationState == DURING_DELEGATION) {                           //New threads may produce more delegations
                 delegationState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
-            else if (delegationState == AWAITING_FREE_THREADS) {                  //Delegations are waiting but there is no free threads
+            } else if (delegationState == AWAITING_FREE_THREADS) {                  //Delegations are waiting but there is no free threads
                 delegationState = DURING_DELEGATION;
                 shallDelegateTasks = true;
             }
@@ -120,10 +121,11 @@ public class TaskDelegationHandler {
                 return false;
             }
 
-            if (externalTask.isOriginatedAt(destinationNode))
+            if (externalTask.isOriginatedAt(destinationNode)) {
                 messageGateway.send(new Sry(taskId), destinationNodeId);
-            else
+            } else {
                 messageGateway.send(new Redirect(destinationNodeId, taskId), externalTask.getSourceNodeId());
+            }
         } else {
             DelegatedTask delegatedTask = new DelegatedTask(task, destinationNodeId);
             delegatedTaskRegistry.add(delegatedTask);
