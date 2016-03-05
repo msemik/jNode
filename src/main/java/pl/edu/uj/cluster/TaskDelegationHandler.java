@@ -10,8 +10,8 @@ import pl.edu.uj.cluster.messages.TaskDelegation;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static pl.edu.uj.cluster.TaskDelegationHandler.TaskDelegationState.*;
 
@@ -19,7 +19,7 @@ import static pl.edu.uj.cluster.TaskDelegationHandler.TaskDelegationState.*;
 @Component
 public class TaskDelegationHandler {
     private Logger logger = LoggerFactory.getLogger(TaskDelegationHandler.class);
-    private TaskDelegationState delegationState = NO_DELEGATION;
+    private AtomicReference<TaskDelegationState> delegationState = new AtomicReference<>(NO_DELEGATION);
     @Autowired
     private Nodes nodes;
     @Autowired
@@ -31,78 +31,127 @@ public class TaskDelegationHandler {
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
 
+    /* State transitions:
+
+     * NO_DELEGATION -> DURING DELEGATION (start task delegation in this case)
+     * DURING DELEGATION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+     * AWAITING_FREE_THREADS -> AWAITING_FREE_THREADS
+     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+     **/
     public void handleDuringOnWorkerPoolEvent() {
-        synchronized (this) {
-            if (delegationState == NO_DELEGATION) {
-                delegationState = DURING_DELEGATION;
-            } else {
-                if (delegationState == DURING_DELEGATION) {
-                    delegationState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
+        while (true) {
+            TaskDelegationState prevState = delegationState.get();
+            TaskDelegationState nextState = prevState;
+            if (prevState == NO_DELEGATION) {
+                nextState = DURING_DELEGATION;
+            } else if (prevState == DURING_DELEGATION) {
+                nextState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
+            }
+            if (delegationState.compareAndSet(prevState, nextState)) {
+                logger.debug("changed from " + prevState + " to " + nextState);
+                if (prevState == NO_DELEGATION) {
+                    delegateTasks();
                 }
                 return;
             }
+            logger.debug("state change missed in handleDuringOnWorkerPoolEvent");
         }
-        delegateTasks();
     }
 
+    /**
+     * State transitions:
+     *
+     * NO_DELEGATION -> NO_DELEGATION
+     * DURING DELEGATION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+     * AWAITING_FREE_THREADS -> DURING_DELEGATION (start task delegation in this case)
+     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+     */
     public void handleDuringOnHeartBeat() {
-
-        boolean shallDelegateTasks = false;
-        synchronized (this) {
-            if (delegationState == DURING_DELEGATION) {                           //New threads may produce more delegations
-                delegationState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
-            } else if (delegationState == AWAITING_FREE_THREADS) {                  //Delegations are waiting but there is no free threads
-                delegationState = DURING_DELEGATION;
-                shallDelegateTasks = true;
+        while (true) {
+            TaskDelegationState prevState = delegationState.get();
+            TaskDelegationState nextState = prevState;
+            if (prevState == DURING_DELEGATION) {
+                //New threads may produce more delegations
+                nextState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
+            } else if (prevState == AWAITING_FREE_THREADS) {
+                //Delegations are waiting but there is no free threads
+                nextState = DURING_DELEGATION;
             }
+            if (delegationState.compareAndSet(prevState, nextState)) {
+                logger.debug("changed from " + prevState + " to " + nextState);
+                if (prevState == AWAITING_FREE_THREADS) {
+                    delegateTasks();
+                }
+                return;
+            }
+            logger.debug("state change missed in handleDuringOnHeartBeat");
         }
-        if (shallDelegateTasks)
-            delegateTasks();
     }
 
     /**
      * Sends tasks until there is no tasks or threads left
+     *
+     * State transitions:
+     *
+     * DURING DELEGATION -> NO_DELEGATION (when there was no workerPoolOverflowEvent during last execution)
+     *                   -> AWAITING_FREE_THREADS (when there is no free threads in cluster)
+     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION (when re executing delegation)
+     *                                               -> AWAITING_FREE_THREADS (when there is no free threads in cluster)
+     * NO_DELEGATION -> *  can't happen
+     * AWAITING_FREE_THREADS -> * can't happen
      */
     private void delegateTasks() {
+        logger.debug("task delegation started");
+
+        untilTasksAndThreadsAreAvailable:
         while (true) {
-            BlockingQueue<Runnable> awaitingTasks = workerPool.getAwaitingTasks();
-            int expectedFreeThreadsNumber = awaitingTasks.size(); //There is no reason to keep this synchronized
-            if (expectedFreeThreadsNumber == 0) {                 //as pool may drain tasks
-                setDelegationState(NO_DELEGATION);
-                return;
-            }
+            Optional<Node> selectedNode;
+            Optional<WorkerPoolTask> task = workerPool.pollTask();
 
-            List<Node> selectedNodes = nodes.getMinHaving(expectedFreeThreadsNumber);
-            if (selectedNodes.isEmpty()) {                        //No need to keep it synchronized, as it doesn't change
-                setDelegationState(AWAITING_FREE_THREADS);
-                return;
-            }
-
-            for (Node selectedNode : selectedNodes) {
-                for (int i = 0; i < selectedNode.getAvailableThreads(); ) {
-                    WorkerPoolTask task = (WorkerPoolTask) awaitingTasks.poll();
-                    if (task == null) {                           //Synchronizing it doesn't change anything.
-                        setDelegationState(NO_DELEGATION);
-                        return;
+            if (!task.isPresent()) {
+                while (true) {
+                    TaskDelegationState prevState = delegationState.get();
+                    TaskDelegationState nextState;
+                    if (prevState == DURING_DELEGATION) {
+                        // No more tasks and free threads appeared
+                        nextState = NO_DELEGATION;
+                    } else {
+                        //prevState == DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+                        nextState = DURING_DELEGATION;
                     }
-                    if (delegateTask(selectedNode, task))
-                        i++;
+                    if (delegationState.compareAndSet(prevState, nextState)) {
+                        logger.debug("changed from " + prevState + " to " + nextState);
+                        if (prevState == DURING_DELEGATION) {
+                            return;
+                        } else {
+                            //prevState == DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
+                            continue untilTasksAndThreadsAreAvailable;
+                        }
+                    }
+                    logger.debug("state change missed in delegateTasks when task wasn't present");
                 }
             }
 
-            synchronized (this) {
-                if (delegationState == DURING_DELEGATION) { // No more tasks and free threads appeared
-                    delegationState = NO_DELEGATION;
+            synchronized (nodes) { // Synchronization with HeartBeat nodes updateAfterHeartBeat.
+                selectedNode = nodes.drainThreadFromNodeHavingHighestPriority();
+                if (!selectedNode.isPresent()) {
+                    workerPool.submitTask(task.get());
+                    // Synchronization with worker pool overflow events
+
+                    TaskDelegationState nextState = AWAITING_FREE_THREADS;
+                    TaskDelegationState prevState = delegationState.getAndSet(nextState);
+                    logger.debug("changed from " + prevState + " to " + nextState);
                     return;
                 }
-                //current state is DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
-                delegationState = DURING_DELEGATION;
+            }
+
+            if (!delegateTask(selectedNode.get(), task.get())) {
+                //If delegation failed we release the thread.
+                //Imo its better to think there is one additional thread(which may not be true) than forgetting it.
+                //Perhaps if there is no HeartBeat from other nodes we may drain all of them on unsuccessful task delegations.
+                nodes.returnThread(selectedNode.get());
             }
         }
-    }
-
-    private synchronized void setDelegationState(TaskDelegationState delegationState) {
-        this.delegationState = delegationState;
     }
 
     /**

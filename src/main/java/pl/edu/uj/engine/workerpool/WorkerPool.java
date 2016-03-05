@@ -10,15 +10,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.crosscuting.ReflectionUtils;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.FutureTask;
 
 import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 /**
  * Created by michal on 31.10.15.
@@ -35,16 +42,13 @@ public class WorkerPool {
 
     @Autowired
     private ExecutingTasks executingTasks;
+    private BlockingQueue<Runnable> queue;
 
     @EventListener
     public void onShutdownJarJobsEvent(CancelJarJobsEvent event) {
         Path fileName = event.getJarFileName();
         int cancelledJobs = executingTasks.cancelAllRunningJobs(fileName);
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
-    }
-
-    public BlockingQueue<Runnable> getAwaitingTasks() {
-        return taskExecutor.getThreadPoolExecutor().getQueue();
     }
 
     public long jobsInPool() {
@@ -82,5 +86,32 @@ public class WorkerPool {
     @EventListener
     public void onApplicationShutdown(ApplicationShutdownEvent e) {
         taskExecutor.shutdown();
+    }
+
+    public Optional<WorkerPoolTask> pollTask() {
+        Runnable polledItem = getAwaitingTasks().poll();
+        if (polledItem == null) {
+            return empty();
+        }
+        if (!(polledItem instanceof FutureTask)) {
+            String message = "Unexpected object type pulled from executors queue: " + polledItem.getClass().getCanonicalName();
+            throw new AssertionError(message);
+        }
+        FutureTask<Callable> futureTask = (FutureTask<Callable>) polledItem;
+        if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
+            String message = join("\n"
+                    , "Prepare for a nice day because you really did a bad thing."
+                    , "I mean taking out this task from internal executor queue."
+                    , "Unfortunately its started executing, not as you expected");
+            throw new AssertionError(message);
+        }
+        return of((WorkerPoolTask) ReflectionUtils.readFieldValue(futureTask, "callable"));
+    }
+
+    private BlockingQueue<Runnable> getAwaitingTasks() {
+        if (queue == null) {
+            queue = taskExecutor.getThreadPoolExecutor().getQueue();
+        }
+        return queue;
     }
 }

@@ -89,7 +89,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
-        // TODO update Nodes
+        // TODO updateAfterHeartBeat Nodes
         taskDelegationHandler.handleDuringOnHeartBeat();
     }
 
