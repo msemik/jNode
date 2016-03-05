@@ -20,4 +20,9 @@ public class JarRequest implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onJarRequest(sourceNodeId, jarFileName);
     }
+
+    @Override
+    public String toString() {
+        return "JarRequest{" + jarFileName + '}';
+    }
 }

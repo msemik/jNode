@@ -42,13 +42,12 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
         channel.setDiscardOwnMessages(true);
         logger.info("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
         logger.trace("Channel properties" + channel.getProperties());
-
-        send(new Sry(69));
     }
 
     @Override
     public void send(Serializable obj, String destinationNodeId) {
         try {
+            logger.debug("Sending message " + obj + " to " + destinationNodeId);
             channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
         } catch (Exception e) {
             e.printStackTrace();

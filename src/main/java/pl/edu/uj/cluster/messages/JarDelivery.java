@@ -26,4 +26,9 @@ public class JarDelivery implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onJarDelivery(sourceNodeId, fileName, jar);
     }
+
+    @Override
+    public String toString() {
+        return "JarDelivery{" + fileName + '}';
+    }
 }

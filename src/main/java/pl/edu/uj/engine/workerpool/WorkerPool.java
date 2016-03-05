@@ -3,6 +3,7 @@ package pl.edu.uj.engine.workerpool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -10,10 +11,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.JNodeApplication;
 import pl.edu.uj.crosscuting.ReflectionUtils;
 import pl.edu.uj.engine.CancelJarJobsEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
+import pl.edu.uj.options.PoolSizeOptionEvent;
 
+import javax.annotation.PostConstruct;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Queue;
@@ -33,32 +37,33 @@ import static java.util.Optional.of;
 @Component
 public class WorkerPool {
     private Logger logger = LoggerFactory.getLogger(WorkerPool.class);
-
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
     @Autowired
-    private ThreadPoolTaskExecutor taskExecutor;
-
+    private ApplicationContext applicationContext;
     @Autowired
     private ExecutingTasks executingTasks;
+    private ThreadPoolTaskExecutor taskExecutor;
     private BlockingQueue<Runnable> queue;
 
+
     @EventListener
-    public void onShutdownJarJobsEvent(CancelJarJobsEvent event) {
+    public void on(ApplicationShutdownEvent e) {
+        if (taskExecutor != null)
+            taskExecutor.shutdown();
+    }
+
+    @EventListener
+    public void on(CancelJarJobsEvent event) {
         Path fileName = event.getJarFileName();
         int cancelledJobs = executingTasks.cancelAllRunningJobs(fileName);
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
     }
 
-    public long jobsInPool() {
-        return executingTasks.size();
-    }
-
     public void submitTask(WorkerPoolTask task) {
         logger.info("Task " + task.toString() + " is being executed");
 
-        final ListenableFuture<Object> taskResultFuture = taskExecutor.submitListenable(task);
+        final ListenableFuture<Object> taskResultFuture = getTaskExecutor().submitListenable(task);
         executingTasks.put(task.getJarName(), taskResultFuture);
         taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
             @Override
@@ -78,14 +83,22 @@ public class WorkerPool {
             }
         });
 
-        if (taskExecutor.getCorePoolSize() - taskExecutor.getActiveCount() == 0) {
+        int corePoolSize = taskExecutor.getCorePoolSize();
+        int tasksInPool = executingTasks.size();
+        logger.debug("Pool size: " + corePoolSize + " , tasksInPool: " + tasksInPool);
+        if (corePoolSize - tasksInPool < 0) {
             eventPublisher.publishEvent(new WorkerPoolOverflowEvent(this));
         }
     }
 
-    @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        taskExecutor.shutdown();
+    private ThreadPoolTaskExecutor getTaskExecutor() {
+        if (taskExecutor == null)
+            taskExecutor = applicationContext.getBean(ThreadPoolTaskExecutor.class);
+        return taskExecutor;
+    }
+
+    public long jobsInPool() {
+        return executingTasks.size();
     }
 
     public Optional<WorkerPoolTask> pollTask() {
@@ -105,12 +118,12 @@ public class WorkerPool {
                     , "Unfortunately its started executing, not as you expected");
             throw new AssertionError(message);
         }
-        return of((WorkerPoolTask) ReflectionUtils.readFieldValue(futureTask, "callable"));
+        return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));
     }
 
     private BlockingQueue<Runnable> getAwaitingTasks() {
         if (queue == null) {
-            queue = taskExecutor.getThreadPoolExecutor().getQueue();
+            queue = getTaskExecutor().getThreadPoolExecutor().getQueue();
         }
         return queue;
     }

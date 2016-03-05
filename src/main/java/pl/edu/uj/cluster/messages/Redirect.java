@@ -26,4 +26,12 @@ public class Redirect implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onRedirect(sourceNodeId, this.destinationNodeId, taskId);
     }
+
+    @Override
+    public String toString() {
+        return "Redirect{" +
+                "destinationNodeId='" + destinationNodeId + '\'' +
+                ", taskId=" + taskId +
+                '}';
+    }
 }

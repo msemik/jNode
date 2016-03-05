@@ -26,6 +26,19 @@ public class JNodeOptions {
                 .desc("paths to jar files to execute")
                 .longOpt("jar")
                 .build());
+
+        options.addOption(Option.builder("i")
+                .hasArgs()
+                .desc("node identifier")
+                .longOpt("nodeId")
+                .build());
+
+        options.addOption(Option.builder("p")
+                .hasArgs()
+                .type(Integer.class)
+                .desc("size of worker pool used by this node")
+                .longOpt("pool-size")
+                .build());
     }
 
     public void printHelp() {

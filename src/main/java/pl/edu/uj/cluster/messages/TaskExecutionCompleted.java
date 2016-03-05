@@ -26,4 +26,12 @@ public class TaskExecutionCompleted implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onTaskExecutionCompleted(taskId, taskResult);
     }
+
+    @Override
+    public String toString() {
+        return "TaskExecutionCompleted{" +
+                "taskResult=" + taskResult +
+                ", taskId=" + taskId +
+                '}';
+    }
 }

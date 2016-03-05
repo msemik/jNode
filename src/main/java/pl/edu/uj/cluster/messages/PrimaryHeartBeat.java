@@ -33,4 +33,13 @@ public class PrimaryHeartBeat implements Serializable, Distributable
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onPrimaryHeartBeat(sourceNodeId, this);
     }
+
+    @Override
+    public String toString() {
+        return "PrimaryHeartBeat{" +
+                "threadsInPool=" + threadsInPool +
+                ", threadsInUse=" + threadsInUse +
+                ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
+                '}';
+    }
 }

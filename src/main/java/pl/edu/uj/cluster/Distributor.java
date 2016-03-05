@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  */
 public interface Distributor {
 
-    void onWorkerPoolOverflow(WorkerPoolOverflowEvent event);
+    void on(WorkerPoolOverflowEvent event);
 
     void onTaskDelegation(ExternalTask externalTask);
 
@@ -27,9 +27,9 @@ public interface Distributor {
 
     void onTaskExecutionCompleted(long taskId, Throwable exception);
 
-    void onCancelJarJobs(CancelJarJobsEvent event);
+    void on(CancelJarJobsEvent event);
 
-    void onTaskCancelled(TaskCancelledEvent event);
+    void on(TaskCancelledEvent event);
 
     void onNodeGone(String nodeId);
 

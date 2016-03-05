@@ -21,4 +21,9 @@ public class TaskDelegation implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onTaskDelegation(task);
     }
+
+    @Override
+    public String toString() {
+        return "TaskDelegation{" + task + '}';
+    }
 }

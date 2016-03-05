@@ -20,4 +20,9 @@ public class CancelJarJobs implements Serializable, Distributable {
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
         distributor.onCancelJarJobs(sourceNodeId, jarPath);
     }
+
+    @Override
+    public String toString() {
+        return "CancelJarJobs{" + jarPath + '}';
+    }
 }

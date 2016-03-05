@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
 import pl.edu.uj.engine.CancelJarJobsEvent;
@@ -34,7 +35,8 @@ public class DefaultDistributor implements Distributor {
     private Nodes nodes;
 
     @Override
-    public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
+    @EventListener
+    public void on(WorkerPoolOverflowEvent event) {
         taskDelegationHandler.handleDuringOnWorkerPoolEvent();
     }
 
@@ -69,13 +71,15 @@ public class DefaultDistributor implements Distributor {
 
     }
 
+    @EventListener
     @Override
-    public void onCancelJarJobs(CancelJarJobsEvent event) {
+    public void on(CancelJarJobsEvent event) {
 
     }
 
     @Override
-    public void onTaskCancelled(TaskCancelledEvent event) {
+    @EventListener
+    public void on(TaskCancelledEvent event) {
 
     }
 
