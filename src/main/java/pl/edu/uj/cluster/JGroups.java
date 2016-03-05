@@ -13,6 +13,10 @@ import pl.edu.uj.cluster.messages.Sry;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 
@@ -25,6 +29,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
 
     @Autowired
     private Distributor distributor;
+    private List<String> membersInCurrentView = new ArrayList<>();
 
     public JGroups() {
     }
@@ -79,9 +84,34 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
         logger.debug("JNodes number:" + view.size());
         logger.debug("View changed" + view.getMembers());
 
-        //TODO: distributor.onNodeGone();
+        synchronized (this) {
+            List<String> membersInLastView = membersInCurrentView;
+            membersInCurrentView = getCurrentViewAsString(view);
+            distributeNewNodeForEachNewNode(membersInLastView);
+            distributeNodeGoneForEachGoneNode(membersInLastView);
+        }
+    }
 
+    private List<String> getCurrentViewAsString(View view) {
+        return view.getMembers()
+                .stream()
+                .map(Address::toString)
+                .collect(Collectors.toList());
+    }
 
+    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
+        membersInLastView.stream()
+                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
+                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
+    }
+
+    private void distributeNewNodeForEachNewNode(List<String> membersInLastView) {
+        membersInCurrentView.stream()
+                .filter(nodeIdInNewView -> !membersInLastView.contains(nodeIdInNewView))
+                .forEach(newNodeId -> {
+                    if (!newNodeId.equals(getCurrentNodeId()))
+                        distributor.onNewNode(newNodeId);
+                });
     }
 
     @Override

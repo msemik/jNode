@@ -6,6 +6,8 @@ import pl.edu.uj.engine.TaskCancelledEvent;
 import pl.edu.uj.engine.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 
+import java.util.stream.Stream;
+
 /**
  * Created by alanhawrot on 29.02.2016.
  */
@@ -30,6 +32,8 @@ public interface Distributor {
     void onTaskCancelled(TaskCancelledEvent event);
 
     void onNodeGone(String nodeId);
+
+    void onNewNode(String newNodeId);
 
     void onCancelJarJobs(String sourceNodeId, String jarPath);
 

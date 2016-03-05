@@ -30,6 +30,8 @@ public class DefaultDistributor implements Distributor {
     private MessageGateway messageGateway;
     @Autowired
     private TaskDelegationHandler taskDelegationHandler;
+    @Autowired
+    private Nodes nodes;
 
     @Override
     public void onWorkerPoolOverflow(WorkerPoolOverflowEvent event) {
@@ -80,6 +82,11 @@ public class DefaultDistributor implements Distributor {
     @Override
     public void onNodeGone(String nodeId) {
 
+    }
+
+    @Override
+    public void onNewNode(String newNodeId) {
+        nodes.add(new Node(newNodeId));
     }
 
     @Override
