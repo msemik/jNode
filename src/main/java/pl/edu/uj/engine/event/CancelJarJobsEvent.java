@@ -1,4 +1,4 @@
-package pl.edu.uj.engine;
+package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
 

@@ -1,6 +1,6 @@
 package pl.edu.uj.cluster;
 
-import pl.edu.uj.engine.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jarpath.JarStateChangedEvent;
 
 public interface JarDistributor {

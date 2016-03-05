@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.xeustechnologies.jcl.JclUtils;
+import pl.edu.uj.engine.event.NewTaskReceivedEvent;
 import pl.edu.uj.engine.workerpool.UserDoAsyncWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.uj.edu.userlib.Callback;

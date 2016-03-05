@@ -1,12 +1,10 @@
 package pl.edu.uj.cluster;
 
 import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
-import pl.edu.uj.engine.CancelJarJobsEvent;
-import pl.edu.uj.engine.TaskCancelledEvent;
-import pl.edu.uj.engine.TaskFinishedEvent;
+import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.TaskCancelledEvent;
+import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
-
-import java.util.stream.Stream;
 
 /**
  * Created by alanhawrot on 29.02.2016.

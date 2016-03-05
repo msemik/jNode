@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
-import pl.edu.uj.engine.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.CancelJarJobsEvent;
 
 import java.nio.file.Path;
 import java.util.Iterator;
