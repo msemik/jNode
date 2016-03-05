@@ -132,12 +132,10 @@ public class TaskDelegationHandler {
                 }
             }
 
-            synchronized (nodes) { // Synchronization with HeartBeat nodes updateAfterHeartBeat.
+            synchronized (nodes) { // Synchronization with HeartBeat nodes.updateAfterHeartBeat method.
                 selectedNode = nodes.drainThreadFromNodeHavingHighestPriority();
                 if (!selectedNode.isPresent()) {
                     workerPool.submitTask(task.get());
-                    // Synchronization with worker pool overflow events
-
                     TaskDelegationState nextState = AWAITING_FREE_THREADS;
                     TaskDelegationState prevState = delegationState.getAndSet(nextState);
                     logger.debug("changed from " + prevState + " to " + nextState);
@@ -146,9 +144,9 @@ public class TaskDelegationHandler {
             }
 
             if (!delegateTask(selectedNode.get(), task.get())) {
-                //If delegation failed we release the thread.
-                //Imo its better to think there is one additional thread(which may not be true) than forgetting it.
-                //Perhaps if there is no HeartBeat from other nodes we may drain all of them on unsuccessful task delegations.
+                //If delegation failed we release the thread to keep proper number of free threads up-to-date
+                //If HeartBeat happened between draining a thread and returning it, this operation will take no effect
+                //as we are working on invalidated version of node.
                 nodes.returnThread(selectedNode.get());
             }
         }
