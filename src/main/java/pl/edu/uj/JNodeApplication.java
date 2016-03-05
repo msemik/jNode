@@ -31,6 +31,8 @@ public class JNodeApplication {
         OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
         optionsEventsDispatcher.dispatchOptionsEvents(args);
 
+
+        applicationContext.publishEvent(new ApplicationInitializedEvent(applicationContext));
         logger.info("jNode application has started, args:" + String.join(" ", args));
 
 

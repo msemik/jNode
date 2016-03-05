@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.cluster.messages.Distributable;
 import pl.edu.uj.cluster.messages.Sry;
+import pl.edu.uj.options.NodeIdOptionEvent;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
@@ -30,15 +32,26 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
     @Autowired
     private Distributor distributor;
     private List<String> membersInCurrentView = new ArrayList<>();
+    private String nodeId;
 
     public JGroups() {
     }
 
-    @PostConstruct
-    public void init() throws Exception {
+    @EventListener
+    public void on(NodeIdOptionEvent event) {
+        this.nodeId = event.getNodeId();
+    }
+
+    @EventListener
+    public void on(ApplicationInitializedEvent event) throws Exception {
         channel = new JChannel();
+        if (nodeId != null)
+            channel.setName(nodeId);
         channel.setReceiver(this);
         channel.connect(DEFAULT_JNODE_CHANNEL);
+        if (nodeId == null)
+            nodeId = channel.getAddressAsString();
+
         channel.setDiscardOwnMessages(true);
         logger.info("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
         logger.trace("Channel properties" + channel.getProperties());
@@ -62,7 +75,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
 
     @Override
     public String getCurrentNodeId() {
-        return channel.getAddressAsString();
+        return nodeId;
     }
 
     private Address getAddressByNodeId(String destinationNodeId) {
