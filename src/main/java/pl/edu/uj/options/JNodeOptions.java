@@ -27,7 +27,7 @@ public class JNodeOptions {
                 .longOpt("jar")
                 .build());
 
-        options.addOption(Option.builder("i")
+        options.addOption(Option.builder("n")
                 .hasArgs()
                 .desc("node identifier")
                 .longOpt("nodeId")

@@ -3,6 +3,7 @@ package pl.edu.uj.cluster;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -66,5 +67,10 @@ public class Nodes {
      */
     public synchronized void returnThread(Node node) {
         node.returnThread();
+    }
+
+    @Override
+    public String toString() {
+        return nodes.stream().map(Node::toString).collect(Collectors.joining("\n"));
     }
 }

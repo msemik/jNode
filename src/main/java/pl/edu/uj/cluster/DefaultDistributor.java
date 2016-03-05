@@ -32,6 +32,8 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private TaskDelegationHandler taskDelegationHandler;
     @Autowired
+    private HeartBeatHandler heartBeatHandler;
+    @Autowired
     private Nodes nodes;
 
     @Override
@@ -101,6 +103,7 @@ public class DefaultDistributor implements Distributor {
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
         // TODO updateAfterHeartBeat Nodes
+        heartBeatHandler.handleIncoming(sourceNodeId, primaryHeartBeat);
         taskDelegationHandler.handleDuringOnHeartBeat();
     }
 

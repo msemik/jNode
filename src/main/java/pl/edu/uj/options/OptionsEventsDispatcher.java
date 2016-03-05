@@ -47,8 +47,8 @@ public class OptionsEventsDispatcher {
             if (cmd.hasOption("j")) {
                 eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
             }
-            if (cmd.hasOption("i")) {
-                eventPublisher.publishEvent(new NodeIdOptionEvent(this, cmd.getOptionValue("i")));
+            if (cmd.hasOption("n")) {
+                eventPublisher.publishEvent(new NodeIdOptionEvent(this, cmd.getOptionValue("n")));
             }
             if (cmd.hasOption("p")) {
                 int p = Integer.parseInt(cmd.getOptionValue("p"));

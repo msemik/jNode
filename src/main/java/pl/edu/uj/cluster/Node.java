@@ -9,11 +9,11 @@ public class Node implements Comparable<Node> {
     private double priority;
 
     public Node(String nodeId) {
-        this(nodeId, 0, 0);
+        this(nodeId, 0, 1);
     }
 
     public Node(String nodeId, int availableThreads) {
-        this(nodeId, availableThreads, 0);
+        this(nodeId, availableThreads, 1);
     }
 
     public Node(String nodeId, int availableWorkers, double priority) {
@@ -74,5 +74,14 @@ public class Node implements Comparable<Node> {
 
     public void setAvailableThreads(int availableThreads) {
         this.availableThreads = availableThreads;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "nodeId=" + nodeId +
+                ", availableThreads=" + availableThreads +
+                ", priority=" + priority +
+                '}';
     }
 }

@@ -42,7 +42,6 @@ public class WorkerPool {
     private ThreadPoolTaskExecutor taskExecutor;
     private BlockingQueue<Runnable> queue;
 
-
     @EventListener
     public void on(ApplicationShutdownEvent e) {
         if (taskExecutor != null)
@@ -59,7 +58,8 @@ public class WorkerPool {
     public void submitTask(WorkerPoolTask task) {
         logger.info("Task " + task.toString() + " is being executed");
 
-        final ListenableFuture<Object> taskResultFuture = getTaskExecutor().submitListenable(task);
+        ThreadPoolTaskExecutor executor = getTaskExecutor();
+        final ListenableFuture<Object> taskResultFuture = executor.submitListenable(task);
         executingTasks.put(task.getJarName(), taskResultFuture);
         taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
             @Override
@@ -79,7 +79,7 @@ public class WorkerPool {
             }
         });
 
-        int corePoolSize = taskExecutor.getCorePoolSize();
+        int corePoolSize = executor.getCorePoolSize();
         int tasksInPool = executingTasks.size();
         logger.debug("Pool size: " + corePoolSize + " , tasksInPool: " + tasksInPool);
         if (corePoolSize - tasksInPool < 0) {
@@ -95,6 +95,10 @@ public class WorkerPool {
 
     public long jobsInPool() {
         return executingTasks.size();
+    }
+
+    public long poolSize() {
+        return getTaskExecutor().getCorePoolSize();
     }
 
     public Optional<WorkerPoolTask> pollTask() {

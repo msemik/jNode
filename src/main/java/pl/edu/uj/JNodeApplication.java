@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import pl.edu.uj.options.OptionsEventsDispatcher;
 import pl.edu.uj.options.PoolSizeOptionEvent;
@@ -19,10 +20,12 @@ import static java.util.Optional.of;
 @EnableAspectJAutoProxy
 @EnableSpringConfigured
 @ComponentScan
+@EnableScheduling()
 public class JNodeApplication {
     static Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
 
     private Optional<Integer> poolSize = empty();
+    private boolean isInitialized = false;
 
     public static void main(String[] args) {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
@@ -54,4 +57,13 @@ public class JNodeApplication {
         return taskExecutor;
     }
 
+
+    @EventListener
+    public void on(ApplicationInitializedEvent event) {
+        isInitialized = true;
+    }
+
+    public boolean isInitialized() {
+        return isInitialized;
+    }
 }

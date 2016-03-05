@@ -53,14 +53,20 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
             nodeId = channel.getAddressAsString();
 
         channel.setDiscardOwnMessages(true);
-        logger.info("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
+        logger.trace("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
         logger.trace("Channel properties" + channel.getProperties());
+    }
+
+    @EventListener
+    public void on(ApplicationShutdownEvent event) {
+        if (channel != null)
+            channel.close();
     }
 
     @Override
     public void send(Serializable obj, String destinationNodeId) {
         try {
-            logger.debug("Sending message " + obj + " to " + destinationNodeId);
+            logger.debug("Sending message " + obj + " to " + destinationNodeId == null ? "all" : destinationNodeId);
             channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,18 +89,14 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
         return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
     }
 
-    @EventListener
-    public void on(ApplicationShutdownEvent event) {
-        channel.close();
-    }
-
     @Override
     public void viewAccepted(View view) {
-        logger.debug("View creator:" + view.getCreator());
-        logger.debug("View id:" + view.getViewId());
-        logger.debug("Current node address:" + channel.getAddress());
-        logger.debug("JNodes number:" + view.size());
-        logger.debug("View changed" + view.getMembers());
+        logger.debug(String.join(", "
+                , "View creator:" + view.getCreator()
+                , "View id:" + view.getViewId()
+                , "Current nodeId:" + getCurrentNodeId()
+                , "jNodes number:" + view.size()
+                , "changed view" + view.getMembers()));
 
         synchronized (this) {
             List<String> membersInLastView = membersInCurrentView;
@@ -132,11 +134,9 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
         String destinationNodeId = msg.dest().toString();
         Object messageBody = msg.getObject();
 
-        logger.debug("Received message, src " + sourceNodeId + " dst " + destinationNodeId);
-        logger.debug("Message: " + messageBody);
-        logger.debug("Message class: " + messageBody.getClass().getSimpleName());
-        logger.debug("Headers: " + msg.printHeaders());
-        logger.debug("Flags: " + msg.getFlags());
+        logger.debug(" received " + messageBody + " from " + sourceNodeId);
+        // , "Headers: " + msg.printHeaders()
+        // , "Flags: " + msg.getFlags()));
 
         if (messageBody instanceof Distributable) {
             Distributable distributable = (Distributable) messageBody;
