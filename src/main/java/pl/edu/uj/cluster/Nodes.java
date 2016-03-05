@@ -41,9 +41,6 @@ public class Nodes {
         }
     }
 
-    /**
-     * This method is based on assumption that if priority of node is 0 then available threads is 0 either.
-     */
     public synchronized Optional<Node> drainThreadFromNodeHavingHighestPriority() {
         if (nodes.isEmpty()) {
             return empty();

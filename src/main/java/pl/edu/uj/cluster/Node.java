@@ -50,6 +50,9 @@ public class Node implements Comparable<Node> {
         return nodeId.equals(node.nodeId);
     }
 
+    /**
+     * This method is based on assumption that if priority of node is 0 then available threads is 0 either.
+     */
     public boolean canTakeTasks() {
         return getPriority() > 0;
     }
