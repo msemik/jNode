@@ -7,22 +7,22 @@ import java.util.Optional;
 
 
 public class PrimaryHeartBeat implements Serializable, Distributable {
+    private long poolSize;
     private long jobsInPool;
-    private long threadsInUse;
     private String expectedHeartBeatType; //PRIMARY|EXTENDED
 
-    public PrimaryHeartBeat(long jobsInPool, long threadsInUse, String expectedHeartBeatType) {
+    public PrimaryHeartBeat(long poolSize, long jobsInPool, String expectedHeartBeatType) {
+        this.poolSize = poolSize;
         this.jobsInPool = jobsInPool;
-        this.threadsInUse = threadsInUse;
         this.expectedHeartBeatType = expectedHeartBeatType;
+    }
+
+    public long getPoolSize() {
+        return poolSize;
     }
 
     public long getJobsInPool() {
         return jobsInPool;
-    }
-
-    public long getThreadsInUse() {
-        return threadsInUse;
     }
 
     public String getExpectedHeartBeatType() {
@@ -37,8 +37,8 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
     @Override
     public String toString() {
         return "PrimaryHeartBeat{" +
-                "jobsInPool=" + jobsInPool +
-                ", threadsInUse=" + threadsInUse +
+                "poolSize=" + poolSize +
+                ", jobsInPool=" + jobsInPool +
                 ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
                 '}';
     }
@@ -50,16 +50,16 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
 
         PrimaryHeartBeat that = (PrimaryHeartBeat) o;
 
+        if (poolSize != that.poolSize) return false;
         if (jobsInPool != that.jobsInPool) return false;
-        if (threadsInUse != that.threadsInUse) return false;
         return expectedHeartBeatType != null ? expectedHeartBeatType.equals(that.expectedHeartBeatType) : that.expectedHeartBeatType == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (jobsInPool ^ (jobsInPool >>> 32));
-        result = 31 * result + (int) (threadsInUse ^ (threadsInUse >>> 32));
+        int result = (int) (poolSize ^ (poolSize >>> 32));
+        result = 31 * result + (int) (jobsInPool ^ (jobsInPool >>> 32));
         result = 31 * result + (expectedHeartBeatType != null ? expectedHeartBeatType.hashCode() : 0);
         return result;
     }
@@ -68,8 +68,8 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
         return new PrimaryHeartBeat(0, 0, null);
     }
 
-    public static PrimaryHeartBeat create(long threadsInUse, long threadsInPool) {
-        return new PrimaryHeartBeat(threadsInUse, threadsInPool, null);
+    public static PrimaryHeartBeat create(long poolSize, long jobsInPool) {
+        return new PrimaryHeartBeat(poolSize, jobsInPool, null);
     }
 
 }

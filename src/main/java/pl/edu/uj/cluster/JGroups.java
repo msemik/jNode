@@ -4,6 +4,7 @@ import org.jgroups.*;
 import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 @Component
@@ -43,18 +45,30 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
     }
 
     @EventListener
-    public void on(ApplicationInitializedEvent event) throws Exception {
-        channel = new JChannel();
-        if (nodeId != null)
-            channel.setName(nodeId);
-        channel.setReceiver(this);
-        channel.connect(DEFAULT_JNODE_CHANNEL);
-        if (nodeId == null)
-            nodeId = channel.getAddressAsString();
+    public void on(ApplicationInitializedEvent event) {
+        init();
+    }
 
-        channel.setDiscardOwnMessages(true);
-        logger.trace("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
-        logger.trace("Channel properties" + channel.getProperties());
+    private void init() {
+        if (channel != null)
+            return;
+        synchronized (this) {
+            if (channel != null)
+                return;
+            try {
+                channel = new JChannel();
+                if (nodeId != null)
+                    channel.setName(nodeId);
+                channel.setReceiver(this);
+                channel.connect(DEFAULT_JNODE_CHANNEL);
+
+                channel.setDiscardOwnMessages(true);
+                logger.trace("Address type " + channel.getView().getMembers().get(0).getClass().getCanonicalName());
+                logger.trace("Channel properties" + channel.getProperties());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @EventListener
@@ -65,8 +79,9 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
 
     @Override
     public void send(Serializable obj, String destinationNodeId) {
+        init();
         try {
-            logger.debug("Sending message " + obj + " to " + destinationNodeId == null ? "all" : destinationNodeId);
+            logger.debug("Sending message " + obj + " to " + (destinationNodeId == null ? "all" : destinationNodeId));
             channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,6 +96,10 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
 
     @Override
     public String getCurrentNodeId() {
+        if (nodeId == null) {
+            init();
+            nodeId = channel.getAddressAsString();
+        }
         return nodeId;
     }
 
@@ -131,7 +150,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
     @Override
     public void receive(Message msg) {
         String sourceNodeId = msg.src().toString();
-        String destinationNodeId = msg.dest().toString();
+        Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
         Object messageBody = msg.getObject();
 
         logger.debug(" received " + messageBody + " from " + sourceNodeId);
@@ -140,7 +159,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway {
 
         if (messageBody instanceof Distributable) {
             Distributable distributable = (Distributable) messageBody;
-            distributable.distribute(distributor, sourceNodeId, ofNullable(destinationNodeId));
+            distributable.distribute(distributor, sourceNodeId, destinationNodeId);
         } else {
             logger.warn("Unexpected message body type: " + messageBody.getClass().getSimpleName());
         }

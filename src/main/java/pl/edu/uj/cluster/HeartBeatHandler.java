@@ -3,10 +3,8 @@ package pl.edu.uj.cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.JNodeApplication;
 import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
 import pl.edu.uj.engine.workerpool.WorkerPool;
@@ -30,7 +28,7 @@ public class HeartBeatHandler {
     public void handleOutgoing() {
         if (!application.isInitialized())
             return;
-        PrimaryHeartBeat heartBeat = PrimaryHeartBeat.create(workerPool.jobsInPool(), workerPool.poolSize());
+        PrimaryHeartBeat heartBeat = PrimaryHeartBeat.create(workerPool.poolSize(), workerPool.jobsInPool());
         if (last.equals(heartBeat))
             return;
 
@@ -39,7 +37,7 @@ public class HeartBeatHandler {
     }
 
     public void handleIncoming(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
-        long availableThreads = max(primaryHeartBeat.getThreadsInUse() - primaryHeartBeat.getJobsInPool(), 0);
+        long availableThreads = max(primaryHeartBeat.getPoolSize() - primaryHeartBeat.getJobsInPool(), 0);
         nodes.updateAfterHeartBeat(new Node(sourceNodeId, (int) availableThreads));
     }
 }

@@ -1,15 +1,16 @@
 package pl.edu.uj.engine.workerpool;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Created by michal on 22.11.15.
  */
 public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
-    private Path jarName;
+    private String jarName;
 
     public BaseWorkerPoolTask(Path jarPath) {
-        this.jarName = jarPath;
+        this.jarName = jarPath.toString();
     }
 
     @Override
@@ -31,7 +32,7 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
 
     @Override
     public Path getJarName() {
-        return this.jarName;
+        return Paths.get(jarName);
     }
 
     @Override
