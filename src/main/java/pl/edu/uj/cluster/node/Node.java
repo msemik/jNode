@@ -13,6 +13,7 @@ public class Node implements Comparable<Node> {
     private int poolSize;
     private int availableThreads;
     private double priority;
+    private boolean isCurrent;
     /**
      * Order in which node entered cluster.
      */
@@ -24,6 +25,11 @@ public class Node implements Comparable<Node> {
 
     protected Node(String nodeId) {
         this(nodeId, 0, 0);
+    }
+
+    public Node(String nodeId, boolean isCurrent) {
+        this.nodeId = nodeId;
+        this.isCurrent = isCurrent;
     }
 
     protected Node(String nodeId, int availableThreads) {
@@ -106,15 +112,19 @@ public class Node implements Comparable<Node> {
         return distance.between(this, other);
     }
 
-    public void computePriority(Priority priority) {
-        this.priority = priority.computeFor(this);
-    }
-
     public int getPoolSize() {
         return poolSize;
     }
 
     public void setArrivalOrder(int arrivalOrder) {
         this.arrivalOrder = arrivalOrder;
+    }
+
+    public boolean isCurrent() {
+        return isCurrent;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 }

@@ -10,32 +10,34 @@ import static java.lang.Integer.signum;
  */
 public class NearestDistancePriority implements Priority {
 
-    private final List<Node> nodes;
-
-    public NearestDistancePriority(List<Node> nodes) {
-        this.nodes = nodes;
+    public NearestDistancePriority() {
     }
 
     @Override
-    public double computeFor(Node node) {
-        int maxPoolSize = computeMaxPoolSize();
-        double partialPriority = 0;
-        List<Integer> distances = computeDistancesBetween(node);
+    public void calculate(List<Node> nodes) {
+        Node currentNode = getCurrentNode(nodes);
+        int maxPoolSize = computeMaxPoolSize(nodes);
+        List<Integer> distances = computeDistancesBetween(nodes, currentNode);
         int maxDistance = maxDistance(distances);
-        for (int i = 0; i < nodes.size(); i++) {
-            Node otherNode = nodes.get(i);
-            if (otherNode.equals(node))
-                continue;
-            int dist = distances.get(i);
-            int availableThreadsInOtherNode = otherNode.getAvailableThreads();
 
-            partialPriority += signum(availableThreadsInOtherNode) * (maxDistance - dist);
-            partialPriority += availableThreadsInOtherNode / (maxPoolSize + 1);
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            if (node.isCurrent())
+                continue;
+            int dst = distances.get(i);
+            int availableThreads = node.getAvailableThreads();
+            node.setPriority(signum(availableThreads) * (maxDistance - dst + 1) + availableThreads / (maxPoolSize + 1));
         }
-        return partialPriority;
     }
 
-    private int computeMaxPoolSize() {
+    private Node getCurrentNode(List<Node> nodes) {
+        return nodes.stream()
+                .filter(Node::isCurrent)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Expected current node in the list"));
+    }
+
+    private int computeMaxPoolSize(List<Node> nodes) {
         return nodes.stream().mapToInt(Node::getPoolSize).max().orElse(0);
     }
 
@@ -43,7 +45,7 @@ public class NearestDistancePriority implements Priority {
         return distances.stream().mapToInt(Integer::intValue).max().orElse(0);
     }
 
-    private List<Integer> computeDistancesBetween(Node node) {
+    private List<Integer> computeDistancesBetween(List<Node> nodes, Node node) {
         return nodes.stream().map(node::distanceBetween).collect(Collectors.toList());
     }
 }

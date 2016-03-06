@@ -1,5 +1,7 @@
 package pl.edu.uj.cluster.node;
 
+import java.util.List;
+
 public interface Priority {
-    double computeFor(Node node);
+    void calculate(List<Node> nodes);
 }

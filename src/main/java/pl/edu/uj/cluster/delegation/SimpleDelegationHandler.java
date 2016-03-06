@@ -1,9 +1,11 @@
-package pl.edu.uj.cluster;
+package pl.edu.uj.cluster.delegation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.cluster.MessageGateway;
 import pl.edu.uj.cluster.message.Redirect;
 import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.message.TaskDelegation;
@@ -19,13 +21,25 @@ import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.edu.uj.cluster.TaskDelegationHandler.TaskDelegationState.*;
+import static pl.edu.uj.cluster.delegation.SimpleDelegationHandler.State.*;
 
 
+/**
+ * GIVEN					WHEN				CHANGE STATE TO			AND EXECUTE
+ * NO_DELEGATION			OVERFLOW			DURING_DELEGATION		delegateTasks()
+ * NO_DELEGATION			PRIMARY				NO_DELEGATION			empty()
+ * DURING_DELEGATION		OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
+ * DURING_DELEGATION		PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * SCHEDULED_RE_EXECUTE	    OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
+ * SCHEDULED_RE_EXECUTE	    PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * AWAITING_THREADS		    OVERFLOW			AWAITING_THREADS		empty()
+ * AWAITING_THREADS		    PRIMARY				DURING_DELEGATION		delegateTasks()
+ */
+@Primary
 @Component
-public class TaskDelegationHandler {
-    private Logger logger = LoggerFactory.getLogger(TaskDelegationHandler.class);
-    private AtomicReference<TaskDelegationState> delegationState = new AtomicReference<>(NO_DELEGATION);
+public class SimpleDelegationHandler implements DelegationHandler {
+    private Logger logger = LoggerFactory.getLogger(SimpleDelegationHandler.class);
+    private AtomicReference<State> state = new AtomicReference<>(NO_DELEGATION);
     @Autowired
     private Nodes nodes;
     @Autowired
@@ -37,23 +51,17 @@ public class TaskDelegationHandler {
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
 
-    /* State transitions:
-
-     * NO_DELEGATION -> DURING DELEGATION (start task delegation in this case)
-     * DURING DELEGATION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
-     * AWAITING_FREE_THREADS -> AWAITING_FREE_THREADS
-     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
-     **/
     public void handleDuringOnWorkerPoolEvent() {
+        logger.info("handleDuringOnWorkerPoolEvent");
         while (true) {
-            TaskDelegationState prevState = delegationState.get();
-            TaskDelegationState nextState = prevState;
+            State prevState = state.get();
+            State nextState = prevState;
             if (prevState == NO_DELEGATION) {
                 nextState = DURING_DELEGATION;
             } else if (prevState == DURING_DELEGATION) {
                 nextState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
             }
-            if (delegationState.compareAndSet(prevState, nextState)) {
+            if (state.compareAndSet(prevState, nextState)) {
                 logger.debug("changed from " + prevState + " to " + nextState);
                 if (prevState == NO_DELEGATION) {
                     delegateTasks();
@@ -64,18 +72,11 @@ public class TaskDelegationHandler {
         }
     }
 
-    /**
-     * State transitions:
-     *
-     * NO_DELEGATION -> NO_DELEGATION
-     * DURING DELEGATION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
-     * AWAITING_FREE_THREADS -> DURING_DELEGATION (start task delegation in this case)
-     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
-     */
     public void handleDuringOnHeartBeat() {
+        logger.info("handleDuringOnHeartBeat");
         while (true) {
-            TaskDelegationState prevState = delegationState.get();
-            TaskDelegationState nextState = prevState;
+            State prevState = state.get();
+            State nextState = prevState;
             if (prevState == DURING_DELEGATION) {
                 //New threads may produce more delegations
                 nextState = DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
@@ -83,7 +84,7 @@ public class TaskDelegationHandler {
                 //Delegations are waiting but there is no free threads
                 nextState = DURING_DELEGATION;
             }
-            if (delegationState.compareAndSet(prevState, nextState)) {
+            if (state.compareAndSet(prevState, nextState)) {
                 logger.debug("changed from " + prevState + " to " + nextState);
                 if (prevState == AWAITING_FREE_THREADS) {
                     delegateTasks();
@@ -96,15 +97,6 @@ public class TaskDelegationHandler {
 
     /**
      * Sends tasks until there is no tasks or threads left
-     *
-     * State transitions:
-     *
-     * DURING DELEGATION -> NO_DELEGATION (when there was no workerPoolOverflowEvent during last execution)
-     *                   -> AWAITING_FREE_THREADS (when there is no free threads in cluster)
-     * DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION -> DURING_DELEGATION (when re executing delegation)
-     *                                               -> AWAITING_FREE_THREADS (when there is no free threads in cluster)
-     * NO_DELEGATION -> *  can't happen
-     * AWAITING_FREE_THREADS -> * can't happen
      */
     private void delegateTasks() {
         logger.debug("task delegation started");
@@ -116,8 +108,8 @@ public class TaskDelegationHandler {
 
             if (!task.isPresent()) {
                 while (true) {
-                    TaskDelegationState prevState = delegationState.get();
-                    TaskDelegationState nextState;
+                    State prevState = state.get();
+                    State nextState;
                     if (prevState == DURING_DELEGATION) {
                         // No more tasks and free threads appeared
                         nextState = NO_DELEGATION;
@@ -125,7 +117,7 @@ public class TaskDelegationHandler {
                         //prevState == DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION
                         nextState = DURING_DELEGATION;
                     }
-                    if (delegationState.compareAndSet(prevState, nextState)) {
+                    if (state.compareAndSet(prevState, nextState)) {
                         logger.debug("changed from " + prevState + " to " + nextState);
                         if (prevState == DURING_DELEGATION) {
                             return;
@@ -142,8 +134,8 @@ public class TaskDelegationHandler {
                 selectedNode = nodes.drainThreadFromNodeHavingHighestPriority();
                 if (!selectedNode.isPresent()) {
                     workerPool.submitTask(task.get());
-                    TaskDelegationState nextState = AWAITING_FREE_THREADS;
-                    TaskDelegationState prevState = delegationState.getAndSet(nextState);
+                    State nextState = AWAITING_FREE_THREADS;
+                    State prevState = state.getAndSet(nextState);
                     logger.debug("changed from " + prevState + " to " + nextState);
                     return;
                 }
@@ -189,7 +181,7 @@ public class TaskDelegationHandler {
         return true;
     }
 
-    enum TaskDelegationState {
+    enum State {
         NO_DELEGATION,
         DURING_DELEGATION,
         DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION,

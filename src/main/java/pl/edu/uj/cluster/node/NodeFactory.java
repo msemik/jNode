@@ -13,7 +13,7 @@ public class NodeFactory {
     private MessageGateway messageGateway;
 
     public Priority createPriority(List<Node> nodes) {
-        return new NearestDistancePriority(nodes);
+        return new NearestDistancePriority();
     }
 
     public void initializeDistance(List<Node> nodes) {
@@ -21,7 +21,7 @@ public class NodeFactory {
     }
 
     public Node createCurrentNode() {
-        return new Node(messageGateway.getCurrentNodeId());
+        return new Node(messageGateway.getCurrentNodeId(), true);
     }
 
     public Node createNode(String newNodeId) {

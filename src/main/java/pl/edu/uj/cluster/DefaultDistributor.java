@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.cluster.delegation.DelegationHandler;
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
@@ -36,7 +37,7 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private MessageGateway messageGateway;
     @Autowired
-    private TaskDelegationHandler taskDelegationHandler;
+    private DelegationHandler delegationHandler;
     @Autowired
     private HeartBeatHandler heartBeatHandler;
     @Autowired
@@ -47,7 +48,7 @@ public class DefaultDistributor implements Distributor {
     @Override
     @EventListener
     public void on(WorkerPoolOverflowEvent event) {
-        taskDelegationHandler.handleDuringOnWorkerPoolEvent();
+        delegationHandler.handleDuringOnWorkerPoolEvent();
     }
 
 
@@ -112,7 +113,7 @@ public class DefaultDistributor implements Distributor {
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
         heartBeatHandler.handleIncoming(sourceNodeId, primaryHeartBeat);
-        taskDelegationHandler.handleDuringOnHeartBeat();
+        delegationHandler.handleDuringOnHeartBeat();
     }
 
     @Override

@@ -1,12 +1,10 @@
 package pl.edu.uj.cluster.node;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.*;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,7 +63,7 @@ public class Nodes {
             return empty();
         }
         computePriorities();
-        Node firstNode = nodes.get(0);
+        Node firstNode = findNodeWithHighestPriority();
         if (!firstNode.canTakeTasks()) {
             return empty();
         }
@@ -73,11 +71,20 @@ public class Nodes {
         return of(firstNode);
     }
 
+    private Node findNodeWithHighestPriority() {
+        double max = 0;
+        Node n = null;
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            if (node.getPriority() > max)
+                n = node;
+        }
+        return n;
+    }
+
     private void computePriorities() {
         Priority priority = nodeFactory.createPriority(nodes);
-        for (Node node : nodes) {
-            node.computePriority(priority);
-        }
+        priority.calculate(nodes);
     }
 
     /**
