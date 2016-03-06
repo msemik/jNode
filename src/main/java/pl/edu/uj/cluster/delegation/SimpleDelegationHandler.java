@@ -35,7 +35,6 @@ import static pl.edu.uj.cluster.delegation.SimpleDelegationHandler.State.*;
  * AWAITING_THREADS		    OVERFLOW			AWAITING_THREADS		empty()
  * AWAITING_THREADS		    PRIMARY				DURING_DELEGATION		delegateTasks()
  */
-@Primary
 @Component
 public class SimpleDelegationHandler implements DelegationHandler {
     private Logger logger = LoggerFactory.getLogger(SimpleDelegationHandler.class);
@@ -133,7 +132,7 @@ public class SimpleDelegationHandler implements DelegationHandler {
             synchronized (nodes) { // Synchronization with HeartBeat nodes.updateAfterHeartBeat method.
                 selectedNode = nodes.drainThreadFromNodeHavingHighestPriority();
                 if (!selectedNode.isPresent()) {
-                    workerPool.submitTask(task.get());
+                    workerPool.submitTask(task.get(), true);
                     State nextState = AWAITING_FREE_THREADS;
                     State prevState = state.getAndSet(nextState);
                     logger.debug("changed from " + prevState + " to " + nextState);

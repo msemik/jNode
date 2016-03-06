@@ -3,6 +3,7 @@ package pl.edu.uj.cluster.delegation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.MessageGateway;
 import pl.edu.uj.cluster.message.Redirect;
@@ -26,6 +27,7 @@ import static pl.edu.uj.cluster.delegation.DefaultState.*;
 
 
 @Component
+@Primary
 public class FSMBasedDelegationHandler implements DelegationHandler {
     private Logger logger = LoggerFactory.getLogger(FSMBasedDelegationHandler.class);
     private AtomicReference<State> delegationState = new AtomicReference<>(NO_DELEGATION);
@@ -87,7 +89,7 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
                     nextState = event.nextState(this, prevState);
 
                 } while (!delegationState.compareAndSet(prevState, nextState));
-
+                logger.info("Changing state from " + prevState + " to " + nextState);
                 //Executing action after atomically changed state
                 //Action may produce another action.
                 Optional<DelegationEvent> nextEvent = event.executeAction(this, prevState);
@@ -98,12 +100,13 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
                 }
             }
         } catch (Throwable t) {
+            t.printStackTrace();
             logger.error(t + " during state transition from " + prevState + " to " + nextState);
         }
     }
 
     public Optional<DelegationEvent> empty() {
-        return empty();
+        return Optional.empty();
     }
 
     public Optional<DelegationEvent> error() {
@@ -124,8 +127,9 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
             synchronized (nodes) { // Synchronization with HeartBeat nodes.updateAfterHeartBeat method.
                 selectedNode = nodes.drainThreadFromNodeHavingHighestPriority();
                 if (!selectedNode.isPresent()) {
-                    workerPool.submitTask(task.get());
+                    workerPool.submitTask(task.get(), true);
                     changeStateAndExecuteEventAction(NO_THREADS);
+                    return Optional.empty();
                 }
             }
 

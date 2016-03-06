@@ -56,7 +56,7 @@ public class WorkerPool {
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, fileName, jobsInPool()));
     }
 
-    public void submitTask(WorkerPoolTask task) {
+    public void submitTask(WorkerPoolTask task, boolean silently) {
         logger.info("Task " + task.toString() + " is being executed");
 
         ThreadPoolTaskExecutor executor = getTaskExecutor();
@@ -76,7 +76,8 @@ public class WorkerPool {
             public void onSuccess(Object result) {
                 executingTasks.remove(task.getJarName(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
-                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS, task, result));
+                if (!silently)
+                    eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS, task, result));
             }
         });
 
@@ -128,5 +129,9 @@ public class WorkerPool {
             queue = getTaskExecutor().getThreadPoolExecutor().getQueue();
         }
         return queue;
+    }
+
+    public void submitTask(WorkerPoolTask workerPoolTask) {
+        submitTask(workerPoolTask, false);
     }
 }
