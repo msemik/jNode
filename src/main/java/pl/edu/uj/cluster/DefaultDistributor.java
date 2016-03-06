@@ -16,7 +16,6 @@ import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
 import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.cluster.task.ExternalTaskRegistry;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
-import pl.edu.uj.engine.event.CancellationEventOrigin;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
@@ -51,6 +50,8 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private HeartBeatHandler heartBeatHandler;
     @Autowired
+    JarHandler jarHandler;
+    @Autowired
     private Nodes nodes;
     @Autowired
     private NodeFactory nodeFactory;
@@ -64,7 +65,8 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
-
+        //TODO: missing statements
+        jarHandler.onTaskDelegation(externalTask);
     }
 
     @Override
@@ -139,6 +141,7 @@ public class DefaultDistributor implements Distributor {
     public void onNewNode(String newNodeId) {
         Node newNode = nodeFactory.createNode(newNodeId);
         nodes.add(newNode);
+        heartBeatHandler.forceOutgoing();
     }
 
     @Override
@@ -154,11 +157,11 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onJarRequest(String nodeId, String jarFileName) {
-
+        jarHandler.onJarRequest(nodeId, jarFileName);
     }
 
     @Override
     public void onJarDelivery(String nodeId, String jarFileName, byte[] jar) {
-
+        jarHandler.onJarDelivery(nodeId, jarFileName, jar);
     }
 }

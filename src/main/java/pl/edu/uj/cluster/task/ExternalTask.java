@@ -56,4 +56,9 @@ public class ExternalTask implements WorkerPoolTask {
     public boolean isOriginatedAt(Node selectedNode) {
         return sourceNodeId.equals(selectedNode.getNodeId());
     }
+
+    @Override
+    public boolean belongToJar(Path jarFileName) {
+        return task.belongToJar(jarFileName);
+    }
 }

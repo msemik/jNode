@@ -44,4 +44,9 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     public boolean isExternal() {
         return false;
     }
+
+    @Override
+    public boolean belongToJar(Path jarFileName) {
+        return jarFileName.equals(jarFileName);
+    }
 }

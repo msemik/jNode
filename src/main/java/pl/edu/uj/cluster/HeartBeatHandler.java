@@ -12,6 +12,8 @@ import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static java.lang.Math.max;
 
 @Component
@@ -29,14 +31,17 @@ public class HeartBeatHandler {
     private NodeFactory nodeFactory;
 
     private PrimaryHeartBeat last = PrimaryHeartBeat.empty();
+    private AtomicBoolean forceHeartBeat = new AtomicBoolean();
 
     @Scheduled(fixedDelay = 50, initialDelay = 200)
     public void handleOutgoing() {
-        if (!application.isInitialized())
+        if (!application.isInitialized()) {
             return;
+        }
         PrimaryHeartBeat heartBeat = PrimaryHeartBeat.create(workerPool.poolSize(), workerPool.jobsInPool());
-        if (last.equals(heartBeat))
+        if (!forceHeartBeat.getAndSet(false) && last.equals(heartBeat)) {
             return;
+        }
 
         messageGateway.send(heartBeat);
         last = heartBeat;
@@ -45,5 +50,12 @@ public class HeartBeatHandler {
     public void handleIncoming(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
         Node currentNode = nodeFactory.createNode(sourceNodeId, primaryHeartBeat);
         nodes.updateAfterHeartBeat(currentNode);
+    }
+
+    /**
+     * Used to force heart beat even if it didn't change since last HeartBeat
+     */
+    public void forceOutgoing() {
+        forceHeartBeat.set(true);
     }
 }

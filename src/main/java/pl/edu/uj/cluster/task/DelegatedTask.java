@@ -47,4 +47,9 @@ public class DelegatedTask implements WorkerPoolTask {
     public Object call() throws Exception {
         return task.call();
     }
+
+    @Override
+    public boolean belongToJar(Path jarFileName) {
+        return task.belongToJar(jarFileName);
+    }
 }

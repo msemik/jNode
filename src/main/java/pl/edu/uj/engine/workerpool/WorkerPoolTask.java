@@ -14,4 +14,6 @@ public interface WorkerPoolTask extends Task {
     int getTaskId();
 
     boolean isExternal();
+
+    boolean belongToJar(Path jarFileName);
 }
