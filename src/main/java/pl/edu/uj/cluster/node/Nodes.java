@@ -44,8 +44,36 @@ public class Nodes {
         return nodes.contains(node);
     }
 
-    public synchronized boolean remove(Node node) {
-        return nodes.remove(node);
+    public synchronized boolean remove(String nodeId) {
+        Optional<Node> node = removeNode(nodeId);
+
+        if (!node.isPresent())
+            return false;
+
+        int arrivalOrder = node.get().getArrivalOrder();
+        fixArrivalOrdersAfterRemovingNode(arrivalOrder);
+        return true;
+    }
+
+    private void fixArrivalOrdersAfterRemovingNode(int arrivalOrderOfRemovedNode) {
+        for (Node node : nodes) {
+            int arrivalOrder = node.getArrivalOrder();
+            if (arrivalOrder > arrivalOrderOfRemovedNode) {
+                node.setArrivalOrder(arrivalOrder - 1);
+            }
+        }
+    }
+
+    private Optional<Node> removeNode(String nodeId) {
+        Iterator<Node> it = nodes.iterator();
+        while (it.hasNext()) {
+            Node next = it.next();
+            if (next.getNodeId().equals(nodeId)) {
+                it.remove();
+                return of(next);
+            }
+        }
+        return empty();
     }
 
     public synchronized void updateAfterHeartBeat(Node node) {

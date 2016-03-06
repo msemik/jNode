@@ -11,14 +11,24 @@ import pl.edu.uj.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
+import pl.edu.uj.cluster.task.DelegatedTask;
 import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
 import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.cluster.task.ExternalTaskRegistry;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.CancellationEventOrigin;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
+import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static pl.edu.uj.engine.event.CancellationEventOrigin.EXTERNAL;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -96,7 +106,33 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onNodeGone(String nodeId) {
+        boolean removedFromNodes = nodes.remove(nodeId);
+        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(nodeId);
+        unwrapTasks(delegatedTasks).forEach(workerPool::submitTask);
+        Set<ExternalTask> externalTasks = externalTaskRegistry.removeAll(nodeId);
+        sendCancelJarJobsForEachJar(externalTasks);
+        logger.debug(String.join(", "
+                , "onNodeGone: " + nodeId
+                , "removed from nodes: " + removedFromNodes
+                , "removed delegated tasks:" + delegatedTasks.size()
+                , "removed external tasks:" + externalTasks.size()));
+    }
 
+    private void sendCancelJarJobsForEachJar(Set<ExternalTask> externalTasks) {
+        externalTasks
+                .stream()
+                .map(ExternalTask::getJarName)
+                .distinct()
+                .forEach(jarPath -> {
+                    CancelJarJobsEvent event = new CancelJarJobsEvent(this, jarPath, EXTERNAL);
+                    eventPublisher.publishEvent(event);
+                });
+    }
+
+    private List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {
+        return delegatedTasks.stream()
+                .map(DelegatedTask::getTask)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -9,8 +9,14 @@ import java.nio.file.Path;
  */
 public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event origin
     private Path jarFileName;
+    private CancellationEventOrigin origin = CancellationEventOrigin.INTERNAL;
 
     public CancelJarJobsEvent(Object source, Path jarPath) {
+        super(source);
+        this.jarFileName = jarPath;
+    }
+
+    public CancelJarJobsEvent(Object source, Path jarPath, CancellationEventOrigin origin) {
         super(source);
         this.jarFileName = jarPath;
     }

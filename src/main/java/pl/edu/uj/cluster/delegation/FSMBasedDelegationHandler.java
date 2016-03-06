@@ -26,6 +26,33 @@ import static pl.edu.uj.cluster.delegation.DefaultTaskDelegationEvent.*;
 import static pl.edu.uj.cluster.delegation.DefaultState.*;
 
 
+/**
+ * Simulates Finite State Machine,
+ * for given pair event, state:
+ * - change to appropriate state
+ * - execute related action.
+ * <p/>
+ * <p/>
+ * Transitions table:
+ * GIVEN				WHEN				CHANGE STATE TO			AND EXECUTE
+ * <p/>
+ * NO_DELEGATION		OVERFLOW			DURING_DELEGATION		delegateTasks()
+ * NO_DELEGATION		PRIMARY				NO_DELEGATION			empty()
+ * NO_DELEGATION		DELEGATION_FINISHED	NO_DELEGATION			error()
+ * NO_DELEGATION		NO_THREADS			NO_DELEGATION			error()
+ * DURING_DELEGATION	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
+ * DURING_DELEGATION	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * DURING_DELEGATION	DELEGATION_FINISHED	NO_DELEGATION			empty()
+ * DURING_DELEGATION	NO_THREADS			AWAITING_THREADS		empty()
+ * SCHEDULED_RE_EXECUTE	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
+ * SCHEDULED_RE_EXECUTE	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * SCHEDULED_RE_EXECUTE	DELEGATION_FINISHED	DURING_DELEGATION		delegateTasks()
+ * SCHEDULED_RE_EXECUTE	NO_THREADS			AWAITING_THREADS		empty()
+ * AWAITING_THREADS		OVERFLOW			AWAITING_THREADS		empty()
+ * AWAITING_THREADS		PRIMARY				DURING_DELEGATION		delegateTasks()
+ * AWAITING_THREADS		DELEGATION_FINISHED	AWAITING_THREADS		empty()
+ * AWAITING_THREADS		NO_THREADS			AWAITING_THREADS		error()
+ */
 @Component
 @Primary
 public class FSMBasedDelegationHandler implements DelegationHandler {
@@ -52,33 +79,6 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
         changeStateAndExecuteEventAction(HEARTBEAT);
     }
 
-    /**
-     * Simulates Finite State Machine,
-     * for given pair event, state:
-     * - change to appropriate state
-     * - execute related action.
-     * <p/>
-     * <p/>
-     * Transitions table:
-     * GIVEN				WHEN				CHANGE STATE TO			AND EXECUTE
-     * <p/>
-     * NO_DELEGATION		OVERFLOW			DURING_DELEGATION		delegateTasks()
-     * NO_DELEGATION		PRIMARY				NO_DELEGATION			empty()
-     * NO_DELEGATION		DELEGATION_FINISHED	NO_DELEGATION			error()
-     * NO_DELEGATION		NO_THREADS			NO_DELEGATION			error()
-     * DURING_DELEGATION	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
-     * DURING_DELEGATION	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
-     * DURING_DELEGATION	DELEGATION_FINISHED	NO_DELEGATION			empty()
-     * DURING_DELEGATION	NO_THREADS			AWAITING_THREADS		empty()
-     * SCHEDULED_RE_EXECUTE	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
-     * SCHEDULED_RE_EXECUTE	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
-     * SCHEDULED_RE_EXECUTE	DELEGATION_FINISHED	DURING_DELEGATION		delegateTasks()
-     * SCHEDULED_RE_EXECUTE	NO_THREADS			AWAITING_THREADS		empty()
-     * AWAITING_THREADS		OVERFLOW			AWAITING_THREADS		empty()
-     * AWAITING_THREADS		PRIMARY				DURING_DELEGATION		delegateTasks()
-     * AWAITING_THREADS		DELEGATION_FINISHED	AWAITING_THREADS		empty()
-     * AWAITING_THREADS		NO_THREADS			AWAITING_THREADS		error()
-     */
     private void changeStateAndExecuteEventAction(DelegationEvent event) {
         State prevState = null;
         State nextState = null;
