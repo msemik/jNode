@@ -4,24 +4,18 @@ import org.jgroups.*;
 import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
-import pl.edu.uj.cluster.messages.Distributable;
-import pl.edu.uj.cluster.messages.Sry;
+import pl.edu.uj.cluster.message.Distributable;
 import pl.edu.uj.options.NodeIdOptionEvent;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 @Component

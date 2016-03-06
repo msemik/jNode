@@ -3,7 +3,7 @@ package pl.edu.uj.engine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.Nodes;
+import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 
@@ -32,7 +32,7 @@ public class JNodeStateMonitor {
         StringBuilder b = new StringBuilder();
         b.append("EventLoopThreads: " + String.join(", ", eventLoopThreadsPaths) + "\n");
         b.append("Jobs in pool: " + workerPool.jobsInPool() + "\n");
-        b.append("nodes:\n" + nodes);
+        b.append("node:\n" + nodes);
         System.out.println(b.toString());
     }
 

@@ -1,6 +1,7 @@
 package pl.edu.uj.cluster;
 
-import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
+import pl.edu.uj.cluster.message.PrimaryHeartBeat;
+import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;

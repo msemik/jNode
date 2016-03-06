@@ -4,9 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.messages.Redirect;
-import pl.edu.uj.cluster.messages.Sry;
-import pl.edu.uj.cluster.messages.TaskDelegation;
+import pl.edu.uj.cluster.message.Redirect;
+import pl.edu.uj.cluster.message.Sry;
+import pl.edu.uj.cluster.message.TaskDelegation;
+import pl.edu.uj.cluster.node.Node;
+import pl.edu.uj.cluster.node.Nodes;
+import pl.edu.uj.cluster.task.DelegatedTask;
+import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
+import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.cluster.task.ExternalTaskRegistry;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 

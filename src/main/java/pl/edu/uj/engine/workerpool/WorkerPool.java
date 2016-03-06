@@ -16,6 +16,7 @@ import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -111,6 +112,7 @@ public class WorkerPool {
             throw new AssertionError(message);
         }
         FutureTask<Callable> futureTask = (FutureTask<Callable>) polledItem;
+        executingTasks.remove(futureTask);
         if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
             String message = join("\n"
                     , "Prepare for a nice day because you really did a bad thing."

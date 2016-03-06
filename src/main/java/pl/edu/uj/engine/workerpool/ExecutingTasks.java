@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static java.util.Collections.emptyList;
 
@@ -27,7 +29,7 @@ public class ExecutingTasks {
     public synchronized boolean remove(Path path, Future<Object> future) {
         List<Future<Object>> futures = futureMap.getOrDefault(path, emptyList());
         boolean result = futures.removeIf(f -> f == future);
-        if(futures.isEmpty())
+        if (futures.isEmpty())
             futureMap.remove(path);
         return result;
     }
@@ -60,5 +62,16 @@ public class ExecutingTasks {
                     ++cancelledJobs;
         }
         return cancelledJobs;
+    }
+
+    public synchronized void remove(Future<Callable> future) {
+        Iterator<Map.Entry<Path, List<Future<Object>>>> it = futureMap.entrySet().iterator();
+        while (it.hasNext()) {
+            List<Future<Object>> futures = it.next().getValue();
+            if (futures.remove(future)) {
+                return;
+            }
+        }
+        logger.error("No future task found");
     }
 }

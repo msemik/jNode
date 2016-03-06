@@ -37,7 +37,7 @@ public class OptionsEventsDispatcher {
 
     public void dispatchOptionsEvents(String[] args) {
         CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = null;
+        CommandLine cmd;
         try {
             cmd = parser.parse(jNodeOptions.getOptions(), args);
 

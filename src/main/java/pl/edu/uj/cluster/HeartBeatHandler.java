@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.JNodeApplication;
-import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
+import pl.edu.uj.cluster.message.PrimaryHeartBeat;
+import pl.edu.uj.cluster.node.Node;
+import pl.edu.uj.cluster.node.NodeFactory;
+import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 
 import static java.lang.Math.max;
@@ -22,6 +25,9 @@ public class HeartBeatHandler {
     private JNodeApplication application;
     @Autowired
     private Nodes nodes;
+    @Autowired
+    private NodeFactory nodeFactory;
+
     private PrimaryHeartBeat last = PrimaryHeartBeat.empty();
 
     @Scheduled(fixedDelay = 50, initialDelay = 200)
@@ -37,7 +43,7 @@ public class HeartBeatHandler {
     }
 
     public void handleIncoming(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
-        long availableThreads = max(primaryHeartBeat.getPoolSize() - primaryHeartBeat.getJobsInPool(), 0);
-        nodes.updateAfterHeartBeat(new Node(sourceNodeId, (int) availableThreads));
+        Node currentNode = nodeFactory.createNode(sourceNodeId, primaryHeartBeat);
+        nodes.updateAfterHeartBeat(currentNode);
     }
 }

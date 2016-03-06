@@ -1,4 +1,4 @@
-package pl.edu.uj.cluster;
+package pl.edu.uj.cluster.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

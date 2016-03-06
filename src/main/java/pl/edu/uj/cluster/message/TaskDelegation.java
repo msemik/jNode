@@ -1,7 +1,7 @@
-package pl.edu.uj.cluster.messages;
+package pl.edu.uj.cluster.message;
 
 import pl.edu.uj.cluster.Distributor;
-import pl.edu.uj.cluster.ExternalTask;
+import pl.edu.uj.cluster.task.ExternalTask;
 
 import java.io.Serializable;
 import java.util.Optional;

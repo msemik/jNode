@@ -1,5 +1,6 @@
-package pl.edu.uj.cluster;
+package pl.edu.uj.cluster.task;
 
+import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 import java.nio.file.Path;

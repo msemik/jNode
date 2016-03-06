@@ -1,10 +1,17 @@
-package pl.edu.uj.cluster;
+package pl.edu.uj.cluster.node;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.*;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.ApplicationInitializedEvent;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.reverseOrder;
+import static java.util.Collections.sort;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -13,15 +20,26 @@ import static java.util.Optional.of;
  */
 @Component
 public class Nodes {
+
+    @Autowired
+    private NodeFactory nodeFactory;
+
     /**
-     * List of nodes (without current node), sorted descending by its priority.
+     * List of node (without current node), may be in no particular order (its ordered on demand)
      */
     private List<Node> nodes = new ArrayList<>();
 
-    public synchronized boolean add(Node node) {
-        boolean hasChanged = nodes.add(node);
-        Collections.sort(nodes, Collections.reverseOrder());
-        return hasChanged;
+
+    @EventListener
+    public void on(ApplicationInitializedEvent event) {
+        nodeFactory.initializeDistance(nodes);
+        Node currentNode = nodeFactory.createCurrentNode();
+        add(currentNode);
+    }
+
+    public synchronized void add(Node node) {
+        node.setArrivalOrder(nodes.size());
+        nodes.add(node);
     }
 
     public synchronized boolean contains(Node node) {
@@ -35,29 +53,31 @@ public class Nodes {
     public synchronized void updateAfterHeartBeat(Node node) {
         int index = nodes.indexOf(node);
         if (index != -1) {
-            nodes.set(index, node);
-            Collections.sort(nodes, Collections.reverseOrder());
+            Node oldVersion = nodes.set(index, node);
+            node.setArrivalOrderAs(oldVersion);
         } else { //For safety.
             add(node);
         }
     }
 
     public synchronized Optional<Node> drainThreadFromNodeHavingHighestPriority() {
-        if (nodes.isEmpty()) {
+        if (nodes.size() <= 1) {
             return empty();
         }
+        computePriorities();
         Node firstNode = nodes.get(0);
         if (!firstNode.canTakeTasks()) {
             return empty();
         }
         firstNode.drainThread();
-        if (nodes.size() > 1) {
-            Node secondNode = nodes.get(1);
-            if (secondNode.hasHigherPriorityThan(firstNode)) {
-                Collections.swap(nodes, 0, 1);
-            }
-        }
         return of(firstNode);
+    }
+
+    private void computePriorities() {
+        Priority priority = nodeFactory.createPriority(nodes);
+        for (Node node : nodes) {
+            node.computePriority(priority);
+        }
     }
 
     /**

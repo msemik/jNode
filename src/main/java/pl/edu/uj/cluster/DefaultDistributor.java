@@ -6,7 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.messages.PrimaryHeartBeat;
+import pl.edu.uj.cluster.message.PrimaryHeartBeat;
+import pl.edu.uj.cluster.node.Node;
+import pl.edu.uj.cluster.node.NodeFactory;
+import pl.edu.uj.cluster.node.Nodes;
+import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
+import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.cluster.task.ExternalTaskRegistry;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
@@ -35,6 +41,8 @@ public class DefaultDistributor implements Distributor {
     private HeartBeatHandler heartBeatHandler;
     @Autowired
     private Nodes nodes;
+    @Autowired
+    private NodeFactory nodeFactory;
 
     @Override
     @EventListener
@@ -92,7 +100,8 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onNewNode(String newNodeId) {
-        nodes.add(new Node(newNodeId));
+        Node newNode = nodeFactory.createNode(newNodeId);
+        nodes.add(newNode);
     }
 
     @Override

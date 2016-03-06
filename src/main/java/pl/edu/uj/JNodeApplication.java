@@ -2,6 +2,7 @@ package pl.edu.uj;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
@@ -11,6 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import pl.edu.uj.options.OptionsEventsDispatcher;
 import pl.edu.uj.options.PoolSizeOptionEvent;
 
+import javax.annotation.PostConstruct;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
@@ -22,23 +24,28 @@ import static java.util.Optional.of;
 @ComponentScan
 @EnableScheduling()
 public class JNodeApplication {
-    static Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
+    private static Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
+    private static String[] args;
 
+    @Autowired
+    private ApplicationContext applicationContext;
     private Optional<Integer> poolSize = empty();
-    private boolean isInitialized = false;
+    private volatile boolean isInitialized = false;
 
     public static void main(String[] args) {
+        JNodeApplication.args = args;
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
-        JNodeApplication jNodeApplication = applicationContext.getBean(JNodeApplication.class);
+        applicationContext.getBean(JNodeApplication.class)
+                .initialize();
+    }
 
+    public void initialize() {
         OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
         optionsEventsDispatcher.dispatchOptionsEvents(args);
 
-
         applicationContext.publishEvent(new ApplicationInitializedEvent(applicationContext));
+        isInitialized = true;
         logger.info("jNode application has started, args:" + String.join(" ", args));
-
-
     }
 
     @EventListener
@@ -55,12 +62,6 @@ public class JNodeApplication {
         taskExecutor.setMaxPoolSize(taskExecutorSize);
         logger.info("Creating ThreadPoolTaskExecutor with " + taskExecutorSize + " workers");
         return taskExecutor;
-    }
-
-
-    @EventListener
-    public void on(ApplicationInitializedEvent event) {
-        isInitialized = true;
     }
 
     public boolean isInitialized() {
