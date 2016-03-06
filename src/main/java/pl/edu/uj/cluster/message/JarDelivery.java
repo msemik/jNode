@@ -1,5 +1,6 @@
 package pl.edu.uj.cluster.message;
 
+import pl.edu.uj.cluster.Distributable;
 import pl.edu.uj.cluster.Distributor;
 
 import java.io.Serializable;

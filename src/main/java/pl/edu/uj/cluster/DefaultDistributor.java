@@ -111,7 +111,6 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat) {
-        // TODO updateAfterHeartBeat Nodes
         heartBeatHandler.handleIncoming(sourceNodeId, primaryHeartBeat);
         taskDelegationHandler.handleDuringOnHeartBeat();
     }

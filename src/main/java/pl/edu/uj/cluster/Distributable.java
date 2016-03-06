@@ -1,4 +1,4 @@
-package pl.edu.uj.cluster.message;
+package pl.edu.uj.cluster;
 
 import pl.edu.uj.cluster.Distributor;
 

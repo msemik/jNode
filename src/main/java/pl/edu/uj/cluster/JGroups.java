@@ -9,7 +9,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
-import pl.edu.uj.cluster.message.Distributable;
 import pl.edu.uj.options.NodeIdOptionEvent;
 
 import java.io.Serializable;
