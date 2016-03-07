@@ -134,4 +134,8 @@ public class WorkerPool {
     public void submitTask(WorkerPoolTask workerPoolTask) {
         submitTask(workerPoolTask, false);
     }
+
+    public boolean hasAvailableThreads() {
+        return poolSize() > jobsInPool();
+    }
 }

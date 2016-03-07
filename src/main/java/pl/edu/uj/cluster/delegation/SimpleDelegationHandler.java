@@ -11,10 +11,7 @@ import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.message.TaskDelegation;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.Nodes;
-import pl.edu.uj.cluster.task.DelegatedTask;
-import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
-import pl.edu.uj.cluster.task.ExternalTask;
-import pl.edu.uj.cluster.task.ExternalTaskRegistry;
+import pl.edu.uj.cluster.task.*;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
@@ -46,9 +43,9 @@ public class SimpleDelegationHandler implements DelegationHandler {
     @Autowired
     private ExternalTaskRegistry externalTaskRegistry;
     @Autowired
-    private MessageGateway messageGateway;
-    @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
+    @Autowired
+    TaskService taskService;
 
     public void handleDuringOnWorkerPoolEvent() {
         logger.info("handleDuringOnWorkerPoolEvent");
@@ -166,16 +163,12 @@ public class SimpleDelegationHandler implements DelegationHandler {
             }
 
             if (externalTask.isOriginatedAt(destinationNode)) {
-                messageGateway.send(new Sry(taskId), destinationNodeId);
+                taskService.sry(destinationNodeId, taskId);
             } else {
-                messageGateway.send(new Redirect(destinationNodeId, taskId), externalTask.getSourceNodeId());
+                taskService.redirectTask(externalTask, destinationNodeId);
             }
         } else {
-            DelegatedTask delegatedTask = new DelegatedTask(task, destinationNodeId);
-            delegatedTaskRegistry.add(delegatedTask);
-
-            ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
-            messageGateway.send(new TaskDelegation(externalTask), destinationNodeId);
+            taskService.delegateTask(task, destinationNodeId);
         }
         return true;
     }

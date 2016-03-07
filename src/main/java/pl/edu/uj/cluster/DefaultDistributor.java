@@ -8,13 +8,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.delegation.DelegationHandler;
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
+import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
-import pl.edu.uj.cluster.task.DelegatedTask;
-import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
-import pl.edu.uj.cluster.task.ExternalTask;
-import pl.edu.uj.cluster.task.ExternalTaskRegistry;
+import pl.edu.uj.cluster.task.*;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
@@ -22,12 +20,14 @@ import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static pl.edu.uj.engine.event.CancellationEventOrigin.EXTERNAL;
+import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -55,6 +55,8 @@ public class DefaultDistributor implements Distributor {
     private Nodes nodes;
     @Autowired
     private NodeFactory nodeFactory;
+    @Autowired
+    private TaskService taskService;
 
     @Override
     @EventListener
@@ -71,12 +73,34 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onRedirect(String currentNodeId, String destinationNodeId, long taskId) {
-
+        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(currentNodeId);
+        if (!delegatedTasks.isEmpty()) {
+            logger.debug("Task absent in registry, currentNodeId " + currentNodeId + ", taskId " + taskId);
+            return;
+        }
+        if (delegatedTasks.size() > 1) {
+            logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + currentNodeId + ", taskId: " + taskId);
+        }
+        DelegatedTask delegatedTask = delegatedTasks.iterator().next();
+        if (workerPool.hasAvailableThreads()) {
+            workerPool.submitTask(delegatedTask.getTask());
+        } else {
+            taskService.delegateTask(delegatedTask.getTask(), destinationNodeId);
+        }
     }
 
     @Override
     public void onSry(String nodeId, long taskId) {
-
+        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(nodeId);
+        if (!delegatedTasks.isEmpty()) {
+            logger.debug("Task absent in registry, nodeId " + nodeId + ", taskId " + taskId);
+            return;
+        }
+        if (delegatedTasks.size() > 1) {
+            logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + nodeId + ", taskId: " + taskId);
+        }
+        DelegatedTask delegatedTask = delegatedTasks.iterator().next();
+        workerPool.submitTask(delegatedTask.getTask());
     }
 
     @Override
@@ -103,6 +127,15 @@ public class DefaultDistributor implements Distributor {
     @Override
     @EventListener
     public void on(TaskCancelledEvent event) {
+        if (!event.getTask().isExternal())
+            return;
+        ExternalTask task = (ExternalTask) event.getTask();
+        if (event.getOrigin() == INTERNAL) {
+            taskService.sry(task.getSourceNodeId(), task.getTaskId());
+        }
+        if (!externalTaskRegistry.remove(task)) {
+            logger.debug("Task absent in registry: " + task);
+        }
 
     }
 
@@ -146,7 +179,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onCancelJarJobs(String sourceNodeId, String jarPath) {
-
+        eventPublisher.publishEvent(new CancelJarJobsEvent(this, Paths.get(jarPath), EXTERNAL));
     }
 
     @Override

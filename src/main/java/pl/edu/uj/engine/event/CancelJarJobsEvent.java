@@ -24,4 +24,8 @@ public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event or
     public Path getJarFileName() {
         return jarFileName;
     }
+
+    public CancellationEventOrigin getOrigin() {
+        return origin;
+    }
 }

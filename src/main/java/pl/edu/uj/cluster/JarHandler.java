@@ -3,12 +3,14 @@ package pl.edu.uj.cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.message.JarDelivery;
 import pl.edu.uj.cluster.message.JarRequest;
 import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.jarpath.JarPathManager;
 
@@ -29,6 +31,8 @@ public class JarHandler {
     private WorkerPool workerPool;
     @Autowired
     private MessageGateway messageGateway;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public void onTaskDelegation(ExternalTask task) {
         String sourceNodeId = task.getSourceNodeId();
@@ -76,6 +80,7 @@ public class JarHandler {
             ExternalTask task = it.next();
             if (task.belongToJar(jarFileName)) {
                 it.remove();
+                eventPublisher.publishEvent(new TaskCancelledEvent(this, task, event.getOrigin()));
             }
         }
     }
