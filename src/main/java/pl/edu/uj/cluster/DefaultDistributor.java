@@ -8,7 +8,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.delegation.DelegationHandler;
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
-import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
@@ -18,13 +17,12 @@ import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
-import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jarpath.JarPathManager;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static pl.edu.uj.engine.event.CancellationEventOrigin.EXTERNAL;
 import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
@@ -57,6 +55,8 @@ public class DefaultDistributor implements Distributor {
     private NodeFactory nodeFactory;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private JarPathManager jarPathManager;
 
     @Override
     @EventListener
@@ -121,8 +121,14 @@ public class DefaultDistributor implements Distributor {
     @EventListener
     @Override
     public void on(CancelJarJobsEvent event) {
-
+        if (!jarPathManager.hasJar(event.getJarFileName())) {
+            return;
+        }
+        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(event.getJarFileName());
+        Stream<String> nodeIds = taskService.getNodeIds(delegatedTasks);
+        nodeIds.forEach(nodeId -> taskService.cancelJarJobs(nodeId, event.getJarFileName()));
     }
+
 
     @Override
     @EventListener
@@ -143,7 +149,7 @@ public class DefaultDistributor implements Distributor {
     public void onNodeGone(String nodeId) {
         boolean removedFromNodes = nodes.remove(nodeId);
         Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(nodeId);
-        unwrapTasks(delegatedTasks).forEach(workerPool::submitTask);
+        taskService.unwrapTasks(delegatedTasks).forEach(workerPool::submitTask);
         Set<ExternalTask> externalTasks = externalTaskRegistry.removeAll(nodeId);
         sendCancelJarJobsForEachJar(externalTasks);
         logger.debug(String.join(", "
@@ -162,12 +168,6 @@ public class DefaultDistributor implements Distributor {
                     CancelJarJobsEvent event = new CancelJarJobsEvent(this, jarPath, EXTERNAL);
                     eventPublisher.publishEvent(event);
                 });
-    }
-
-    private List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {
-        return delegatedTasks.stream()
-                .map(DelegatedTask::getTask)
-                .collect(Collectors.toList());
     }
 
     @Override

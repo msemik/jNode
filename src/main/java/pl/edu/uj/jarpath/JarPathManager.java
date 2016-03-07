@@ -161,6 +161,10 @@ public class JarPathManager {
 
     public boolean hasJar(String sourceNodeId, Path jarName) {
         jarName = getJarFileNameOnCluster(sourceNodeId, jarName.toString());
+        return hasJar(jarName);
+    }
+
+    public boolean hasJar(Path jarName) {
         jarName = jarPathServices.getJarPath().resolve(jarName);
         return Files.exists(jarName) && Files.isReadable(jarName);
     }

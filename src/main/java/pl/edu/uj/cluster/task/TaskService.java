@@ -6,10 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.cluster.MessageGateway;
 import pl.edu.uj.cluster.delegation.FSMBasedDelegationHandler;
+import pl.edu.uj.cluster.message.CancelJarJobs;
 import pl.edu.uj.cluster.message.Redirect;
 import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.message.TaskDelegation;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TaskService {
@@ -35,5 +43,22 @@ public class TaskService {
 
     public void sry(String destinationNodeId, int taskId) {
         messageGateway.send(new Sry(taskId), destinationNodeId);
+    }
+
+    public void cancelJarJobs(String nodeId, Path jarFileName) {
+        messageGateway.send(new CancelJarJobs(jarFileName.toString()), nodeId);
+    }
+
+    public Stream<String> getNodeIds(Set<DelegatedTask> delegatedTasks) {
+        return delegatedTasks
+                .stream()
+                .map(DelegatedTask::getDestinationNodeId)
+                .distinct();
+    }
+
+    public List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {
+        return delegatedTasks.stream()
+                .map(DelegatedTask::getTask)
+                .collect(Collectors.toList());
     }
 }
