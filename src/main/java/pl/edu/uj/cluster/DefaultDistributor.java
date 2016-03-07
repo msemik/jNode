@@ -115,7 +115,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskExecutionCompleted(long taskId, Throwable exception) {
-
+        //TODO chyba trzeba będzie w metodzie wyżej to obsłużyć przy użyciu instance of.
     }
 
     @EventListener
