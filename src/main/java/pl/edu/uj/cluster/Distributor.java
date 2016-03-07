@@ -24,8 +24,6 @@ public interface Distributor {
 
     void onTaskExecutionCompleted(long taskId, Object taskResult);
 
-    void onTaskExecutionCompleted(long taskId, Throwable exception);
-
     void on(CancelJarJobsEvent event);
 
     void on(TaskCancelledEvent event);

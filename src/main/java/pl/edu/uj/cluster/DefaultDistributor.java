@@ -17,6 +17,7 @@ import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
+import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarPathManager;
 
 import java.nio.file.Path;
@@ -105,17 +106,15 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskFinished(TaskFinishedEvent event) {
-
+        if (!event.getTask().isExternal())
+            return;
+        ExternalTask task = (ExternalTask) event.getTask();
+        taskService.taskExecutionCompleted(task, event.getResultOrException());
     }
 
     @Override
-    public void onTaskExecutionCompleted(long taskId, Object taskResult) {
+    public void onTaskExecutionCompleted(long taskId, Object taskResultOrException) {
 
-    }
-
-    @Override
-    public void onTaskExecutionCompleted(long taskId, Throwable exception) {
-        //TODO chyba trzeba będzie w metodzie wyżej to obsłużyć przy użyciu instance of.
     }
 
     @EventListener

@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.cluster.MessageGateway;
 import pl.edu.uj.cluster.delegation.FSMBasedDelegationHandler;
-import pl.edu.uj.cluster.message.CancelJarJobs;
-import pl.edu.uj.cluster.message.Redirect;
-import pl.edu.uj.cluster.message.Sry;
-import pl.edu.uj.cluster.message.TaskDelegation;
+import pl.edu.uj.cluster.message.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 import java.nio.file.Path;
@@ -54,6 +51,10 @@ public class TaskService {
                 .stream()
                 .map(DelegatedTask::getDestinationNodeId)
                 .distinct();
+    }
+
+    public void taskExecutionCompleted(ExternalTask task, Object taskResult) {
+        messageGateway.send(new TaskExecutionCompleted(taskResult, task.getTaskId()), task.getSourceNodeId());
     }
 
     public List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {

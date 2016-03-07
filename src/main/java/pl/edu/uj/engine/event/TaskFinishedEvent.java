@@ -1,6 +1,7 @@
 package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
+import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 /**
@@ -40,6 +41,10 @@ public class TaskFinishedEvent extends ApplicationEvent {
 
     public Throwable getException() {
         return exception;
+    }
+
+    public Object getResultOrException() {
+        return taskResult != null ? taskResult : exception;
     }
 
     public enum TaskFinalExecutionStatus {
