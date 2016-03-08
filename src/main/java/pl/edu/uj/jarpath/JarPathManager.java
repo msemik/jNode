@@ -72,7 +72,7 @@ public class JarPathManager {
         }
     }
 
-    private Path getJarFileNameOnCluster(String nodeId, String jarFileName) {
+    public Path getJarFileNameOnCluster(String nodeId, String jarFileName) {
         if (nodeId.equals(currentNodeId))
             return Paths.get(jarFileName);
         return Paths.get("EXT" + "__" + nodeId + "__" + jarFileName);

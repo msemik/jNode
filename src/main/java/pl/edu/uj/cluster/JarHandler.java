@@ -3,18 +3,21 @@ package pl.edu.uj.cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.message.JarDelivery;
 import pl.edu.uj.cluster.message.JarRequest;
 import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.engine.JarLauncher;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.jarpath.JarPathManager;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -33,6 +36,8 @@ public class JarHandler {
     private MessageGateway messageGateway;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public void onTaskDelegation(ExternalTask task) {
         String sourceNodeId = task.getSourceNodeId();
@@ -64,10 +69,18 @@ public class JarHandler {
         Path jarFilePath = Paths.get(jarFileName);
         jarPathManager.storeJarWithProperties(jarFilePath, inputStream, nodeId);
         Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
+        JarLauncher jarLauncher = applicationContext.getBean(JarLauncher.class);
+        jarLauncher.setPath(jarPathManager.getJarFileNameOnCluster(nodeId, jarFileName.toString()));
         while (it.hasNext()) {
             ExternalTask task = it.next();
             if (task.belongToJar(jarFilePath)) {
                 it.remove();
+                try {
+                    task.deserialize(jarLauncher.getClassLoader());
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
                 workerPool.submitTask(task);
             }
         }

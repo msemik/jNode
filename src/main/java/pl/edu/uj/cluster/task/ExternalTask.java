@@ -111,7 +111,8 @@ public class ExternalTask implements WorkerPoolTask {
         this.jarName = (String) in.readObject();
         int available = in.available();
         //System.out.println("readObject task size: " + available);
-        in.readFully(new byte[available]);
+        serializedTask = new byte[available];
+        in.readFully(serializedTask);
     }
 
     private void readObjectNoData() throws ObjectStreamException {

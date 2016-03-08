@@ -24,14 +24,12 @@ import java.util.jar.Manifest;
 @Component
 @Scope("prototype")
 public class JarLauncher {
+    @Autowired
+    private JarPathServices jarPathServices;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     private Path path;
     private JarClassLoader jcl;
-
-    @Autowired
-    JarPathServices jarPathServices;
-
-    @Autowired
-    ApplicationEventPublisher eventPublisher;
 
     public JarLauncher() {
     }
