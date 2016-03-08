@@ -44,6 +44,11 @@ public class OptionsEventsDispatcher {
             if (cmd.hasOption("h")) {
                 eventPublisher.publishEvent(new HelpOptionEvent(this));
             }
+
+            if (cmd.hasOption("z")) {
+                eventPublisher.publishEvent(new CustomJarPathEvent(this, cmd.getOptionValue("z")));
+            }
+
             if (cmd.hasOption("j")) {
                 eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
             }

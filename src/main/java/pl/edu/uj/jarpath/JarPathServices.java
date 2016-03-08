@@ -1,7 +1,9 @@
 package pl.edu.uj.jarpath;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.JNodeApplication;
+import pl.edu.uj.options.CustomJarPathEvent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +16,14 @@ import java.util.Optional;
  */
 @Service
 public class JarPathServices {
+    private Path pathToJarPath = Paths.get("jarpath");
+
+    @EventListener
+    public void on(CustomJarPathEvent event) {
+        pathToJarPath = Paths.get(event.getCustomJarPath());
+    }
+
+
     public Optional<Path> getJarForProperty(Path path) {
         String s = path.toString();
         if (!s.endsWith(".properties"))
@@ -46,10 +56,16 @@ public class JarPathServices {
     }
 
     public Path getJarPath() {
-        String applicationDir = JNodeApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        Path path = Paths.get(applicationDir);
-        if (applicationDir.endsWith(".jar") || path.endsWith("classes"))
-            path = path.getParent().resolve("jarpath");
+        Path path;
+        if (pathToJarPath.isAbsolute()) {
+            path = pathToJarPath;
+        } else {
+            String applicationDir = JNodeApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            path = Paths.get(applicationDir);
+            if (applicationDir.endsWith(".jar") || path.endsWith("classes")) {
+                path = path.getParent().resolve(pathToJarPath);
+            }
+        }
 
         if (Files.notExists(path))
             try {

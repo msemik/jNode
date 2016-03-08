@@ -39,6 +39,12 @@ public class JNodeOptions {
                 .desc("size of worker pool used by this node")
                 .longOpt("pool-size")
                 .build());
+
+        options.addOption(Option.builder("z")
+                .hasArgs()
+                .desc("path to jar path (by default $JNODE_HOME/jarpath")
+                .longOpt("jar-path")
+                .build());
     }
 
     public void printHelp() {

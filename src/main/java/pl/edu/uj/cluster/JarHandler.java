@@ -59,6 +59,7 @@ public class JarHandler {
     }
 
     public synchronized void onJarDelivery(String nodeId, String jarFileName, byte[] jar) {
+        logger.debug(jarFileName + " delivery from " + nodeId);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(jar);
         Path jarFilePath = Paths.get(jarFileName);
         jarPathManager.storeJarWithProperties(jarFilePath, inputStream, nodeId);
@@ -86,6 +87,7 @@ public class JarHandler {
     }
 
     public void onJarRequest(String nodeId, String jarFileName) {
+        logger.debug(jarFileName + " requested from " + nodeId);
         byte[] jar = jarPathManager.readJarContent(Paths.get(jarFileName));
         if (jar.length == 0) {
             logger.warn("jar content missing for " + jarFileName);

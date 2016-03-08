@@ -1,5 +1,7 @@
 package pl.edu.uj.jarpath;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -26,7 +28,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Component
 public class JarPathManager {
-
+    Logger logger = LoggerFactory.getLogger(JarPathManager.class);
     public static final String currentNodeId = "CURRENT_NODE";
     @Autowired
     private JarPathServices jarPathServices;
@@ -49,19 +51,22 @@ public class JarPathManager {
         for (Path jarFile : paths) {
             try {
                 InputStream inputStream = Files.newInputStream(jarFile);
-                storeJarWithProperties(jarFile, inputStream, "NODE_ID_STUB"); //TODO: set real node identifier;
+                Path path = storeJarWithProperties(jarFile, inputStream, currentNodeId);//TODO: set real node identifier;
+                logger.info("Stored jar to:" + path);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public void storeJarWithProperties(Path jarFile, InputStream jarData, String nodeId) {
+    public Path storeJarWithProperties(Path jarFile, InputStream jarData, String nodeId) {
         try {
             Path jarPath = jarPathServices.getJarPath();
             jarFile = getJarFileNameOnCluster(nodeId, jarFile.toString());
             JarProperties.fromJarPath(jarPath, nodeId).store();
-            Files.copy(jarData, jarPath.resolve(jarFile.getFileName()), REPLACE_EXISTING);
+            Path fullJarPath = jarPath.resolve(jarFile.getFileName());
+            Files.copy(jarData, fullJarPath, REPLACE_EXISTING);
+            return fullJarPath;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +74,7 @@ public class JarPathManager {
 
     private Path getJarFileNameOnCluster(String nodeId, String jarFileName) {
         if (nodeId.equals(currentNodeId))
-            return Paths.get(nodeId);
+            return Paths.get(jarFileName);
         return Paths.get("EXT" + "__" + nodeId + "__" + jarFileName);
     }
 
@@ -145,7 +150,7 @@ public class JarPathManager {
 
     public byte[] readJarContent(Path jarFileName) {
         Path pathToJar = resolveFullPath(jarFileName);
-        if (!jarPathServices.isJar(jarFileName)) {
+        if (!jarPathServices.isJar(pathToJar)) {
             return new byte[0];
         }
         try {

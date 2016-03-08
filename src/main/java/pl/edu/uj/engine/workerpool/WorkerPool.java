@@ -68,7 +68,7 @@ public class WorkerPool {
                 executingTasks.remove(task.getJarName(), taskResultFuture);
                 if (ex instanceof CancellationException)
                     return;
-                logger.info("Execution of task " + task.toString() + " has failed, reason: " + ex.getMessage());
+                logger.info("Execution of task " + task.toString() + " has failed, thrown " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
                 eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.FAILURE, task, ex));
             }
 

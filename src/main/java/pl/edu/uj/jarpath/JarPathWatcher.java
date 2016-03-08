@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.crosscuting.OSValidator;
 
@@ -40,10 +41,19 @@ public class JarPathWatcher extends Thread {
     private boolean shutDown = false;
     private Kind<Path> eventForFileCreatedWithContent;
 
-    @PostConstruct
-    public void watch() {
+    @EventListener
+    public void watch(ApplicationInitializedEvent event) {
         path = jarServices.getJarPath();
         start();
+        try {
+            Files.walk(path).forEach(filePath -> {
+                if (jarServices.isJar(filePath))
+                    jarPathManager.onCreateJar(filePath);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @EventListener
