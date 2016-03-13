@@ -17,10 +17,8 @@ import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
-import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarPathManager;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -109,7 +107,7 @@ public class DefaultDistributor implements Distributor {
         if (!event.getTask().isExternal())
             return;
         ExternalTask task = (ExternalTask) event.getTask();
-        taskService.taskExecutionCompleted(task, event.getResultOrException());
+        taskService.taskExecutionCompleted(task, event.getTaskResultOrException());
     }
 
     @Override

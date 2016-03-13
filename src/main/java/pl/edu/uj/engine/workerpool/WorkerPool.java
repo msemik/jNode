@@ -69,7 +69,7 @@ public class WorkerPool {
                 if (ex instanceof CancellationException)
                     return;
                 logger.info("Execution of task " + task.toString() + " has failed, thrown " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
-                eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.FAILURE, task, ex));
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, task, ex));
             }
 
             @Override
@@ -77,7 +77,7 @@ public class WorkerPool {
                 executingTasks.remove(task.getJarName(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
                 if (!silently)
-                    eventPublisher.publishEvent(new TaskFinishedEvent(this, TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS, task, result));
+                    eventPublisher.publishEvent(new TaskFinishedEvent(this, task, result));
             }
         });
 

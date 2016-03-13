@@ -100,9 +100,10 @@ public class TaskCoordinator {
             return;
         }
 
-        if (event.getStatus() == TaskFinishedEvent.TaskFinalExecutionStatus.SUCCESS)
-            eventLoopThread.get().submitTaskResult(task, event.getTaskResult());
-        else
-            eventLoopThread.get().submitTaskFailure(task, event.getException());
+        if (event.withSuccess()) {
+            eventLoopThread.get().submitTaskResult(task, event.getTaskResultOrException());
+        } else {
+            eventLoopThread.get().submitTaskFailure(task, (Throwable) event.getTaskResultOrException());
+        }
     }
 }
