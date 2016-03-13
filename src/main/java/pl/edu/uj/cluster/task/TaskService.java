@@ -38,7 +38,7 @@ public class TaskService {
         messageGateway.send(new Redirect(destinationNodeId, externalTask.getTaskId()), externalTask.getSourceNodeId());
     }
 
-    public void sry(String destinationNodeId, int taskId) {
+    public void sry(String destinationNodeId, long taskId) {
         messageGateway.send(new Sry(taskId), destinationNodeId);
     }
 

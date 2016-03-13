@@ -44,7 +44,7 @@ public class ExternalTask implements WorkerPoolTask {
     }
 
     @Override
-    public int getTaskId() {
+    public long getTaskId() {
         return task.getTaskId();
     }
 

@@ -20,6 +20,7 @@ import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.jarpath.JarPathManager;
 
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -31,6 +32,8 @@ import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
  */
 @Component
 public class DefaultDistributor implements Distributor {
+    @Autowired
+    JarHandler jarHandler;
     private Logger logger = LoggerFactory.getLogger(DefaultDistributor.class);
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
@@ -46,8 +49,6 @@ public class DefaultDistributor implements Distributor {
     private DelegationHandler delegationHandler;
     @Autowired
     private HeartBeatHandler heartBeatHandler;
-    @Autowired
-    JarHandler jarHandler;
     @Autowired
     private Nodes nodes;
     @Autowired
@@ -112,7 +113,12 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskExecutionCompleted(long taskId, Object taskResultOrException) {
-
+        Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
+        if (delegatedTask.isPresent()) {
+            eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrException));
+        } else {
+            logger.debug("Task absent in registry, taskId " + taskId);
+        }
     }
 
     @EventListener

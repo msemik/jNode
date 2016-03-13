@@ -36,7 +36,7 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     }
 
     @Override
-    public int getTaskId() {
+    public long getTaskId() {
         return System.identityHashCode(this);
     }
 

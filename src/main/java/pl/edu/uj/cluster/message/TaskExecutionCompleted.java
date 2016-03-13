@@ -7,16 +7,16 @@ import java.io.Serializable;
 import java.util.Optional;
 
 public class TaskExecutionCompleted implements Serializable, Distributable {
-    private Object taskResult;
+    private Object taskResultOrException;
     private long taskId;
 
-    public TaskExecutionCompleted(Object taskResult, long taskId) {
-        this.taskResult = taskResult;
+    public TaskExecutionCompleted(Object taskResultOrException, long taskId) {
+        this.taskResultOrException = taskResultOrException;
         this.taskId = taskId;
     }
 
-    public Object getTaskResult() {
-        return taskResult;
+    public Object getTaskResultOrException() {
+        return taskResultOrException;
     }
 
     public long getTaskId() {
@@ -25,13 +25,13 @@ public class TaskExecutionCompleted implements Serializable, Distributable {
 
     @Override
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
-        distributor.onTaskExecutionCompleted(taskId, taskResult);
+        distributor.onTaskExecutionCompleted(taskId, taskResultOrException);
     }
 
     @Override
     public String toString() {
         return "TaskExecutionCompleted{" +
-                "taskResult=" + taskResult +
+                "taskResultOrException=" + taskResultOrException +
                 ", taskId=" + taskId +
                 '}';
     }

@@ -11,7 +11,7 @@ public interface WorkerPoolTask extends Task {
 
     Path getJarName();
 
-    int getTaskId();
+    long getTaskId();
 
     boolean isExternal();
 

@@ -23,6 +23,18 @@ public class DelegatedTaskRegistry {
         return set.remove(delegatedTask);
     }
 
+    public synchronized Optional<DelegatedTask> remove(long taskId) {
+        Iterator<DelegatedTask> it = set.iterator();
+        while (it.hasNext()) {
+            DelegatedTask delegatedTask = it.next();
+            if (delegatedTask.getTaskId() == taskId) {
+                it.remove();
+                return Optional.of(delegatedTask);
+            }
+        }
+        return Optional.empty();
+    }
+
     public synchronized Set<DelegatedTask> removeAll(String nodeId) {
         Set<DelegatedTask> removedDelegatedTasks = new HashSet<>();
         set.forEach(delegatedTask -> {
