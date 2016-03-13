@@ -82,6 +82,7 @@ public class DefaultDistributor implements Distributor {
             logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + currentNodeId + ", taskId: " + taskId);
         }
         DelegatedTask delegatedTask = delegatedTasks.iterator().next();
+        delegatedTask.incrementPriority();
         if (workerPool.hasAvailableThreads()) {
             workerPool.submitTask(delegatedTask.getTask());
         } else {
@@ -100,6 +101,7 @@ public class DefaultDistributor implements Distributor {
             logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + nodeId + ", taskId: " + taskId);
         }
         DelegatedTask delegatedTask = delegatedTasks.iterator().next();
+        delegatedTask.incrementPriority();
         workerPool.submitTask(delegatedTask.getTask());
     }
 
