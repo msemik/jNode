@@ -13,48 +13,40 @@ import java.util.*;
 @Component
 public class DelegatedTaskRegistry {
     private Logger logger = LoggerFactory.getLogger(DelegatedTaskRegistry.class);
-    private Set<DelegatedTask> set = new HashSet<>();
+    private Map<Long, DelegatedTask> map = new HashMap<>();
 
     public synchronized boolean add(DelegatedTask delegatedTask) {
-        return set.add(delegatedTask);
+        return map.putIfAbsent(delegatedTask.getTaskId(), delegatedTask) == null;
     }
 
     public synchronized boolean remove(DelegatedTask delegatedTask) {
-        return set.remove(delegatedTask);
+        return map.remove(delegatedTask.getTaskId(), delegatedTask);
     }
 
     public synchronized Optional<DelegatedTask> remove(long taskId) {
-        Iterator<DelegatedTask> it = set.iterator();
-        while (it.hasNext()) {
-            DelegatedTask delegatedTask = it.next();
-            if (delegatedTask.getTaskId() == taskId) {
-                it.remove();
-                return Optional.of(delegatedTask);
-            }
-        }
-        return Optional.empty();
+        DelegatedTask delegatedTask = map.remove(taskId);
+        return delegatedTask != null ? Optional.of(delegatedTask) : Optional.empty();
     }
 
     public synchronized Set<DelegatedTask> removeAll(String nodeId) {
         Set<DelegatedTask> removedDelegatedTasks = new HashSet<>();
-        set.forEach(delegatedTask -> {
+        map.values().forEach(delegatedTask -> {
             if (delegatedTask.getDestinationNodeId().compareTo(nodeId) == 0) {
                 removedDelegatedTasks.add(delegatedTask);
             }
         });
-        set.removeAll(removedDelegatedTasks);
+        map.values().removeAll(removedDelegatedTasks);
         return removedDelegatedTasks;
     }
 
     public synchronized Set<DelegatedTask> removeAll(Path jarFileName) {
         Set<DelegatedTask> removedDelegatedTasks = new HashSet<>();
-        set.forEach(delegatedTask -> {
+        map.values().forEach(delegatedTask -> {
             if (delegatedTask.getJarName().compareTo(jarFileName) == 0) {
                 removedDelegatedTasks.add(delegatedTask);
             }
         });
-        set.removeAll(removedDelegatedTasks);
+        map.values().removeAll(removedDelegatedTasks);
         return removedDelegatedTasks;
     }
-
 }
