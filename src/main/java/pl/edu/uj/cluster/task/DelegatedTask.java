@@ -52,4 +52,14 @@ public class DelegatedTask implements WorkerPoolTask {
     public boolean belongToJar(Path jarFileName) {
         return task.belongToJar(jarFileName);
     }
+
+    @Override
+    public int getPriority() {
+        return task.getPriority();
+    }
+
+    @Override
+    public void incrementPriority() {
+        task.incrementPriority();
+    }
 }

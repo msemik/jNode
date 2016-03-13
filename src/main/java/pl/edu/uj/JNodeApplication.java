@@ -9,10 +9,10 @@ import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import pl.edu.uj.engine.workerpool.PriorityThreadPoolTaskExecutor;
 import pl.edu.uj.options.OptionsEventsDispatcher;
 import pl.edu.uj.options.PoolSizeOptionEvent;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
@@ -56,7 +56,7 @@ public class JNodeApplication {
     @Bean
     @Lazy
     public ThreadPoolTaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor taskExecutor = new PriorityThreadPoolTaskExecutor();
         int taskExecutorSize = poolSize.orElse(Runtime.getRuntime().availableProcessors());
         taskExecutor.setCorePoolSize(taskExecutorSize);
         taskExecutor.setMaxPoolSize(taskExecutorSize);

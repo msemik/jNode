@@ -77,6 +77,16 @@ public class ExternalTask implements WorkerPoolTask {
         return getJarName().equals(jarFileName);
     }
 
+    @Override
+    public int getPriority() {
+        return task.getPriority();
+    }
+
+    @Override
+    public void incrementPriority() {
+        task.incrementPriority();
+    }
+
 
     public boolean isDeserialized() {
         return getTask() != null;
@@ -118,5 +128,4 @@ public class ExternalTask implements WorkerPoolTask {
     private void readObjectNoData() throws ObjectStreamException {
 
     }
-
 }

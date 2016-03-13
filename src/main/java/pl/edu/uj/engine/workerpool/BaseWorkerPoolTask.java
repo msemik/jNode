@@ -8,6 +8,7 @@ import java.nio.file.Paths;
  */
 public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     private String jarName;
+    private int priority = 0;
 
     public BaseWorkerPoolTask(Path jarPath) {
         this.jarName = jarPath.toString();
@@ -48,5 +49,15 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     @Override
     public boolean belongToJar(Path jarFileName) {
         return jarFileName.equals(jarFileName);
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    @Override
+    public void incrementPriority() {
+        priority++;
     }
 }
