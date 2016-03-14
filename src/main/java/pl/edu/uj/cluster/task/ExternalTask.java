@@ -25,7 +25,7 @@ public class ExternalTask implements WorkerPoolTask {
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
         if (task == null)
-            throw new IllegalStateException("Can't create null task!!");
+            throw new IllegalStateException("Can't create with null task!!");
         this.task = task;
         this.sourceNodeId = sourceNodeId;
         this.jarName = getJar().getFileName().toString();

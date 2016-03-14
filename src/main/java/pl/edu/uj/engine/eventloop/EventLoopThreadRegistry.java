@@ -41,7 +41,7 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
         try {
             Jar jar = event.getJar();
-            Optional<EventLoopThread> optEventLoopThread = forJar(jar);
+            Optional<EventLoopThread> optEventLoopThread = get(jar);
 
             if (!optEventLoopThread.isPresent()) {
                 logger.info("There was no EventLoopThread for the jar " + jar + ",  " + toString());
@@ -61,10 +61,6 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         }
     }
 
-    public Optional<EventLoopThread> forJar(Jar jar) {
-        return ofNullable(map.get(jar));
-    }
-
     @Override
     public String toString() {
         return "EventLoopThreadRegistry" + map;
@@ -77,7 +73,21 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         }
     }
 
-    public EventLoopThread createEventLoopThread(Jar jar) {
+    public Optional<EventLoopThread> get(Jar jar) {
+        return ofNullable(map.get(jar));
+    }
+
+    public EventLoopThread getOrCreate(Jar jar) {
+        return map.computeIfAbsent(jar, jar0 -> createWithoutRegistration(jar0));
+    }
+
+    public EventLoopThread create(Jar jar) {
+        EventLoopThread eventLoopThread = createWithoutRegistration(jar);
+        register(jar, eventLoopThread);
+        return eventLoopThread;
+    }
+
+    private EventLoopThread createWithoutRegistration(Jar jar) {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
         eventLoopThread.startLoop(jar);
         return eventLoopThread;

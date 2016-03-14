@@ -37,7 +37,7 @@ public class TaskCoordinator {
     public void onJarStateChanged(JarStateChangedEvent event) {
         Jar jar = event.getJar();
         if (!jar.isLocal()) {
-            logger.error("not local");
+            logger.debug("Ignoring not local jar");
             return;
         }
         logger.info("Got jar " + jar + " with properties " + event.getProperties());
@@ -51,7 +51,7 @@ public class TaskCoordinator {
     private void startJarJob(Jar jar) {
         logger.info("Launching main class for jar " + jar);
 
-        EventLoopThread eventLoopThread = eventLoopThreadRegistry.createEventLoopThread(jar);
+        EventLoopThread eventLoopThread = eventLoopThreadRegistry.create(jar);
         LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(eventLoopThread);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
@@ -66,7 +66,7 @@ public class TaskCoordinator {
     @EventListener
     public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
         Jar jar = event.getJar();
-        if (eventLoopThreadRegistry.forJar(jar).isPresent()) {
+        if (eventLoopThreadRegistry.get(jar).isPresent()) {
             eventPublisher.publishEvent(new CancelJarJobsEvent(this, jar));
         } else {
             startJarJob(jar);
@@ -80,12 +80,18 @@ public class TaskCoordinator {
 
         logger.info("Submitting newly received task to pool and saving callback in EventLoopThread " + task);
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJar(task.getJar());
-        if (!eventLoopThread.isPresent()) {
-            logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
-            return;
+        EventLoopThread eventLoopThread;
+        Jar jar = task.getJar();
+        if (task.isExternal()) { //might be recreated for external tasks.
+            eventLoopThread = eventLoopThreadRegistry.getOrCreate(jar);
+        } else {
+            eventLoopThread = eventLoopThreadRegistry.get(jar).orElse(null);
+            if (eventLoopThread == null) {
+                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
+                return;
+            }
         }
-        eventLoopThread.get().registerTask(task, callback);
+        eventLoopThread.registerTask(task, callback);
         workerPool.submitTask(task);
     }
 
@@ -93,9 +99,7 @@ public class TaskCoordinator {
     public void onTaskFinished(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
 
-        if (task.isExternal()) return;
-
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJar(task.getJar());
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread missing for given task: " + task);
             return;

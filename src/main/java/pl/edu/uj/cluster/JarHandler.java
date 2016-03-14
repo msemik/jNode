@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.message.JarDelivery;
 import pl.edu.uj.cluster.message.JarRequest;
 import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.engine.EmptyCallback;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.NewTaskReceivedEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.jarpath.Jar;
@@ -49,7 +51,11 @@ public class JarHandler {
                 }
             }
         task.deserialize(jar);
-        workerPool.submitTask(task);
+        publishTaskReceivedEvent(task);
+    }
+
+    private void publishTaskReceivedEvent(ExternalTask task) {
+        eventPublisher.publishEvent(new NewTaskReceivedEvent(this, task, new EmptyCallback()));
     }
 
     private synchronized boolean notRequestedYet(Jar jar) {
@@ -72,7 +78,7 @@ public class JarHandler {
             if (task.belongToJar(jar)) {
                 it.remove();
                 task.deserialize(jar);
-                workerPool.submitTask(task);
+                publishTaskReceivedEvent(task);
             }
         }
     }

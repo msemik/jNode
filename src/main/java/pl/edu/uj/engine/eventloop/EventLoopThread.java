@@ -137,7 +137,6 @@ public class EventLoopThread extends Thread {
     public void startLoop(Jar jar) {
         this.jar = jar;
         start();
-        eventLoopThreadRegistry.register(jar, this);
     }
 
     public void registerTask(WorkerPoolTask task, Callback callback) {
