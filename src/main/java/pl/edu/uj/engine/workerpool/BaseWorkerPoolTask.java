@@ -1,13 +1,14 @@
 package pl.edu.uj.engine.workerpool;
 
 import pl.edu.uj.jarpath.Jar;
+import pl.uj.edu.userlib.Task;
 
 /**
  * Created by michal on 22.11.15.
  */
 public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
-    private Jar jar;
-    private int priority = 0;
+    private transient Jar jar;
+    private transient int priority = 0;
 
     public BaseWorkerPoolTask(Jar jar) {
         this.jar = jar;

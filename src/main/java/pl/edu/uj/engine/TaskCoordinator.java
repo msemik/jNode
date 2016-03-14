@@ -36,10 +36,7 @@ public class TaskCoordinator {
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
         Jar jar = event.getJar();
-        if (!jar.isLocal()) {
-            logger.debug("Ignoring not local jar");
-            return;
-        }
+
         logger.info("Got jar " + jar + " with properties " + event.getProperties());
 
         if (event.getProperties().getExecutionState() != NOT_STARTED)

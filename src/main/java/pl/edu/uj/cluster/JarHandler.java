@@ -44,7 +44,7 @@ public class JarHandler {
             synchronized (this) {
                 if (!jar.isValidExistingJar()) {
                     if (notRequestedYet(jar)) {
-                        messageGateway.send(new JarRequest(jar.getFileNameAsString()));
+                        messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
                     }
                     awaitingForJarExternalTasks.add(task);
                     return;
@@ -96,14 +96,14 @@ public class JarHandler {
         }
     }
 
-    public void onJarRequest(String nodeId, String fileName) {
-        logger.debug(fileName + " requested from " + nodeId);
-        Jar jar = jarFactory.getFor(nodeId, fileName);
+    public void onJarRequest(String requesterNodeId, String fileName) {
+        logger.debug(fileName + " requested from " + requesterNodeId);
+        Jar jar = jarFactory.getFor(fileName);
         byte[] jarContent = jar.readContent();
         if (jarContent.length == 0) {
             logger.warn("jar content missing for " + jar);
             return;
         }
-        messageGateway.send(new JarDelivery(jarContent, fileName), nodeId);
+        messageGateway.send(new JarDelivery(jarContent, fileName), requesterNodeId);
     }
 }

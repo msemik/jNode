@@ -1,7 +1,6 @@
 package pl.edu.uj.cluster.task;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.crosscuting.ClassLoaderAwareObjectInputStream;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
@@ -18,10 +17,11 @@ import java.io.ObjectStreamException;
 public class ExternalTask implements WorkerPoolTask {
     private transient WorkerPoolTask task;
     private transient byte[] serializedTask;
+    private transient Jar jar;
     private String sourceNodeId;
     private String jarName;
-    @Autowired
-    private transient JarFactory jarFactory;
+    private int priority;
+    private long taskId;
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
         if (task == null)
@@ -29,16 +29,20 @@ public class ExternalTask implements WorkerPoolTask {
         this.task = task;
         this.sourceNodeId = sourceNodeId;
         this.jarName = getJar().getFileName().toString();
+        this.priority = task.getPriority();
+        this.taskId = task.getTaskId();
     }
 
     @Override
     public Jar getJar() {
+        if (jar != null)
+            return jar;
         return task.getJar();
     }
 
     @Override
     public long getTaskId() {
-        return task.getTaskId();
+        return taskId;
     }
 
     @Override
@@ -48,19 +52,21 @@ public class ExternalTask implements WorkerPoolTask {
 
     @Override
     public boolean belongToJar(Jar jar) {
-        if (task != null)
-            return task.belongToJar(jar);
-        return jarFactory.getFor(sourceNodeId, jarName).equals(jar);
+        return getJar().equals(jar);
     }
 
     @Override
     public int getPriority() {
-        return task.getPriority();
+        return this.priority;
     }
 
     @Override
     public void incrementPriority() {
         task.incrementPriority();
+    }
+
+    public void populateJar(JarFactory jarFactory) {
+        this.jar = jarFactory.getFor(sourceNodeId, jarName);
     }
 
     public String getSourceNodeId() {
@@ -75,17 +81,13 @@ public class ExternalTask implements WorkerPoolTask {
     @Override
     public String toString() {
         return "ExternalTask{" +
-                "task=" + task +
+                "task=" + taskId +
                 ", sourceNodeId='" + sourceNodeId + '\'' +
                 '}';
     }
 
     public boolean isOriginatedAt(Node selectedNode) {
         return sourceNodeId.equals(selectedNode.getNodeId());
-    }
-
-    public boolean isDeserialized() {
-        return getTask() != null;
     }
 
     public WorkerPoolTask getTask() {

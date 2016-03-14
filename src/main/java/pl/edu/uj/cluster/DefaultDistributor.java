@@ -67,6 +67,7 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
+        externalTask.populateJar(jarFactory);
         if (externalTaskRegistry.add(externalTask)) {
             jarHandler.onTaskDelegation(externalTask);
         } else {
