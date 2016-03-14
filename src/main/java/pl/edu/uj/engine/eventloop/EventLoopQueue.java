@@ -1,9 +1,7 @@
 package pl.edu.uj.engine.eventloop;
 
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.ApplicationShutdownEvent;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +30,8 @@ public class EventLoopQueue {
         while (true) {
             try {
                 return eventLoopResponses.take();
-            } catch (InterruptedException | IllegalMonitorStateException e) {;
+            } catch (InterruptedException | IllegalMonitorStateException e) {
+                ;
                 //IllegalMonitorStateException may be thrown due to usage of Thread.stop() method which releases all locks.
                 return POISON;
             }

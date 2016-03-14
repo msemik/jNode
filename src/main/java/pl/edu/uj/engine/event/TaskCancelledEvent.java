@@ -1,7 +1,6 @@
 package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
-import pl.edu.uj.engine.event.CancellationEventOrigin;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
 /**

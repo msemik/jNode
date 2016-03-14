@@ -55,6 +55,47 @@ public class WorkerPool {
         logger.info(format("Cancelled %d jobs for %s, %d jobs left in pool", cancelledJobs, jar, jobsInPool()));
     }
 
+    public long jobsInPool() {
+        return executingTasks.size();
+    }
+
+    public Optional<WorkerPoolTask> pollTask() {
+        Runnable polledItem = getAwaitingTasks().poll();
+        if (polledItem == null) {
+            return empty();
+        }
+        if (!(polledItem instanceof FutureTask)) {
+            String message = "Unexpected object type pulled from executors queue: " + polledItem.getClass().getCanonicalName();
+            throw new AssertionError(message);
+        }
+        FutureTask<Callable> futureTask = (FutureTask<Callable>) polledItem;
+        executingTasks.remove(futureTask);
+        if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
+            String message = join("\n"
+                    , "Prepare for a nice day because you really did a bad thing."
+                    , "I mean taking out this task from internal executor queue."
+                    , "Unfortunately its started executing, not as you expected");
+            throw new AssertionError(message);
+        }
+        return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));
+    }
+
+    private BlockingQueue<Runnable> getAwaitingTasks() {
+        if (queue == null) {
+            queue = getTaskExecutor().getThreadPoolExecutor().getQueue();
+        }
+        return queue;
+    }
+
+    private ThreadPoolTaskExecutor getTaskExecutor() {
+        if (taskExecutor == null)
+            taskExecutor = applicationContext.getBean(ThreadPoolTaskExecutor.class);
+        return taskExecutor;
+    }
+
+    public void submitTask(WorkerPoolTask workerPoolTask) {
+        submitTask(workerPoolTask, false);
+    }
 
     public void submitTask(WorkerPoolTask task, boolean silently) {
         logger.info("Task " + task.toString() + " is being executed");
@@ -90,53 +131,11 @@ public class WorkerPool {
         }
     }
 
-    private ThreadPoolTaskExecutor getTaskExecutor() {
-        if (taskExecutor == null)
-            taskExecutor = applicationContext.getBean(ThreadPoolTaskExecutor.class);
-        return taskExecutor;
-    }
-
-    public long jobsInPool() {
-        return executingTasks.size();
+    public boolean hasAvailableThreads() {
+        return poolSize() > jobsInPool();
     }
 
     public long poolSize() {
         return getTaskExecutor().getCorePoolSize();
-    }
-
-    public Optional<WorkerPoolTask> pollTask() {
-        Runnable polledItem = getAwaitingTasks().poll();
-        if (polledItem == null) {
-            return empty();
-        }
-        if (!(polledItem instanceof FutureTask)) {
-            String message = "Unexpected object type pulled from executors queue: " + polledItem.getClass().getCanonicalName();
-            throw new AssertionError(message);
-        }
-        FutureTask<Callable> futureTask = (FutureTask<Callable>) polledItem;
-        executingTasks.remove(futureTask);
-        if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
-            String message = join("\n"
-                    , "Prepare for a nice day because you really did a bad thing."
-                    , "I mean taking out this task from internal executor queue."
-                    , "Unfortunately its started executing, not as you expected");
-            throw new AssertionError(message);
-        }
-        return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));
-    }
-
-    private BlockingQueue<Runnable> getAwaitingTasks() {
-        if (queue == null) {
-            queue = getTaskExecutor().getThreadPoolExecutor().getQueue();
-        }
-        return queue;
-    }
-
-    public void submitTask(WorkerPoolTask workerPoolTask) {
-        submitTask(workerPoolTask, false);
-    }
-
-    public boolean hasAvailableThreads() {
-        return poolSize() > jobsInPool();
     }
 }

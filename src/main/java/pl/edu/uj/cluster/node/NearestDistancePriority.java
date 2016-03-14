@@ -41,11 +41,11 @@ public class NearestDistancePriority implements Priority {
         return nodes.stream().mapToInt(Node::getPoolSize).max().orElse(0);
     }
 
-    private int maxDistance(List<Integer> distances) {
-        return distances.stream().mapToInt(Integer::intValue).max().orElse(0);
-    }
-
     private List<Integer> computeDistancesBetween(List<Node> nodes, Node node) {
         return nodes.stream().map(node::distanceBetween).collect(Collectors.toList());
+    }
+
+    private int maxDistance(List<Integer> distances) {
+        return distances.stream().mapToInt(Integer::intValue).max().orElse(0);
     }
 }

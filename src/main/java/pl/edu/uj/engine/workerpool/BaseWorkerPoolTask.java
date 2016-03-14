@@ -2,8 +2,6 @@ package pl.edu.uj.engine.workerpool;
 
 import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Paths;
-
 /**
  * Created by michal on 22.11.15.
  */

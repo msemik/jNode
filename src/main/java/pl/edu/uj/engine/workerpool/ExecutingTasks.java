@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -34,13 +33,6 @@ public class ExecutingTasks {
         return result;
     }
 
-    private List<Future<Object>> removeAll(Jar jar) {
-        List<Future<Object>> removedItems = futureMap.remove(jar);
-        if (removedItems == null)
-            return emptyList();
-        return removedItems;
-    }
-
     @Override
     public String toString() {
         return "ExecutingTasks" + futureMap;
@@ -62,6 +54,13 @@ public class ExecutingTasks {
                     ++cancelledJobs;
         }
         return cancelledJobs;
+    }
+
+    private List<Future<Object>> removeAll(Jar jar) {
+        List<Future<Object>> removedItems = futureMap.remove(jar);
+        if (removedItems == null)
+            return emptyList();
+        return removedItems;
     }
 
     public synchronized void remove(Future<Callable> future) {

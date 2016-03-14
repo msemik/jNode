@@ -33,12 +33,12 @@ public class JarProperties {
         }
     }
 
-    public static JarProperties createFor(Jar jar) {
-        return createFor(jar, false);
+    public boolean isStored() {
+        return Files.exists(propertiesPath) && Files.isReadable(propertiesPath);
     }
 
-    public static JarProperties readFor(Jar jar) {
-        return createFor(jar, true);
+    public static JarProperties createFor(Jar jar) {
+        return createFor(jar, false);
     }
 
     private static JarProperties createFor(Jar jar, boolean loadPersistentPropertiesIfExists) {
@@ -50,6 +50,10 @@ public class JarProperties {
     private static Path convertJarPathToPropertiesPath(Path pathToJar) {
         String pathToJarStr = pathToJar.toString();
         return Paths.get(pathToJarStr.substring(0, pathToJarStr.length() - 3) + "properties");
+    }
+
+    public static JarProperties readFor(Jar jar) {
+        return createFor(jar, true);
     }
 
     @Override
@@ -78,10 +82,6 @@ public class JarProperties {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public boolean isStored() {
-        return Files.exists(propertiesPath) && Files.isReadable(propertiesPath);
     }
 
     public void delete() {

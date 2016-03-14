@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 

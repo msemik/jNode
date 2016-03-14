@@ -5,11 +5,12 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.reverseOrder;
-import static java.util.Collections.sort;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
@@ -55,15 +56,6 @@ public class Nodes {
         return true;
     }
 
-    private void fixArrivalOrdersAfterRemovingNode(int arrivalOrderOfRemovedNode) {
-        for (Node node : nodes) {
-            int arrivalOrder = node.getArrivalOrder();
-            if (arrivalOrder > arrivalOrderOfRemovedNode) {
-                node.setArrivalOrder(arrivalOrder - 1);
-            }
-        }
-    }
-
     private Optional<Node> removeNode(String nodeId) {
         Iterator<Node> it = nodes.iterator();
         while (it.hasNext()) {
@@ -74,6 +66,15 @@ public class Nodes {
             }
         }
         return empty();
+    }
+
+    private void fixArrivalOrdersAfterRemovingNode(int arrivalOrderOfRemovedNode) {
+        for (Node node : nodes) {
+            int arrivalOrder = node.getArrivalOrder();
+            if (arrivalOrder > arrivalOrderOfRemovedNode) {
+                node.setArrivalOrder(arrivalOrder - 1);
+            }
+        }
     }
 
     public synchronized void updateAfterHeartBeat(Node node) {
@@ -99,6 +100,11 @@ public class Nodes {
         return of(firstNode);
     }
 
+    private void computePriorities() {
+        Priority priority = nodeFactory.createPriority(nodes);
+        priority.calculate(nodes);
+    }
+
     private Node findNodeWithHighestPriority() {
         double max = 0;
         Node n = null;
@@ -108,11 +114,6 @@ public class Nodes {
                 n = node;
         }
         return n;
-    }
-
-    private void computePriorities() {
-        Priority priority = nodeFactory.createPriority(nodes);
-        priority.calculate(nodes);
     }
 
     /**

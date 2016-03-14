@@ -3,15 +3,13 @@ package pl.edu.uj.cluster.delegation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.MessageGateway;
-import pl.edu.uj.cluster.message.Redirect;
-import pl.edu.uj.cluster.message.Sry;
-import pl.edu.uj.cluster.message.TaskDelegation;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.Nodes;
-import pl.edu.uj.cluster.task.*;
+import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
+import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.cluster.task.ExternalTaskRegistry;
+import pl.edu.uj.cluster.task.TaskService;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
@@ -34,6 +32,8 @@ import static pl.edu.uj.cluster.delegation.SimpleDelegationHandler.State.*;
  */
 @Component
 public class SimpleDelegationHandler implements DelegationHandler {
+    @Autowired
+    TaskService taskService;
     private Logger logger = LoggerFactory.getLogger(SimpleDelegationHandler.class);
     private AtomicReference<State> state = new AtomicReference<>(NO_DELEGATION);
     @Autowired
@@ -44,8 +44,6 @@ public class SimpleDelegationHandler implements DelegationHandler {
     private ExternalTaskRegistry externalTaskRegistry;
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
-    @Autowired
-    TaskService taskService;
 
     public void handleDuringOnWorkerPoolEvent() {
         logger.info("handleDuringOnWorkerPoolEvent");

@@ -1,7 +1,5 @@
 package pl.edu.uj.cluster;
 
-import pl.edu.uj.cluster.Distributor;
-
 import java.util.Optional;
 
 public interface Distributable {

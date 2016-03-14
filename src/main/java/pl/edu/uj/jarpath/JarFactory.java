@@ -24,18 +24,6 @@ public class JarFactory {
         return findAndStoreIfAbsent(pathToJar);
     }
 
-    public Jar getFor(String pathToJar) {
-        return findAndStoreIfAbsent(Paths.get(pathToJar));
-    }
-
-    public Jar getFor(String nodeId, String fileName) {
-        return getFor(nodeId, Paths.get(fileName));
-    }
-
-    public Jar getFor(String nodeId, Path fileName) {
-        return findAndStoreIfAbsent(nodeIdFactory.getCurrentNodeId().equals(nodeId) ? fileName : Paths.get(nodeId).resolve(fileName));
-    }
-
     private Jar findAndStoreIfAbsent(Path pathToJar) {
         if (pathToJar.isAbsolute()) {
             pathToJar = jarPathServices.getPathSinceJarPath(pathToJar);
@@ -56,15 +44,27 @@ public class JarFactory {
         return jar;
     }
 
-    private boolean isFileName(Path pathToJar) {
-        return pathToJar.getNameCount() == 1;
-    }
-
     private Jar find(Path pathToJar) {
         return jars.stream()
                 .filter(jar -> jar.hasRelativePath(pathToJar))
                 .findAny()
                 .orElse(null);
+    }
+
+    private boolean isFileName(Path pathToJar) {
+        return pathToJar.getNameCount() == 1;
+    }
+
+    public Jar getFor(String pathToJar) {
+        return findAndStoreIfAbsent(Paths.get(pathToJar));
+    }
+
+    public Jar getFor(String nodeId, String fileName) {
+        return getFor(nodeId, Paths.get(fileName));
+    }
+
+    public Jar getFor(String nodeId, Path fileName) {
+        return findAndStoreIfAbsent(nodeIdFactory.getCurrentNodeId().equals(nodeId) ? fileName : Paths.get(nodeId).resolve(fileName));
     }
 
 }

@@ -5,11 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.MessageGateway;
-import pl.edu.uj.cluster.message.Sry;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.Nodes;
-import pl.edu.uj.cluster.task.*;
+import pl.edu.uj.cluster.task.DelegatedTaskRegistry;
+import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.cluster.task.ExternalTaskRegistry;
+import pl.edu.uj.cluster.task.TaskService;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 
@@ -17,8 +18,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Optional.of;
+import static pl.edu.uj.cluster.delegation.DefaultState.NO_DELEGATION;
 import static pl.edu.uj.cluster.delegation.DefaultTaskDelegationEvent.*;
-import static pl.edu.uj.cluster.delegation.DefaultState.*;
 
 
 /**

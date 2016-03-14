@@ -19,12 +19,14 @@ public class Node implements Comparable<Node> {
      */
     private int arrivalOrder;
 
-    public static void setDistance(Distance dst) {
-        distance = dst;
-    }
-
     protected Node(String nodeId) {
         this(nodeId, 0, 0);
+    }
+
+    protected Node(String nodeId, int availableWorkers, double priority) {
+        this.nodeId = nodeId;
+        this.availableThreads = availableWorkers;
+        this.priority = priority;
     }
 
     public Node(String nodeId, boolean isCurrent) {
@@ -36,21 +38,27 @@ public class Node implements Comparable<Node> {
         this(nodeId, availableThreads, 0);
     }
 
-    protected Node(String nodeId, int availableWorkers, double priority) {
-        this.nodeId = nodeId;
-        this.availableThreads = availableWorkers;
-        this.priority = priority;
-    }
-
     protected Node(String nodeId, PrimaryHeartBeat primaryHeartBeat) {
         this.nodeId = nodeId;
         poolSize = (int) primaryHeartBeat.getPoolSize();
         availableThreads = (int) max(primaryHeartBeat.getPoolSize() - primaryHeartBeat.getJobsInPool(), 0);
     }
 
+    public static void setDistance(Distance dst) {
+        distance = dst;
+    }
+
     @Override
     public int compareTo(Node o) {
         return priority < o.getPriority() ? -1 : priority > o.getPriority() ? 1 : 0;
+    }
+
+    public double getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     @Override
@@ -81,12 +89,12 @@ public class Node implements Comparable<Node> {
         return availableThreads;
     }
 
-    public double getPriority() {
-        return priority;
-    }
-
     public int getArrivalOrder() {
         return arrivalOrder;
+    }
+
+    public void setArrivalOrder(int arrivalOrder) {
+        this.arrivalOrder = arrivalOrder;
     }
 
     /**
@@ -116,15 +124,7 @@ public class Node implements Comparable<Node> {
         return poolSize;
     }
 
-    public void setArrivalOrder(int arrivalOrder) {
-        this.arrivalOrder = arrivalOrder;
-    }
-
     public boolean isCurrent() {
         return isCurrent;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
     }
 }

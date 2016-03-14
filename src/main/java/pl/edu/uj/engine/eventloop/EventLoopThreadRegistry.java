@@ -10,7 +10,6 @@ import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -28,10 +27,6 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
 
     @Autowired
     private ApplicationContext context;
-
-    public Optional<EventLoopThread> forJar(Jar jar) {
-        return ofNullable(map.get(jar));
-    }
 
     public void register(Jar jar, EventLoopThread eventLoopThread) {
         map.put(jar, eventLoopThread);
@@ -66,6 +61,15 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         }
     }
 
+    public Optional<EventLoopThread> forJar(Jar jar) {
+        return ofNullable(map.get(jar));
+    }
+
+    @Override
+    public String toString() {
+        return "EventLoopThreadRegistry" + map;
+    }
+
     @EventListener
     public void onApplicationShutdown(ApplicationShutdownEvent e) {
         for (EventLoopThread eventLoopThread : this) {
@@ -77,11 +81,6 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
         eventLoopThread.startLoop(jar);
         return eventLoopThread;
-    }
-
-    @Override
-    public String toString() {
-        return "EventLoopThreadRegistry" + map;
     }
 
     @Override

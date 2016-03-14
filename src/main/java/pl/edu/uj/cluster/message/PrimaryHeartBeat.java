@@ -18,6 +18,14 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
         this.expectedHeartBeatType = expectedHeartBeatType;
     }
 
+    public static PrimaryHeartBeat empty() {
+        return new PrimaryHeartBeat(0, 0, null);
+    }
+
+    public static PrimaryHeartBeat create(long poolSize, long jobsInPool) {
+        return new PrimaryHeartBeat(poolSize, jobsInPool, null);
+    }
+
     public long getPoolSize() {
         return poolSize;
     }
@@ -36,12 +44,11 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
     }
 
     @Override
-    public String toString() {
-        return "PrimaryHeartBeat{" +
-                "poolSize=" + poolSize +
-                ", jobsInPool=" + jobsInPool +
-                ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
-                '}';
+    public int hashCode() {
+        int result = (int) (poolSize ^ (poolSize >>> 32));
+        result = 31 * result + (int) (jobsInPool ^ (jobsInPool >>> 32));
+        result = 31 * result + (expectedHeartBeatType != null ? expectedHeartBeatType.hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -58,19 +65,12 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
     }
 
     @Override
-    public int hashCode() {
-        int result = (int) (poolSize ^ (poolSize >>> 32));
-        result = 31 * result + (int) (jobsInPool ^ (jobsInPool >>> 32));
-        result = 31 * result + (expectedHeartBeatType != null ? expectedHeartBeatType.hashCode() : 0);
-        return result;
-    }
-
-    public static PrimaryHeartBeat empty() {
-        return new PrimaryHeartBeat(0, 0, null);
-    }
-
-    public static PrimaryHeartBeat create(long poolSize, long jobsInPool) {
-        return new PrimaryHeartBeat(poolSize, jobsInPool, null);
+    public String toString() {
+        return "PrimaryHeartBeat{" +
+                "poolSize=" + poolSize +
+                ", jobsInPool=" + jobsInPool +
+                ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
+                '}';
     }
 
 }

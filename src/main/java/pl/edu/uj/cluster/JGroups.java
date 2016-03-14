@@ -14,7 +14,9 @@ import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.options.NodeIdOptionEvent;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -22,9 +24,8 @@ import static java.util.Optional.ofNullable;
 @Component
 @Primary
 public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFactory {
-    private Logger logger = LoggerFactory.getLogger(JGroups.class);
-
     private static final String DEFAULT_JNODE_CHANNEL = "DefaultJNodeChannel";
+    private Logger logger = LoggerFactory.getLogger(JGroups.class);
     private JChannel channel;
 
     @Autowired
@@ -74,6 +75,22 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
     @Override
+    public void receive(Message msg) {
+        String sourceNodeId = msg.src().toString();
+        Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
+        Object messageBody = msg.getObject();
+
+        logger.debug(" received " + messageBody + " from " + sourceNodeId);
+        // , "Headers: " + msg.printHeaders()
+        // , "Flags: " + msg.getFlags()));
+
+        if (messageBody instanceof Distributable) {
+            Distributable distributable = (Distributable) messageBody;
+            distributable.distribute(distributor, sourceNodeId, destinationNodeId);
+        } else {
+            logger.warn("Unexpected message body type: " + messageBody.getClass().getSimpleName());
+        }
+    }    @Override
     public void send(Serializable obj, String destinationNodeId) {
         init();
         try {
@@ -83,25 +100,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void send(Serializable obj) {
-        send(obj, null);
-    }
-
-    @Override
-    public String getCurrentNodeId() {
-        if (nodeId == null) {
-            init();
-            nodeId = channel.getAddressAsString();
-        }
-        return nodeId;
-    }
-
-    private Address getAddressByNodeId(String destinationNodeId) {
-        //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
-        return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
     }
 
     @Override
@@ -119,6 +117,9 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
             distributeNewNodeForEachNewNode(membersInLastView);
             distributeNodeGoneForEachGoneNode(membersInLastView);
         }
+    }    @Override
+    public void send(Serializable obj) {
+        send(obj, null);
     }
 
     private List<String> getCurrentViewAsString(View view) {
@@ -126,12 +127,13 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 .stream()
                 .map(Address::toString)
                 .collect(Collectors.toList());
-    }
-
-    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
-        membersInLastView.stream()
-                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
-                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
+    }    @Override
+    public String getCurrentNodeId() {
+        if (nodeId == null) {
+            init();
+            nodeId = channel.getAddressAsString();
+        }
+        return nodeId;
     }
 
     private void distributeNewNodeForEachNewNode(List<String> membersInLastView) {
@@ -141,23 +143,22 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                     if (!newNodeId.equals(getCurrentNodeId()))
                         distributor.onNewNode(newNodeId);
                 });
+    }    private Address getAddressByNodeId(String destinationNodeId) {
+        //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
+        return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
     }
 
-    @Override
-    public void receive(Message msg) {
-        String sourceNodeId = msg.src().toString();
-        Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
-        Object messageBody = msg.getObject();
-
-        logger.debug(" received " + messageBody + " from " + sourceNodeId);
-        // , "Headers: " + msg.printHeaders()
-        // , "Flags: " + msg.getFlags()));
-
-        if (messageBody instanceof Distributable) {
-            Distributable distributable = (Distributable) messageBody;
-            distributable.distribute(distributor, sourceNodeId, destinationNodeId);
-        } else {
-            logger.warn("Unexpected message body type: " + messageBody.getClass().getSimpleName());
-        }
+    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
+        membersInLastView.stream()
+                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
+                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
     }
+
+
+
+
+
+
+
+
 }

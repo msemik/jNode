@@ -43,11 +43,6 @@ public class DelegatedTask implements WorkerPoolTask {
     }
 
     @Override
-    public Object call() throws Exception {
-        return task.call();
-    }
-
-    @Override
     public boolean belongToJar(Jar jar) {
         return task.belongToJar(jar);
     }
@@ -60,5 +55,10 @@ public class DelegatedTask implements WorkerPoolTask {
     @Override
     public void incrementPriority() {
         task.incrementPriority();
+    }
+
+    @Override
+    public Object call() throws Exception {
+        return task.call();
     }
 }

@@ -11,8 +11,6 @@ import pl.edu.uj.jarpath.JarFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Created by alanhawrot on 29.02.2016.
@@ -33,14 +31,6 @@ public class ExternalTask implements WorkerPoolTask {
         this.jarName = getJar().getFileName().toString();
     }
 
-    public WorkerPoolTask getTask() {
-        return task;
-    }
-
-    public String getSourceNodeId() {
-        return sourceNodeId;
-    }
-
     @Override
     public Jar getJar() {
         return task.getJar();
@@ -54,11 +44,6 @@ public class ExternalTask implements WorkerPoolTask {
     @Override
     public boolean isExternal() {
         return true;
-    }
-
-    @Override
-    public Object call() throws Exception {
-        return task.call();
     }
 
     @Override
@@ -78,6 +63,15 @@ public class ExternalTask implements WorkerPoolTask {
         task.incrementPriority();
     }
 
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+
+    @Override
+    public Object call() throws Exception {
+        return task.call();
+    }
+
     @Override
     public String toString() {
         return "ExternalTask{" +
@@ -90,10 +84,12 @@ public class ExternalTask implements WorkerPoolTask {
         return sourceNodeId.equals(selectedNode.getNodeId());
     }
 
-
-
     public boolean isDeserialized() {
         return getTask() != null;
+    }
+
+    public WorkerPoolTask getTask() {
+        return task;
     }
 
     public void deserialize(Jar jar) {

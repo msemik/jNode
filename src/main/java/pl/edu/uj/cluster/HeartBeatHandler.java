@@ -14,8 +14,6 @@ import pl.edu.uj.engine.workerpool.WorkerPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.Math.max;
-
 @Component
 public class HeartBeatHandler {
     static Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);
