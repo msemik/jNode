@@ -64,11 +64,13 @@ public class DefaultDistributor implements Distributor {
         delegationHandler.handleDuringOnWorkerPoolEvent();
     }
 
-
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
-        //TODO: missing statements
-        jarHandler.onTaskDelegation(externalTask);
+        if (externalTaskRegistry.add(externalTask)) {
+            jarHandler.onTaskDelegation(externalTask);
+        } else {
+            logger.debug("Task with taskId: " + externalTask.getTaskId() + " is already in registry");
+        }
     }
 
     @Override
@@ -147,7 +149,6 @@ public class DefaultDistributor implements Distributor {
         if (!externalTaskRegistry.remove(task)) {
             logger.debug("Task absent in registry: " + task);
         }
-
     }
 
     @Override
