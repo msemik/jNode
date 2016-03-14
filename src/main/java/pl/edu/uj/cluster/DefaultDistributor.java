@@ -88,17 +88,13 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onSry(String nodeId, long taskId) {
-        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(nodeId);
-        if (!delegatedTasks.isEmpty()) {
-            logger.debug("Task absent in registry, nodeId " + nodeId + ", taskId " + taskId);
+        Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
+        if (!delegatedTask.isPresent()) {
+            logger.debug("Task absent in registry, nodeId: " + nodeId + ", taskId: " + taskId);
             return;
         }
-        if (delegatedTasks.size() > 1) {
-            logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + nodeId + ", taskId: " + taskId);
-        }
-        DelegatedTask delegatedTask = delegatedTasks.iterator().next();
-        delegatedTask.incrementPriority();
-        workerPool.submitTask(delegatedTask.getTask());
+        delegatedTask.get().incrementPriority();
+        workerPool.submitTask(delegatedTask.get().getTask());
     }
 
     @Override
@@ -119,7 +115,7 @@ public class DefaultDistributor implements Distributor {
         if (externalTaskRegistry.remove(externalTask)) {
             taskService.taskExecutionCompleted(externalTask, event.getTaskResultOrException());
         } else {
-            logger.info("Task absent in registry, taskId: " + externalTask.getTaskId() + ", not sending the result");
+            logger.debug("Task absent in registry, taskId: " + externalTask.getTaskId() + ", not sending the result");
         }
     }
 
