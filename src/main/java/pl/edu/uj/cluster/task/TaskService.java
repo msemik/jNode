@@ -5,11 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.cluster.MessageGateway;
-import pl.edu.uj.cluster.delegation.FSMBasedDelegationHandler;
 import pl.edu.uj.cluster.message.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -42,8 +41,8 @@ public class TaskService {
         messageGateway.send(new Sry(taskId), destinationNodeId);
     }
 
-    public void cancelJarJobs(String nodeId, Path jarFileName) {
-        messageGateway.send(new CancelJarJobs(jarFileName.toString()), nodeId);
+    public void cancelJarJobs(String nodeId, Jar jar) {
+        messageGateway.send(new CancelJarJobs(jar.toString()), nodeId);
     }
 
     public Stream<String> getNodeIds(Set<DelegatedTask> delegatedTasks) {

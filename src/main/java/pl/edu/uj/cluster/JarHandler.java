@@ -3,23 +3,20 @@ package pl.edu.uj.cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.message.JarDelivery;
 import pl.edu.uj.cluster.message.JarRequest;
 import pl.edu.uj.cluster.task.ExternalTask;
-import pl.edu.uj.engine.JarLauncher;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
+import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathManager;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,50 +34,44 @@ public class JarHandler {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     @Autowired
-    private ApplicationContext applicationContext;
+    private JarFactory jarFactory;
 
     public void onTaskDelegation(ExternalTask task) {
-        String sourceNodeId = task.getSourceNodeId();
-        Path jarName = task.getJarName();
-        if (!jarPathManager.hasJar(sourceNodeId, jarName))
+        Jar jar = task.getJar();
+        if (!jar.isValidExistingJar())
             synchronized (this) {
-                if (!jarPathManager.hasJar(sourceNodeId, jarName)) {
-                    if (notRequestedYet(jarName)) {
-                        messageGateway.send(new JarRequest(jarName.toString()));
+                if (!jar.isValidExistingJar()) {
+                    if (notRequestedYet(jar)) {
+                        messageGateway.send(new JarRequest(jar.getFileNameAsString()));
                     }
                     awaitingForJarExternalTasks.add(task);
                     return;
                 }
             }
+        task.deserialize(jar);
         workerPool.submitTask(task);
     }
 
-    private synchronized boolean notRequestedYet(Path jarName) {
+    private synchronized boolean notRequestedYet(Jar jar) {
         return !awaitingForJarExternalTasks
                 .stream()
-                .filter(task -> task.getJarName().equals(jarName))
+                .filter(task -> task.belongToJar(jar))
                 .findAny()
                 .isPresent();
     }
 
-    public synchronized void onJarDelivery(String nodeId, String jarFileName, byte[] jar) {
-        logger.debug(jarFileName + " delivery from " + nodeId);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(jar);
-        Path jarFilePath = Paths.get(jarFileName);
-        jarPathManager.storeJarWithProperties(jarFilePath, inputStream, nodeId);
+    public synchronized void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {
+        logger.debug(fileName + " delivery from " + nodeId);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(jarContent);
+        Jar jar = jarFactory.getFor(nodeId, fileName);
+        jar.storeDefaultProperties();
+        jar.storeJarContent(inputStream);
         Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
-        JarLauncher jarLauncher = applicationContext.getBean(JarLauncher.class);
-        jarLauncher.setPath(jarPathManager.getJarFileNameOnCluster(nodeId, jarFileName.toString()));
         while (it.hasNext()) {
             ExternalTask task = it.next();
-            if (task.belongToJar(jarFilePath)) {
+            if (task.belongToJar(jar)) {
                 it.remove();
-                try {
-                    task.deserialize(jarLauncher.getClassLoader());
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
+                task.deserialize(jar);
                 workerPool.submitTask(task);
             }
         }
@@ -89,23 +80,24 @@ public class JarHandler {
     @EventListener
     public synchronized void on(CancelJarJobsEvent event) {
         Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
-        Path jarFileName = event.getJarFileName();
+        Jar jar = event.getJar();
         while (it.hasNext()) {
             ExternalTask task = it.next();
-            if (task.belongToJar(jarFileName)) {
+            if (task.belongToJar(jar)) {
                 it.remove();
                 eventPublisher.publishEvent(new TaskCancelledEvent(this, task, event.getOrigin()));
             }
         }
     }
 
-    public void onJarRequest(String nodeId, String jarFileName) {
-        logger.debug(jarFileName + " requested from " + nodeId);
-        byte[] jar = jarPathManager.readJarContent(Paths.get(jarFileName));
-        if (jar.length == 0) {
-            logger.warn("jar content missing for " + jarFileName);
+    public void onJarRequest(String nodeId, String fileName) {
+        logger.debug(fileName + " requested from " + nodeId);
+        Jar jar = jarFactory.getFor(nodeId, fileName);
+        byte[] jarContent = jar.readContent();
+        if (jarContent.length == 0) {
+            logger.warn("jar content missing for " + jar);
             return;
         }
-        messageGateway.send(new JarDelivery(jar, jarFileName), nodeId);
+        messageGateway.send(new JarDelivery(jarContent, fileName), nodeId);
     }
 }

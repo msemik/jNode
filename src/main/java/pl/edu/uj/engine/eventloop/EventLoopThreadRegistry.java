@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.jarpath.Jar;
 
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -21,38 +22,38 @@ import static java.util.Optional.ofNullable;
 @Component
 public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
 
-    private Map<Path, EventLoopThread> map = new ConcurrentHashMap<>();
+    private Map<Jar, EventLoopThread> map = new ConcurrentHashMap<>();
 
     private Logger logger = LoggerFactory.getLogger(EventLoopThreadRegistry.class);
 
     @Autowired
     private ApplicationContext context;
 
-    public Optional<EventLoopThread> forJarName(Path jarName) {
-        return ofNullable(map.get(jarName));
+    public Optional<EventLoopThread> forJar(Jar jar) {
+        return ofNullable(map.get(jar));
     }
 
-    public void register(Path jarName, EventLoopThread eventLoopThread) {
-        map.put(jarName, eventLoopThread);
+    public void register(Jar jar, EventLoopThread eventLoopThread) {
+        map.put(jar, eventLoopThread);
     }
 
-    public EventLoopThread unregister(Path jarName) {
-        EventLoopThread eventLoopThread = map.remove(jarName);
+    public EventLoopThread unregister(Jar jar) {
+        EventLoopThread eventLoopThread = map.remove(jar);
         return eventLoopThread;
     }
 
     @EventListener
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
         try {
-            Path jarFileName = event.getJarFileName();
-            Optional<EventLoopThread> optEventLoopThread = forJarName(jarFileName);
+            Jar jar = event.getJar();
+            Optional<EventLoopThread> optEventLoopThread = forJar(jar);
 
             if (!optEventLoopThread.isPresent()) {
-                logger.info("There was no EventLoopThread for the jar " + jarFileName + ",  " + toString());
+                logger.info("There was no EventLoopThread for the jar " + jar + ",  " + toString());
                 return;
             }
 
-            logger.info("Forcing EventLoopThread " + jarFileName + " to shutdown");
+            logger.info("Forcing EventLoopThread " + jar + " to shutdown");
             EventLoopThread eventLoopThread = optEventLoopThread.get();
             if (eventLoopThread.equals(event.getSource())) {
                 //if EventLoopThread pushed that event, we don't need to shutdown it as it is already done.
@@ -72,9 +73,9 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         }
     }
 
-    public EventLoopThread createEventLoopThread(Path jarName) {
+    public EventLoopThread createEventLoopThread(Jar jar) {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
-        eventLoopThread.startLoop(jarName);
+        eventLoopThread.startLoop(jar);
         return eventLoopThread;
     }
 
@@ -88,7 +89,7 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         return map.values().iterator();
     }
 
-    public Set<Path> jarPaths() {
+    public Set<Jar> getJars() {
         return map.keySet();
     }
 }

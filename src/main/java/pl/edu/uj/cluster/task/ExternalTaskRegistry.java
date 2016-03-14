@@ -3,6 +3,7 @@ package pl.edu.uj.cluster.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.jarpath.Jar;
 
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -35,10 +36,10 @@ public class ExternalTaskRegistry {
         return removedExternalTasks;
     }
 
-    public synchronized Set<ExternalTask> removeAll(Path jarFileName) {
+    public synchronized Set<ExternalTask> removeAll(Jar jar) {
         Set<ExternalTask> removedExternalTasks = new HashSet<>();
         set.forEach(externalTask -> {
-            if (externalTask.getJarName().compareTo(jarFileName) == 0) {
+            if (externalTask.belongToJar(jar)) {
                 removedExternalTasks.add(externalTask);
             }
         });

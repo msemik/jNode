@@ -7,23 +7,23 @@ import java.io.Serializable;
 import java.util.Optional;
 
 public class JarRequest implements Serializable, Distributable {
-    private String jarFileName;
+    private String jar;
 
-    public JarRequest(String jarFileName) {
-        this.jarFileName = jarFileName;
+    public JarRequest(String jar) {
+        this.jar = jar;
     }
 
-    public String getJarFileName() {
-        return jarFileName;
+    public String getJar() {
+        return jar;
     }
 
     @Override
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
-        distributor.onJarRequest(sourceNodeId, jarFileName);
+        distributor.onJarRequest(sourceNodeId, jar);
     }
 
     @Override
     public String toString() {
-        return "JarRequest{" + jarFileName + '}';
+        return "JarRequest{" + jar + '}';
     }
 }

@@ -2,24 +2,22 @@ package pl.edu.uj.jarpath;
 
 import org.springframework.context.ApplicationEvent;
 
-import java.nio.file.Path;
-
 /**
  * Created by michal on 22.10.15.
  */
 public class JarDeletedEvent extends ApplicationEvent {
-    private Path jarPath;
+    private Jar jarPath;
 
-    public JarDeletedEvent(Object source, Path jarPath) {
+    public JarDeletedEvent(Object source, Jar jarPath) {
         super(source);
         this.jarPath = jarPath;
     }
 
-    public Path getJarPath() {
+    public Jar getJarPath() {
         return jarPath;
     }
 
-    public void setJarPath(Path jarPath) {
+    public void setJarPath(Jar jarPath) {
         this.jarPath = jarPath;
     }
 }

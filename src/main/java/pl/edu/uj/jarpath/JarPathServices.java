@@ -1,7 +1,10 @@
 package pl.edu.uj.jarpath;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.JNodeApplication;
 import pl.edu.uj.options.CustomJarPathEvent;
 
@@ -11,44 +14,67 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 /**
  * Created by michal on 22.10.15.
  */
 @Service
 public class JarPathServices {
-    private Path pathToJarPath = Paths.get("jarpath");
+    @Autowired
+    private JarFactory jarFactory;
+    private Path pathToJarPath;
 
     @EventListener
     public void on(CustomJarPathEvent event) {
-        pathToJarPath = Paths.get(event.getCustomJarPath());
+        init(event.getCustomJarPath());
     }
 
+    @EventListener
+    public void on(ApplicationInitializedEvent event) {
+        init(Paths.get("jarpath"));
+    }
 
-    public Optional<Path> getJarForProperty(Path path) {
-        String s = path.toString();
-        if (!s.endsWith(".properties"))
+    private void init(Path path) {
+        if (this.pathToJarPath != null)
+            return;
+
+        if (path.isAbsolute()) {
+            pathToJarPath = path;
+        } else {
+            String applicationDir = JNodeApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            pathToJarPath = Paths.get(applicationDir);
+            if (StringUtils.endsWithAny(pathToJarPath.toString(), ".jar", "classes")) {
+                pathToJarPath = pathToJarPath.getParent().resolve(path);
+            }
+        }
+
+        if (Files.notExists(pathToJarPath))
+            try {
+                Files.createDirectory(pathToJarPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        if (!Files.isDirectory(pathToJarPath))
+            throw new IllegalArgumentException("Path: '" + pathToJarPath + "' is not a directory");
+        validateReadWriteAccess(pathToJarPath);
+    }
+
+    public Optional<Jar> getJarForProperty(Path path) {
+        String strPath = path.toString();
+        if (!strPath.endsWith(".properties"))
             throw new IllegalArgumentException("not a property file '" + path + "'");
-        String jarFileName = s.substring(0, s.length() - ".properties".length()) + ".jar";
-        Path jarPath = Paths.get(jarFileName);
-        if (Files.exists(jarPath) && Files.isRegularFile(jarPath))
-            return Optional.of(jarPath);
-        return Optional.empty();
-    }
-
-    public Path getPropertyForJar(Path jarPath) {
-        String s = jarPath.toString();
-        if (!s.endsWith(".jar"))
-            throw new IllegalArgumentException("not a jar file '" + jarPath + "'");
-        String propertiesFileName = s.substring(0, s.length() - ".jar".length()) + ".properties";
-        return Paths.get(propertiesFileName);
+        String pathToJar = strPath.substring(0, strPath.length() - ".properties".length()) + ".pathToJar";
+        try {
+            return of(jarFactory.getFor(pathToJar));
+        } catch (IllegalArgumentException e) {
+            return empty();
+        }
     }
 
     public boolean isJarOrProperty(Path path) {
-        return isJar(path) || isProperties(path);
-    }
-
-    public boolean isJar(Path path) {
-        return Files.isRegularFile(path) && path.toString().endsWith(".jar");
+        return isValidExistingJar(path) || isProperties(path);
     }
 
     public boolean isProperties(Path path) {
@@ -56,27 +82,7 @@ public class JarPathServices {
     }
 
     public Path getJarPath() {
-        Path path;
-        if (pathToJarPath.isAbsolute()) {
-            path = pathToJarPath;
-        } else {
-            String applicationDir = JNodeApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            path = Paths.get(applicationDir);
-            if (applicationDir.endsWith(".jar") || path.endsWith("classes")) {
-                path = path.getParent().resolve(pathToJarPath);
-            }
-        }
-
-        if (Files.notExists(path))
-            try {
-                Files.createDirectory(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        if (!Files.isDirectory(path))
-            throw new IllegalArgumentException("Path: '" + path + "' is not a directory");
-        validateReadWriteAccess(path);
-        return path;
+        return pathToJarPath;
     }
 
     public void validateReadWriteAccess(Path path) {
@@ -85,5 +91,18 @@ public class JarPathServices {
 
         if (!Files.isWritable(path))
             throw new IllegalStateException("Write access denied for path '" + path + "'");
+    }
+
+    public boolean isValidExistingJar(Path absolutePath) {
+        try {
+            return jarFactory.getFor(absolutePath).isValidExistingJar();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public Path getPathSinceJarPath(Path pathToJarInJarPath) {
+        System.out.println(getJarPath() + " since " + pathToJarInJarPath);
+        return getJarPath().relativize(pathToJarInJarPath);
     }
 }

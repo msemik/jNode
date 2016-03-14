@@ -12,13 +12,13 @@ import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.JarJobsCompletedEvent;
 import pl.edu.uj.engine.event.JarJobsExecutionStartedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jarpath.Jar;
 import pl.uj.edu.userlib.Callback;
 import pl.uj.edu.userlib.Task;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.nio.file.Path;
 
 @Component
 @Scope("prototype")
@@ -36,7 +36,7 @@ public class EventLoopThread extends Thread {
 
     private CallbackStorage callbackStorage;
     private EventLoopQueue eventLoopQueue;
-    private Path jarName;
+    private Jar jar;
     private JarLauncher jarLauncher;
 
     @PostConstruct
@@ -49,7 +49,7 @@ public class EventLoopThread extends Thread {
     public void run() {
         logger.info("Started to listen for tasks results");
         while (true) {
-            eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJarName()));
+            eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJar()));
             EventLoopResponse eventLoopResponse = eventLoopQueue.take();
 
             if (eventLoopResponse.getType() == EventLoopResponse.Type.POISON) {
@@ -68,7 +68,7 @@ public class EventLoopThread extends Thread {
                     logger.info("Callback execution finished successfully");
                 } catch (RuntimeException ex) {
                     Throwable e = ex;
-                    System.out.println("Error in " + getJarName() + " while executing onSuccess, aborting jar jobs");
+                    System.out.println("Error in " + getJar() + " while executing onSuccess, aborting jar jobs");
 
                     //Seeking user exception
                     if (e instanceof UndeclaredThrowableException)
@@ -77,14 +77,14 @@ public class EventLoopThread extends Thread {
                         e = e.getCause();
 
                     e.printStackTrace();
-                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJar()));
                     break;
                 }
             } else {
                 Throwable exception = eventLoopResponse.getException();
                 if (exception instanceof InvalidJarFileException) {
-                    System.out.println(getJarName() + " is invalid jar file: " + exception.getMessage());
-                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
+                    System.out.println(getJar() + " is invalid jar file: " + exception.getMessage());
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJar()));
                     break;
                 }
 
@@ -100,7 +100,7 @@ public class EventLoopThread extends Thread {
                     callback.onFailure(exception.getCause());
                 } catch (RuntimeException ex) {
                     Throwable e = ex;
-                    System.out.println("Error in " + getJarName() + " while executing onFailure, aborting jar jobs");
+                    System.out.println("Error in " + getJar() + " while executing onFailure, aborting jar jobs");
 
                     //Seeking user exception
                     if (e instanceof UndeclaredThrowableException)
@@ -109,37 +109,37 @@ public class EventLoopThread extends Thread {
                         e = e.getCause();
 
                     e.printStackTrace();
-                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJarName()));
+                    eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJar()));
                     break;
                 }
             }
 
             if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
                 logger.info("No more callbacks to execute, shutting down");
-                eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJarName()));
+                eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
                 break;
             }
         }
 
-        eventLoopThreadRegistry.unregister(jarName);
-        logger.info(getJarName() + " loop shutdown successfully");
+        eventLoopThreadRegistry.unregister(jar);
+        logger.info(getJar() + " loop shutdown successfully");
     }
 
-    public Path getJarName() {
-        return jarName;
+    public Jar getJar() {
+        return jar;
     }
 
     @Override
     public String toString() {
-        return "EventLoopThread{" + jarName + '}';
+        return "EventLoopThread{" + jar + '}';
     }
 
-    public void startLoop(Path jarName) {
-        this.jarName = jarName;
+    public void startLoop(Jar jar) {
+        this.jar = jar;
         this.jarLauncher = context.getBean(JarLauncher.class);
-        jarLauncher.setPath(jarName);
+        jarLauncher.setJar(jar);
         start();
-        eventLoopThreadRegistry.register(jarName, this);
+        eventLoopThreadRegistry.register(jar, this);
     }
 
     public JarLauncher getJarLauncher() {
@@ -162,9 +162,9 @@ public class EventLoopThread extends Thread {
         interrupt();
         yield();
         if (isAlive()) {
-            eventLoopThreadRegistry.unregister(jarName);
+            eventLoopThreadRegistry.unregister(jar);
             stop();
         }
-        logger.info(getJarName() + " shutdown() method execution finished");
+        logger.info(getJar() + " shutdown() method execution finished");
     }
 }

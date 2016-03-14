@@ -37,7 +37,7 @@ public class JNodeStateMonitor {
     }
 
     private List<String> getEventLoopThreadsPaths() {
-        return eventLoopThreadRegistry.jarPaths()
+        return eventLoopThreadRegistry.getJars()
                 .stream()
                 .map(p -> p.toString())
                 .collect(Collectors.toList());

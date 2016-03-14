@@ -36,7 +36,7 @@ public interface Distributor {
 
     void onPrimaryHeartBeat(String sourceNodeId, PrimaryHeartBeat primaryHeartBeat);
 
-    void onJarRequest(String nodeId, String jarFileName);
+    void onJarRequest(String nodeId, String jar);
 
     void onJarDelivery(String nodeId, String jarFileName, byte[] jar);
 

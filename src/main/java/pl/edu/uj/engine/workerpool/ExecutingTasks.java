@@ -3,12 +3,12 @@ package pl.edu.uj.engine.workerpool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.jarpath.Jar;
 
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import static java.util.Collections.emptyList;
 
@@ -17,25 +17,25 @@ import static java.util.Collections.emptyList;
  */
 @Component
 public class ExecutingTasks {
-    private Map<Path, List<Future<Object>>> futureMap = new HashMap<>();
+    private Map<Jar, List<Future<Object>>> futureMap = new HashMap<>();
     private Logger logger = LoggerFactory.getLogger(ExecutingTasks.class);
 
-    public synchronized void put(Path jarName, Future<Object> future) {
-        List<Future<Object>> futures = futureMap.getOrDefault(jarName, new ArrayList<>());
+    public synchronized void put(Jar jar, Future<Object> future) {
+        List<Future<Object>> futures = futureMap.getOrDefault(jar, new ArrayList<>());
         futures.add(future);
-        futureMap.putIfAbsent(jarName, futures);
+        futureMap.putIfAbsent(jar, futures);
     }
 
-    public synchronized boolean remove(Path path, Future<Object> future) {
-        List<Future<Object>> futures = futureMap.getOrDefault(path, emptyList());
+    public synchronized boolean remove(Jar jar, Future<Object> future) {
+        List<Future<Object>> futures = futureMap.getOrDefault(jar, emptyList());
         boolean result = futures.removeIf(f -> f == future);
         if (futures.isEmpty())
-            futureMap.remove(path);
+            futureMap.remove(jar);
         return result;
     }
 
-    private List<Future<Object>> removeAll(Path path) {
-        List<Future<Object>> removedItems = futureMap.remove(path);
+    private List<Future<Object>> removeAll(Jar jar) {
+        List<Future<Object>> removedItems = futureMap.remove(jar);
         if (removedItems == null)
             return emptyList();
         return removedItems;
@@ -50,10 +50,10 @@ public class ExecutingTasks {
         return (int) futureMap.values().stream().flatMap(l -> l.stream()).count();
     }
 
-    public synchronized int cancelAllRunningJobs(Path fileName) {
+    public synchronized int cancelAllRunningJobs(Jar jar) {
         int cancelledJobs = 0;
-        List<Future<Object>> futures = removeAll(fileName);
-        logger.debug("Cancelling " + futures.size() + " tasks for " + fileName + " all tasks: " + futures.size());
+        List<Future<Object>> futures = removeAll(jar);
+        logger.debug("Cancelling " + futures.size() + " tasks for " + jar + " all tasks: " + futures.size());
         for (Future<Object> future : futures) {
             if (!future.isCancelled() && !future.isDone())
                 if (!future.cancel(true))
@@ -65,7 +65,7 @@ public class ExecutingTasks {
     }
 
     public synchronized void remove(Future<Callable> future) {
-        Iterator<Map.Entry<Path, List<Future<Object>>>> it = futureMap.entrySet().iterator();
+        Iterator<Map.Entry<Jar, List<Future<Object>>>> it = futureMap.entrySet().iterator();
         while (it.hasNext()) {
             List<Future<Object>> futures = it.next().getValue();
             if (futures.remove(future)) {

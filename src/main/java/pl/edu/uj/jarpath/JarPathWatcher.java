@@ -9,7 +9,6 @@ import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.crosscuting.OSValidator;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.WatchEvent.Kind;
@@ -24,22 +23,17 @@ import static java.nio.file.StandardWatchEventKinds.*;
 @Component
 public class JarPathWatcher extends Thread {
     private static final long SCAN_PERIOD = 1000; //1 second
-
     private Logger logger = LoggerFactory.getLogger(JarPathWatcher.class);
-
+    private Path path;
+    private boolean shutDown = false;
     @Autowired
     private JarPathServices jarServices;
-
     @Autowired
     private JarPathManager jarPathManager;
-
     @Autowired
     private OSValidator osValidator;
-
-    private Path path;
-
-    private boolean shutDown = false;
-    private Kind<Path> eventForFileCreatedWithContent;
+    @Autowired
+    private JarFactory jarFactory;
 
     @EventListener
     public void watch(ApplicationInitializedEvent event) {
@@ -47,8 +41,8 @@ public class JarPathWatcher extends Thread {
         start();
         try {
             Files.walk(path).forEach(filePath -> {
-                if (jarServices.isJar(filePath))
-                    jarPathManager.onCreateJar(filePath);
+                if (jarServices.isValidExistingJar(filePath))
+                    jarPathManager.onFoundJarAfterStart(jarFactory.getFor(filePath));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -100,8 +94,8 @@ public class JarPathWatcher extends Thread {
                             jarServices.validateReadWriteAccess(eventPath);
 
                             logger.info("File created: " + eventPath);
-                            if (jarServices.isJar(eventPath))
-                                jarPathManager.onCreateJar(eventPath);
+                            if (jarServices.isValidExistingJar(eventPath))
+                                jarPathManager.onCreateJar(jarFactory.getFor(eventPath));
 
                         } else if (ENTRY_DELETE == kind) {
                             if (!eventPath.toString().endsWith(".jar") && !eventPath.toString().endsWith(".properties"))
@@ -109,7 +103,7 @@ public class JarPathWatcher extends Thread {
                             logger.info("File deleted: " + eventPath);
 
                             if (eventPath.toString().endsWith(".jar"))
-                                jarPathManager.onDeleteJar(eventPath);
+                                jarPathManager.onDeleteJar(jarFactory.getFor(eventPath));
                             else
                                 jarPathManager.onDeleteProperties(eventPath);
 
@@ -134,8 +128,8 @@ public class JarPathWatcher extends Thread {
     /**
      * WatchService returns variable amount of events per paths.
      * These may contain duplicate events, or mix of events like CREATE, MODIFY.
-     * When you create a file in Ubuntu there is single CREATE event(in that time file is empty).
-     * When you create file in mac, there is single CREATE event and file has already content in it.
+     * When you getFor a file in Ubuntu there is single CREATE event(in that time file is empty).
+     * When you getFor file in mac, there is single CREATE event and file has already content in it.
      * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
      * When you delete file there is only a delete event, function will return DELETE event
      * <p/>

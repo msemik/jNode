@@ -1,28 +1,27 @@
 package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
-
-import java.nio.file.Path;
+import pl.edu.uj.jarpath.Jar;
 
 /**
  * Created by michal on 13.12.15.
  */
 public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event origin
-    private Path jarFileName;
+    private Jar jar;
     private CancellationEventOrigin origin = CancellationEventOrigin.INTERNAL;
 
-    public CancelJarJobsEvent(Object source, Path jarPath) {
+    public CancelJarJobsEvent(Object source, Jar jarPath) {
         super(source);
-        this.jarFileName = jarPath;
+        this.jar = jarPath;
     }
 
-    public CancelJarJobsEvent(Object source, Path jarPath, CancellationEventOrigin origin) {
+    public CancelJarJobsEvent(Object source, Jar jarPath, CancellationEventOrigin origin) {
         super(source);
-        this.jarFileName = jarPath;
+        this.jar = jarPath;
     }
 
-    public Path getJarFileName() {
-        return jarFileName;
+    public Jar getJar() {
+        return jar;
     }
 
     public CancellationEventOrigin getOrigin() {

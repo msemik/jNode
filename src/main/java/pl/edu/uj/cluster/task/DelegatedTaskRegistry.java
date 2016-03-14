@@ -3,8 +3,8 @@ package pl.edu.uj.cluster.task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.jarpath.Jar;
 
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -46,10 +46,10 @@ public class DelegatedTaskRegistry {
         return removedDelegatedTasks;
     }
 
-    public synchronized Set<DelegatedTask> removeAll(Path jarFileName) {
+    public synchronized Set<DelegatedTask> removeAll(Jar jar) {
         Set<DelegatedTask> removedDelegatedTasks = new HashSet<>();
         set.forEach(delegatedTask -> {
-            if (delegatedTask.getJarName().compareTo(jarFileName) == 0) {
+            if (delegatedTask.belongToJar(jar)) {
                 removedDelegatedTasks.add(delegatedTask);
             }
         });
