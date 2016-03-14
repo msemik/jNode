@@ -1,21 +1,20 @@
 package pl.edu.uj.engine.workerpool;
 
+import pl.edu.uj.jarpath.Jar;
 import pl.uj.edu.userlib.Task;
-
-import java.nio.file.Path;
 
 /**
  * Created by michal on 22.11.15.
  */
 public interface WorkerPoolTask extends Task {
 
-    Path getJarName();
+    Jar getJar();
 
     long getTaskId();
 
     boolean isExternal();
 
-    boolean belongToJar(Path jarFileName);
+    boolean belongToJar(Jar jar);
 
     int getPriority();
 

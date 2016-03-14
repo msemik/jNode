@@ -17,9 +17,9 @@ import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
+import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathManager;
 
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -55,12 +55,15 @@ public class DefaultDistributor implements Distributor {
     private TaskService taskService;
     @Autowired
     private JarPathManager jarPathManager;
+    @Autowired
+    private JarFactory jarFactory;
 
     @Override
     @EventListener
     public void on(WorkerPoolOverflowEvent event) {
         delegationHandler.handleDuringOnWorkerPoolEvent();
     }
+
 
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
@@ -122,12 +125,12 @@ public class DefaultDistributor implements Distributor {
     @EventListener
     @Override
     public void on(CancelJarJobsEvent event) {
-        if (!jarPathManager.hasJar(event.getJarFileName())) {
+        if (!event.getJar().isValidExistingJar()) {
             return;
         }
-        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(event.getJarFileName());
+        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(event.getJar());
         Stream<String> nodeIds = taskService.getNodeIds(delegatedTasks);
-        nodeIds.forEach(nodeId -> taskService.cancelJarJobs(nodeId, event.getJarFileName()));
+        nodeIds.forEach(nodeId -> taskService.cancelJarJobs(nodeId, event.getJar()));
     }
 
     @Override
@@ -161,10 +164,10 @@ public class DefaultDistributor implements Distributor {
     private void sendCancelJarJobsForEachJar(Set<ExternalTask> externalTasks) {
         externalTasks
                 .stream()
-                .map(ExternalTask::getJarName)
+                .map(ExternalTask::getJar)
                 .distinct()
-                .forEach(jarPath -> {
-                    CancelJarJobsEvent event = new CancelJarJobsEvent(this, jarPath, EXTERNAL);
+                .forEach(jar -> {
+                    CancelJarJobsEvent event = new CancelJarJobsEvent(this, jar, EXTERNAL);
                     eventPublisher.publishEvent(event);
                 });
     }
@@ -177,8 +180,8 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onCancelJarJobs(String sourceNodeId, String jarPath) {
-        eventPublisher.publishEvent(new CancelJarJobsEvent(this, Paths.get(jarPath), EXTERNAL));
+    public void onCancelJarJobs(String sourceNodeId, String jarFileName) {
+        eventPublisher.publishEvent(new CancelJarJobsEvent(this, jarFactory.getFor(sourceNodeId, jarFileName), EXTERNAL));
     }
 
     @Override

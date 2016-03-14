@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.JarJobsCompletedEvent;
 import pl.edu.uj.engine.event.JarJobsExecutionStartedEvent;
@@ -16,11 +17,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static pl.edu.uj.ApplicationShutdownEvent.ShutdownReason.INVALID_JAR_FILE;
+import static pl.edu.uj.jarpath.JarExecutionState.*;
 
 /**
  * Created by michal on 28.10.15.
@@ -29,148 +29,77 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 @Component
 public class JarPathManager {
     Logger logger = LoggerFactory.getLogger(JarPathManager.class);
-    public static final String currentNodeId = "CURRENT_NODE";
     @Autowired
     private JarPathServices jarPathServices;
-
+    @Autowired
+    private NodeIdFactory nodeIdFactory;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private JarFactory jarFactory;
 
     @EventListener
     public void storeJarGivenByJarOptionAndCreateItsProperties(JarOptionEvent event) {
-        List<Path> paths = event.getPaths();
-        for (Path path : paths) {
-            if (Files.notExists(path) || !jarPathServices.isJar(path)) {
-                eventPublisher.publishEvent(new ApplicationShutdownEvent(this,
-                        ApplicationShutdownEvent.ShutdownReason.INVALID_JAR_FILE,
-                        "Not a jar file: " + path));
+        for (Path pathToJarWhichWillBeCopied : event.getPaths()) {
+            if (!jarPathServices.isValidExistingJar(pathToJarWhichWillBeCopied)) {
+                String message = "Not a jar file: " + pathToJarWhichWillBeCopied;
+                ApplicationShutdownEvent shutdownEvent = new ApplicationShutdownEvent(this, INVALID_JAR_FILE, message);
+                eventPublisher.publishEvent(shutdownEvent);
                 return;
             }
-        }
 
-        for (Path jarFile : paths) {
             try {
-                InputStream inputStream = Files.newInputStream(jarFile);
-                Path path = storeJarWithProperties(jarFile, inputStream, currentNodeId);//TODO: set real node identifier;
-                logger.info("Stored jar to:" + path);
+                InputStream inputStream = Files.newInputStream(pathToJarWhichWillBeCopied);
+                Jar jar = jarFactory.getFor(pathToJarWhichWillBeCopied.getFileName());
+                jar.storeDefaultProperties();
+                jar.storeJarContent(inputStream);
+                logger.info("Stored jar: " + jar);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public Path storeJarWithProperties(Path jarFile, InputStream jarData, String nodeId) {
-        try {
-            Path jarPath = jarPathServices.getJarPath();
-            jarFile = getJarFileNameOnCluster(nodeId, jarFile.toString());
-            JarProperties.fromJarPath(jarPath, nodeId).store();
-            Path fullJarPath = jarPath.resolve(jarFile.getFileName());
-            Files.copy(jarData, fullJarPath, REPLACE_EXISTING);
-            return fullJarPath;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void onFoundJarAfterStart(Jar jar) {
+        JarProperties jarProperties = jar.storeExecutionState(NOT_STARTED);
+        eventPublisher.publishEvent(new JarStateChangedEvent(this, jar, jarProperties));
     }
 
-    public Path getJarFileNameOnCluster(String nodeId, String jarFileName) {
-        if (nodeId.equals(currentNodeId))
-            return Paths.get(jarFileName);
-        return Paths.get("EXT" + "__" + nodeId + "__" + jarFileName);
+    public void onCreateJar(Jar jar) {
+        JarProperties jarProperties = jar.storeDefaultProperties();
+        eventPublisher.publishEvent(new JarStateChangedEvent(this, jar, jarProperties));
     }
 
-    public void onCreateJar(Path pathToJar) {
-        Path propertiesPath = jarPathServices.getPropertyForJar(pathToJar);
-        if (Files.notExists(propertiesPath)) {
-            //If path doesn't exists then user dropped jar (sorry).
-            JarProperties.fromJarPath(pathToJar, currentNodeId)
-                    .store();
-        }
-        eventPublisher.publishEvent(new JarStateChangedEvent(this, pathToJar.getFileName(), JarProperties.fromJarPath(pathToJar)));
-    }
-
-    public void onDeleteJar(Path pathToJar) {
-        Path jarProperties = jarPathServices.getPropertyForJar(pathToJar);
-        System.out.println("Deleting " + pathToJar);
-        try {
-            Files.deleteIfExists(jarProperties);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        eventPublisher.publishEvent(new JarDeletedEvent(this, pathToJar.getFileName()));
-
+    public void onDeleteJar(Jar jar) {
+        jar.deleteProperties();
+        System.out.println("Deleted " + jar);
+        eventPublisher.publishEvent(new JarDeletedEvent(this, jar));
     }
 
     @EventListener
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
-        try {
-            Path pathToJar = resolveFullPath(event.getJarFileName());
-            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
-            jarProperties.setExecutionState(JarExecutionState.CANCELLED);
-            jarProperties.store();
-        } catch (Throwable e) {
-            if (!(e instanceof IllegalStateException)) //When properties file is missing
-                e.printStackTrace();
-        }
+        Jar jar = event.getJar();
+        jar.storeExecutionState(CANCELLED);
     }
 
     @EventListener
     public void onJobExecutionStartedEvent(JarJobsExecutionStartedEvent event) {
-        try {
-            Path pathToJar = resolveFullPath(event.getJarName());
-            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
-            jarProperties.setExecutionState(JarExecutionState.RUNNING);
-            jarProperties.store();
-        } catch (Throwable e) {
-            if (!(e instanceof IllegalStateException)) //When properties file is missing
-                e.printStackTrace();
-        }
+        Jar jar = event.getJar();
+        jar.storeExecutionState(RUNNING);
     }
 
     @EventListener
     public void onJarExecutionCompletedEvent(JarJobsCompletedEvent event) {
-        try {
-            Path pathToJar = resolveFullPath(event.getJarName());
-            JarProperties jarProperties = JarProperties.fromJarPath(pathToJar);
-            jarProperties.setExecutionState(JarExecutionState.COMPLETED);
-            jarProperties.store();
-        } catch (Throwable e) {
-            if (!(e instanceof IllegalStateException)) //When properties file is missing
-                e.printStackTrace();
-        }
+        Jar jar = event.getJar();
+        jar.storeExecutionState(COMPLETED);
     }
 
     public void onDeleteProperties(Path propertiesPath) {
-        Optional<Path> jarPath = jarPathServices.getJarForProperty(propertiesPath);
-        if (!jarPath.isPresent())
+        Optional<Jar> optionalJar = jarPathServices.getJarForProperty(propertiesPath);
+        if (!optionalJar.isPresent())
             return;
-        JarProperties jarProperties = JarProperties.fromJarPath(jarPath.get(), "UNKNOWN");
-        jarProperties.store();
-        eventPublisher.publishEvent(new JarPropertiesDeletedEvent(this, propertiesPath.getFileName(), jarPath.get().getFileName()));
-    }
-
-    public byte[] readJarContent(Path jarFileName) {
-        Path pathToJar = resolveFullPath(jarFileName);
-        if (!jarPathServices.isJar(pathToJar)) {
-            return new byte[0];
-        }
-        try {
-            return Files.readAllBytes(pathToJar);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Path resolveFullPath(Path jarFileName) {
-        return jarPathServices.getJarPath().resolve(jarFileName);
-    }
-
-    public boolean hasJar(String sourceNodeId, Path jarName) {
-        jarName = getJarFileNameOnCluster(sourceNodeId, jarName.toString());
-        return hasJar(jarName);
-    }
-
-    public boolean hasJar(Path jarName) {
-        jarName = jarPathServices.getJarPath().resolve(jarName);
-        return Files.exists(jarName) && Files.isReadable(jarName);
+        Jar jar = optionalJar.get();
+        jar.storeDefaultProperties();
+        eventPublisher.publishEvent(new JarPropertiesDeletedEvent(this, jar));
     }
 }

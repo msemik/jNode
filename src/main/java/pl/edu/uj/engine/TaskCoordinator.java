@@ -14,12 +14,9 @@ import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-import pl.edu.uj.jarpath.JarDeletedEvent;
-import pl.edu.uj.jarpath.JarPropertiesDeletedEvent;
-import pl.edu.uj.jarpath.JarStateChangedEvent;
+import pl.edu.uj.jarpath.*;
 import pl.uj.edu.userlib.Callback;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static pl.edu.uj.jarpath.JarExecutionState.NOT_STARTED;
@@ -27,31 +24,34 @@ import static pl.edu.uj.jarpath.JarExecutionState.NOT_STARTED;
 @Component
 public class TaskCoordinator {
     private Logger logger = LoggerFactory.getLogger(TaskCoordinator.class);
-
     @Autowired
     private WorkerPool workerPool;
-
     @Autowired
     private EventLoopThreadRegistry eventLoopThreadRegistry;
-
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private JarPathManager jarPathManager;
 
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
-        // TODO: only local jars?
-        Path jarName = event.getPath();
-        logger.info("Got jar " + jarName + " with properties " + event.getProperties());
+        Jar jar = event.getJar();
+        if (!jar.isLocal()) {
+            logger.error("not local");
+            return;
+        }
+        logger.info("Got jar " + jar + " with properties " + event.getProperties());
 
         if (event.getProperties().getExecutionState() != NOT_STARTED)
             return;
-        startJarJob(jarName);
+
+        startJarJob(jar);
     }
 
-    private void startJarJob(Path jarName) {
-        logger.info("Launching main class for jar " + jarName);
+    private void startJarJob(Jar jar) {
+        logger.info("Launching main class for jar " + jar);
 
-        EventLoopThread eventLoopThread = eventLoopThreadRegistry.createEventLoopThread(jarName);
+        EventLoopThread eventLoopThread = eventLoopThreadRegistry.createEventLoopThread(jar);
         LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(eventLoopThread);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
@@ -60,16 +60,17 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-        eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJarPath()));
+        eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJar()));
     }
 
     @EventListener
     public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
-        Path jarFileName = event.getJarFileName();
-        if (eventLoopThreadRegistry.forJarName(jarFileName).isPresent())
-            eventPublisher.publishEvent(new CancelJarJobsEvent(this, jarFileName));
-        else
-            startJarJob(jarFileName);
+        Jar jar = event.getJar();
+        if (eventLoopThreadRegistry.forJar(jar).isPresent()) {
+            eventPublisher.publishEvent(new CancelJarJobsEvent(this, jar));
+        } else {
+            startJarJob(jar);
+        }
     }
 
     @EventListener
@@ -79,7 +80,7 @@ public class TaskCoordinator {
 
         logger.info("Submitting newly received task to pool and saving callback in EventLoopThread " + task);
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJar(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
             return;
@@ -94,7 +95,7 @@ public class TaskCoordinator {
 
         if (task.isExternal()) return;
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJarName(task.getJarName());
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.forJar(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread missing for given task: " + task);
             return;

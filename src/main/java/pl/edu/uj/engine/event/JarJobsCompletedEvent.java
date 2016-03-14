@@ -1,21 +1,20 @@
 package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
-
-import java.nio.file.Path;
+import pl.edu.uj.jarpath.Jar;
 
 /**
  * Created by michal on 13.12.15.
  */
 public class JarJobsCompletedEvent extends ApplicationEvent {
-    private Path jarName;
+    private Jar jar;
 
-    public JarJobsCompletedEvent(Object source, Path jarName) {
+    public JarJobsCompletedEvent(Object source, Jar jar) {
         super(source);
-        this.jarName = jarName;
+        this.jar = jar;
     }
 
-    public Path getJarName() {
-        return jarName;
+    public Jar getJar() {
+        return jar;
     }
 }

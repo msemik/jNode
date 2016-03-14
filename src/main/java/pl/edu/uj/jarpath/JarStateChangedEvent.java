@@ -2,23 +2,21 @@ package pl.edu.uj.jarpath;
 
 import org.springframework.context.ApplicationEvent;
 
-import java.nio.file.Path;
-
 /**
  * Created by michal on 22.10.15.
  */
 public class JarStateChangedEvent extends ApplicationEvent {
     private final JarProperties properties;
-    private Path path;
+    private Jar jar;
 
-    public JarStateChangedEvent(Object source, Path path, JarProperties properties) {
+    public JarStateChangedEvent(Object source, Jar jar, JarProperties properties) {
         super(source);
-        this.path = path;
+        this.jar = jar;
         this.properties = properties;
     }
 
-    public Path getPath() {
-        return path;
+    public Jar getJar() {
+        return jar;
     }
 
     public JarProperties getProperties() {

@@ -1,8 +1,7 @@
 package pl.edu.uj.cluster.task;
 
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-
-import java.nio.file.Path;
+import pl.edu.uj.jarpath.Jar;
 
 /**
  * Created by alanhawrot on 29.02.2016.
@@ -29,8 +28,8 @@ public class DelegatedTask implements WorkerPoolTask {
     }
 
     @Override
-    public Path getJarName() {
-        return task.getJarName();
+    public Jar getJar() {
+        return task.getJar();
     }
 
     @Override
@@ -49,8 +48,8 @@ public class DelegatedTask implements WorkerPoolTask {
     }
 
     @Override
-    public boolean belongToJar(Path jarFileName) {
-        return task.belongToJar(jarFileName);
+    public boolean belongToJar(Jar jar) {
+        return task.belongToJar(jar);
     }
 
     @Override

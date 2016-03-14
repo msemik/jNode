@@ -5,10 +5,12 @@ import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.options.NodeIdOptionEvent;
 
 import java.io.Serializable;
@@ -18,7 +20,8 @@ import java.util.stream.Collectors;
 import static java.util.Optional.ofNullable;
 
 @Component
-public class JGroups extends ReceiverAdapter implements MessageGateway {
+@Primary
+public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFactory {
     private Logger logger = LoggerFactory.getLogger(JGroups.class);
 
     private static final String DEFAULT_JNODE_CHANNEL = "DefaultJNodeChannel";

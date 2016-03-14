@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class JNodeStateMonitor {
-
     public static final int TEN_SECONDS_IN_MILLIS = 10000;
     public static final int THREE_SECONDS_IN_MILLIS = 3000;
     @Autowired
@@ -28,18 +27,18 @@ public class JNodeStateMonitor {
 
     @Scheduled(initialDelay = THREE_SECONDS_IN_MILLIS, fixedDelay = TEN_SECONDS_IN_MILLIS)
     public void run() {
-        List<String> eventLoopThreadsPaths = getEventLoopThreadsPaths();
+        List<String> jars = getJars();
         StringBuilder b = new StringBuilder();
-        b.append("EventLoopThreads: " + String.join(", ", eventLoopThreadsPaths) + "\n");
+        b.append("EventLoopThreads: " + String.join(", ", jars) + "\n");
         b.append("Jobs in pool: " + workerPool.jobsInPool() + "\n");
         b.append("node:\n" + nodes);
         System.out.println(b.toString());
     }
 
-    private List<String> getEventLoopThreadsPaths() {
-        return eventLoopThreadRegistry.jarPaths()
+    private List<String> getJars() {
+        return eventLoopThreadRegistry.getJars()
                 .stream()
-                .map(p -> p.toString())
+                .map(Object::toString)
                 .collect(Collectors.toList());
     }
 }

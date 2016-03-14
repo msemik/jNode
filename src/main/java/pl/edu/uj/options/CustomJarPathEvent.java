@@ -2,6 +2,9 @@ package pl.edu.uj.options;
 
 import org.springframework.context.ApplicationEvent;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class CustomJarPathEvent extends ApplicationEvent {
 
     private String customJarPath;
@@ -11,8 +14,8 @@ public class CustomJarPathEvent extends ApplicationEvent {
         this.customJarPath = customJarPath;
     }
 
-    public String getCustomJarPath() {
-        return customJarPath;
+    public Path getCustomJarPath() {
+        return Paths.get(customJarPath);
     }
 
 }

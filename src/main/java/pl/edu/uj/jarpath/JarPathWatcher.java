@@ -9,7 +9,6 @@ import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.crosscuting.OSValidator;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.WatchEvent.Kind;
@@ -24,22 +23,17 @@ import static java.nio.file.StandardWatchEventKinds.*;
 @Component
 public class JarPathWatcher extends Thread {
     private static final long SCAN_PERIOD = 1000; //1 second
-
     private Logger logger = LoggerFactory.getLogger(JarPathWatcher.class);
-
+    private Path path;
+    private boolean shutDown = false;
     @Autowired
     private JarPathServices jarServices;
-
     @Autowired
     private JarPathManager jarPathManager;
-
     @Autowired
     private OSValidator osValidator;
-
-    private Path path;
-
-    private boolean shutDown = false;
-    private Kind<Path> eventForFileCreatedWithContent;
+    @Autowired
+    private JarFactory jarFactory;
 
     @EventListener
     public void watch(ApplicationInitializedEvent event) {
@@ -47,8 +41,8 @@ public class JarPathWatcher extends Thread {
         start();
         try {
             Files.walk(path).forEach(filePath -> {
-                if (jarServices.isJar(filePath))
-                    jarPathManager.onCreateJar(filePath);
+                if (jarServices.isValidExistingJar(filePath))
+                    jarPathManager.onFoundJarAfterStart(jarFactory.getFor(filePath));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -100,8 +94,8 @@ public class JarPathWatcher extends Thread {
                             jarServices.validateReadWriteAccess(eventPath);
 
                             logger.info("File created: " + eventPath);
-                            if (jarServices.isJar(eventPath))
-                                jarPathManager.onCreateJar(eventPath);
+                            if (jarServices.isValidExistingJar(eventPath))
+                                jarPathManager.onCreateJar(jarFactory.getFor(eventPath));
 
                         } else if (ENTRY_DELETE == kind) {
                             if (!eventPath.toString().endsWith(".jar") && !eventPath.toString().endsWith(".properties"))
@@ -109,7 +103,7 @@ public class JarPathWatcher extends Thread {
                             logger.info("File deleted: " + eventPath);
 
                             if (eventPath.toString().endsWith(".jar"))
-                                jarPathManager.onDeleteJar(eventPath);
+                                jarPathManager.onDeleteJar(jarFactory.getFor(eventPath));
                             else
                                 jarPathManager.onDeleteProperties(eventPath);
 
@@ -138,7 +132,7 @@ public class JarPathWatcher extends Thread {
      * When you create file in mac, there is single CREATE event and file has already content in it.
      * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
      * When you delete file there is only a delete event, function will return DELETE event
-     * <p/>
+     * <p>
      * This function should reduce pain to analise all these combinations in later stages.
      * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY event.
      */
@@ -173,6 +167,12 @@ public class JarPathWatcher extends Thread {
         return reducedEvents;
     }
 
+    public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
+        if (osValidator.isUnix())
+            return ENTRY_MODIFY;
+        return ENTRY_CREATE;
+    }
+
     private Map<Path, Set<Kind<Path>>> groupEventsByPaths(List<WatchEvent<?>> watchEvents) {
         Map<Path, Set<Kind<Path>>> pathEventKinds = new HashMap<>();
         for (WatchEvent<?> watchEvent : watchEvents) {
@@ -185,11 +185,5 @@ public class JarPathWatcher extends Thread {
             pathEventKinds.putIfAbsent(path, kinds);
         }
         return pathEventKinds;
-    }
-
-    public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
-        if (osValidator.isUnix())
-            return ENTRY_MODIFY;
-        return ENTRY_CREATE;
     }
 }

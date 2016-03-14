@@ -1,9 +1,12 @@
 package pl.edu.uj.cluster.task;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.crosscuting.ClassLoaderAwareObjectInputStream;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.jarpath.JarFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,12 +22,15 @@ public class ExternalTask implements WorkerPoolTask {
     private transient byte[] serializedTask;
     private String sourceNodeId;
     private String jarName;
+    @Autowired
+    private transient JarFactory jarFactory;
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
         if (task == null)
             throw new IllegalStateException("Can't create null task!!");
         this.task = task;
         this.sourceNodeId = sourceNodeId;
+        this.jarName = getJar().getFileName().toString();
     }
 
     public WorkerPoolTask getTask() {
@@ -36,11 +42,8 @@ public class ExternalTask implements WorkerPoolTask {
     }
 
     @Override
-    public Path getJarName() {
-        if (jarName != null) {
-            return Paths.get(jarName);
-        }
-        return task.getJarName();
+    public Jar getJar() {
+        return task.getJar();
     }
 
     @Override
@@ -59,22 +62,10 @@ public class ExternalTask implements WorkerPoolTask {
     }
 
     @Override
-    public String toString() {
-        return "ExternalTask{" +
-                "task=" + task +
-                ", sourceNodeId='" + sourceNodeId + '\'' +
-                '}';
-    }
-
-    public boolean isOriginatedAt(Node selectedNode) {
-        return sourceNodeId.equals(selectedNode.getNodeId());
-    }
-
-    @Override
-    public boolean belongToJar(Path jarFileName) {
+    public boolean belongToJar(Jar jar) {
         if (task != null)
-            return task.belongToJar(jarFileName);
-        return getJarName().equals(jarFileName);
+            return task.belongToJar(jar);
+        return jarFactory.getFor(sourceNodeId, jarName).equals(jar);
     }
 
     @Override
@@ -87,21 +78,39 @@ public class ExternalTask implements WorkerPoolTask {
         task.incrementPriority();
     }
 
+    @Override
+    public String toString() {
+        return "ExternalTask{" +
+                "task=" + task +
+                ", sourceNodeId='" + sourceNodeId + '\'' +
+                '}';
+    }
+
+    public boolean isOriginatedAt(Node selectedNode) {
+        return sourceNodeId.equals(selectedNode.getNodeId());
+    }
+
+
 
     public boolean isDeserialized() {
         return getTask() != null;
     }
 
-    public void deserialize(ClassLoader classLoader) throws IOException, ClassNotFoundException {
+    public void deserialize(Jar jar) {
         if (serializedTask == null)
             return;
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
-        ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, classLoader);
-        Object o = stream.readObject();
-        if (!(o instanceof ExternalTask))
-            throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
-        this.task = (WorkerPoolTask) o;
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
+            ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getClassLoader());
+            Object o = stream.readObject();
+            if (!(o instanceof ExternalTask))
+                throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
+            this.task = (WorkerPoolTask) o;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
@@ -110,7 +119,6 @@ public class ExternalTask implements WorkerPoolTask {
             this.serializedTask = SerializationUtils.serialize(task);
         }
 
-        out.writeObject(getJarName().toString());
         out.write(serializedTask);
         //System.out.println("writeObject task size: " + serializedTask.length);
 
@@ -118,7 +126,6 @@ public class ExternalTask implements WorkerPoolTask {
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        this.jarName = (String) in.readObject();
         int available = in.available();
         //System.out.println("readObject task size: " + available);
         serializedTask = new byte[available];

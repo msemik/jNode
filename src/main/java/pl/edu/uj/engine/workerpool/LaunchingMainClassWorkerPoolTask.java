@@ -9,12 +9,12 @@ public class LaunchingMainClassWorkerPoolTask extends BaseWorkerPoolTask {
     private EventLoopThread eventLoopThread;
 
     public LaunchingMainClassWorkerPoolTask(EventLoopThread eventLoopThread) {
-        super(eventLoopThread.getJarName());
+        super(eventLoopThread.getJar());
         this.eventLoopThread = eventLoopThread;
     }
 
     @Override
     public Object call() throws Exception {
-        return eventLoopThread.getJarLauncher().launchMain();
+        return eventLoopThread.getJar().launchMain();
     }
 }
