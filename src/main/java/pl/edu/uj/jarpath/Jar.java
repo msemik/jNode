@@ -106,11 +106,15 @@ public class Jar {
     }
 
     public ClassLoader getClassLoader() {
+        return getJarLauncher().getClassLoader();
+    }
+
+    private JarLauncher getJarLauncher() {
         if (jarLauncher == null) {
             jarLauncher = applicationContext.getBean(JarLauncher.class);
             jarLauncher.setJar(this);
         }
-        return jarLauncher.getClassLoader();
+        return jarLauncher;
     }
 
     public String getFileNameAsString() {
@@ -130,7 +134,7 @@ public class Jar {
     }
 
     public Object launchMain() {
-        return jarLauncher.launchMain();
+        return getJarLauncher().launchMain();
     }
 
     @Override
