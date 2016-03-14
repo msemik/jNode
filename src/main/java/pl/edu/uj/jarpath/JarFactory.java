@@ -20,37 +20,8 @@ public class JarFactory {
     private NodeIdFactory nodeIdFactory;
     private List<Jar> jars = new CopyOnWriteArrayList<>();
 
-
     public Jar getFor(Path pathToJar) {
         return findAndStoreIfAbsent(pathToJar);
-    }
-
-    private Jar findAndStoreIfAbsent(Path pathToJar) {
-        pathToJar = pathToJar.normalize();
-        Jar jar = find(pathToJar);
-        if (jar == null) {
-            if (pathToJar.isAbsolute()) { // TODO: should be before call to find
-                pathToJar = jarPathServices.getPathSinceJarPath(pathToJar).normalize();
-            }
-
-            String nodeId;
-            if (pathToJar.getNameCount() == 1) { //its local fileName, its in root directory of jarpath
-                nodeId = nodeIdFactory.getCurrentNodeId();
-            } else {
-                nodeId = pathToJar.getParent().toString();
-            }
-            jar = applicationContext.getBean(Jar.class, nodeId, pathToJar);
-            jar.validate();
-            jars.add(jar);
-        }
-        return jar;
-    }
-
-    private Jar find(Path pathToJar) {
-        return jars.stream()
-                .filter(jar -> jar.hasRelativePath(pathToJar))
-                .findAny()
-                .orElse(null);
     }
 
     public Jar getFor(String pathToJar) {
@@ -63,6 +34,37 @@ public class JarFactory {
 
     public Jar getFor(String nodeId, Path fileName) {
         return findAndStoreIfAbsent(nodeIdFactory.getCurrentNodeId().equals(nodeId) ? fileName : Paths.get(nodeId).resolve(fileName));
+    }
+
+    private Jar findAndStoreIfAbsent(Path pathToJar) {
+        if (pathToJar.isAbsolute()) {
+            pathToJar = jarPathServices.getPathSinceJarPath(pathToJar);
+        }
+        pathToJar = pathToJar.normalize();
+        Jar jar = find(pathToJar);
+        if (jar == null) {
+            String nodeId;
+            if (isFileName(pathToJar)) {
+                nodeId = nodeIdFactory.getCurrentNodeId();
+            } else {
+                nodeId = pathToJar.getParent().toString();
+            }
+            jar = applicationContext.getBean(Jar.class, nodeId, pathToJar);
+            jar.validate();
+            jars.add(jar);
+        }
+        return jar;
+    }
+
+    private boolean isFileName(Path pathToJar) {
+        return pathToJar.getNameCount() == 1;
+    }
+
+    private Jar find(Path pathToJar) {
+        return jars.stream()
+                .filter(jar -> jar.hasRelativePath(pathToJar))
+                .findAny()
+                .orElse(null);
     }
 
 }
