@@ -73,20 +73,16 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     public void onRedirect(String currentNodeId, String destinationNodeId, long taskId) {
-        Set<DelegatedTask> delegatedTasks = delegatedTaskRegistry.removeAll(currentNodeId);
-        if (!delegatedTasks.isEmpty()) {
-            logger.debug("Task absent in registry, currentNodeId " + currentNodeId + ", taskId " + taskId);
+        Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
+        if (!delegatedTask.isPresent()) {
+            logger.debug("Task absent in registry, currentNodeId: " + currentNodeId + ", taskId: " + taskId);
             return;
         }
-        if (delegatedTasks.size() > 1) {
-            logger.error("More than one delegated task found in delegatedTaskRegistry, delegated to " + currentNodeId + ", taskId: " + taskId);
-        }
-        DelegatedTask delegatedTask = delegatedTasks.iterator().next();
-        delegatedTask.incrementPriority();
+        delegatedTask.get().incrementPriority();
         if (workerPool.hasAvailableThreads()) {
-            workerPool.submitTask(delegatedTask.getTask());
+            workerPool.submitTask(delegatedTask.get().getTask());
         } else {
-            taskService.delegateTask(delegatedTask.getTask(), destinationNodeId);
+            taskService.delegateTask(delegatedTask.get().getTask(), destinationNodeId);
         }
     }
 
