@@ -44,8 +44,6 @@ public class DefaultDistributor implements Distributor {
     @Autowired
     private WorkerPool workerPool;
     @Autowired
-    private MessageGateway messageGateway;
-    @Autowired
     private DelegationHandler delegationHandler;
     @Autowired
     private HeartBeatHandler heartBeatHandler;
@@ -108,7 +106,17 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onTaskFinished(TaskFinishedEvent event) {
+    public void onTaskExecutionCompleted(long taskId, Object taskResultOrException) {
+        Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
+        if (delegatedTask.isPresent()) {
+            eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrException));
+        } else {
+            logger.debug("Task absent in registry, taskId: " + taskId);
+        }
+    }
+
+    @Override
+    public void on(TaskFinishedEvent event) {
         if (!event.getTask().isExternal())
             return;
         ExternalTask externalTask = (ExternalTask) event.getTask();
@@ -116,16 +124,6 @@ public class DefaultDistributor implements Distributor {
             taskService.taskExecutionCompleted(externalTask, event.getTaskResultOrException());
         } else {
             logger.info("Task absent in registry, taskId: " + externalTask.getTaskId() + ", not sending the result");
-        }
-    }
-
-    @Override
-    public void onTaskExecutionCompleted(long taskId, Object taskResultOrException) {
-        Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
-        if (delegatedTask.isPresent()) {
-            eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrException));
-        } else {
-            logger.debug("Task absent in registry, taskId " + taskId);
         }
     }
 

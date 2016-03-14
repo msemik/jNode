@@ -20,9 +20,9 @@ public interface Distributor {
 
     void onSry(String nodeId, long taskId);
 
-    void onTaskFinished(TaskFinishedEvent event);
-
     void onTaskExecutionCompleted(long taskId, Object taskResult);
+
+    void on(TaskFinishedEvent event);
 
     void on(CancelJarJobsEvent event);
 
@@ -39,5 +39,4 @@ public interface Distributor {
     void onJarRequest(String nodeId, String jarFileName);
 
     void onJarDelivery(String nodeId, String jarFileName, byte[] jar);
-
 }
