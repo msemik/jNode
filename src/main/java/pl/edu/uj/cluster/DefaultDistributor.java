@@ -111,8 +111,12 @@ public class DefaultDistributor implements Distributor {
     public void onTaskFinished(TaskFinishedEvent event) {
         if (!event.getTask().isExternal())
             return;
-        ExternalTask task = (ExternalTask) event.getTask();
-        taskService.taskExecutionCompleted(task, event.getTaskResultOrException());
+        ExternalTask externalTask = (ExternalTask) event.getTask();
+        if (externalTaskRegistry.remove(externalTask)) {
+            taskService.taskExecutionCompleted(externalTask, event.getTaskResultOrException());
+        } else {
+            logger.info("Task absent in registry, taskId: " + externalTask.getTaskId() + ", not sending the result");
+        }
     }
 
     @Override
@@ -135,7 +139,6 @@ public class DefaultDistributor implements Distributor {
         Stream<String> nodeIds = taskService.getNodeIds(delegatedTasks);
         nodeIds.forEach(nodeId -> taskService.cancelJarJobs(nodeId, event.getJarFileName()));
     }
-
 
     @Override
     @EventListener
