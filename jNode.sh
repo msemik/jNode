@@ -15,4 +15,10 @@ if [ ! -f "$JNODE_JAR" ] ; then
     exit 1
 fi
 
-java -jar $JNODE_JAR $@
+OS=$(uname -s)
+
+if [ "$OS" == "Darwin" ]; then
+    java -jar -Djava.net.preferIPv4Stack=true $JNODE_JAR $@
+else
+    java -jar $JNODE_JAR $@
+fi
