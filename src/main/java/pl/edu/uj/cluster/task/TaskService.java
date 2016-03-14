@@ -42,7 +42,7 @@ public class TaskService {
     }
 
     public void cancelJarJobs(String nodeId, Jar jar) {
-        messageGateway.send(new CancelJarJobs(jar.toString()), nodeId);
+        messageGateway.send(new CancelJarJobs(jar.getFileNameAsString()), nodeId);
     }
 
     public Stream<String> getNodeIds(Set<DelegatedTask> delegatedTasks) {

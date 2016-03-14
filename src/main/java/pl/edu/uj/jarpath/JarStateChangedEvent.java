@@ -7,16 +7,16 @@ import org.springframework.context.ApplicationEvent;
  */
 public class JarStateChangedEvent extends ApplicationEvent {
     private final JarProperties properties;
-    private Jar path;
+    private Jar jar;
 
-    public JarStateChangedEvent(Object source, Jar path, JarProperties properties) {
+    public JarStateChangedEvent(Object source, Jar jar, JarProperties properties) {
         super(source);
-        this.path = path;
+        this.jar = jar;
         this.properties = properties;
     }
 
     public Jar getJar() {
-        return path;
+        return jar;
     }
 
     public JarProperties getProperties() {

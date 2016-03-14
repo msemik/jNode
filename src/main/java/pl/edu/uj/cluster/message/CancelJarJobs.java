@@ -7,23 +7,23 @@ import java.io.Serializable;
 import java.util.Optional;
 
 public class CancelJarJobs implements Serializable, Distributable {
-    private String jarPath;
+    private String jarName;
 
-    public CancelJarJobs(String jarPath) {
-        this.jarPath = jarPath;
+    public CancelJarJobs(String jarName) {
+        this.jarName = jarName;
     }
 
-    public String getJarPath() {
-        return jarPath;
+    public String getJarName() {
+        return jarName;
     }
 
     @Override
     public void distribute(Distributor distributor, String sourceNodeId, Optional<String> destinationNodeId) {
-        distributor.onCancelJarJobs(sourceNodeId, jarPath);
+        distributor.onCancelJarJobs(sourceNodeId, jarName);
     }
 
     @Override
     public String toString() {
-        return "CancelJarJobs{" + jarPath + '}';
+        return "CancelJarJobs{" + jarName + '}';
     }
 }

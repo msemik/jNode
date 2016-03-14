@@ -15,6 +15,6 @@ public class LaunchingMainClassWorkerPoolTask extends BaseWorkerPoolTask {
 
     @Override
     public Object call() throws Exception {
-        return eventLoopThread.getJarLauncher().launchMain();
+        return eventLoopThread.getJar().launchMain();
     }
 }

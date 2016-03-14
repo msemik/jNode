@@ -37,7 +37,6 @@ public class EventLoopThread extends Thread {
     private CallbackStorage callbackStorage;
     private EventLoopQueue eventLoopQueue;
     private Jar jar;
-    private JarLauncher jarLauncher;
 
     @PostConstruct
     public void init() {
@@ -136,14 +135,8 @@ public class EventLoopThread extends Thread {
 
     public void startLoop(Jar jar) {
         this.jar = jar;
-        this.jarLauncher = context.getBean(JarLauncher.class);
-        jarLauncher.setJar(jar);
         start();
         eventLoopThreadRegistry.register(jar, this);
-    }
-
-    public JarLauncher getJarLauncher() {
-        return jarLauncher;
     }
 
     public void registerTask(WorkerPoolTask task, Callback callback) {

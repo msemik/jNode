@@ -11,7 +11,6 @@ import pl.edu.uj.jarpath.JarPathServices;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -32,25 +31,6 @@ public class JarLauncher {
     private JarClassLoader jcl;
 
     public JarLauncher() {
-    }
-
-    private String getMainClass(Jar jar) {
-        try {
-            JarFile jarFile = new JarFile(jar.getAbsolutePath().toString());
-            Manifest manifest = jarFile.getManifest();
-            Attributes mainAttributes = manifest.getMainAttributes();
-
-            for (Iterator it = mainAttributes.keySet().iterator(); it.hasNext(); ) {
-                Attributes.Name attribute = (Attributes.Name) it.next();
-                if (attribute.toString().equals("Main-Class"))
-                    return (String) mainAttributes.get(attribute);
-            }
-
-            throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public Object launchMain() {
@@ -77,12 +57,11 @@ public class JarLauncher {
     }
 
     public ClassLoader getClassLoader() {
-
         if (jcl != null)
             return jcl;
 
         jcl = new JarClassLoader();
-        jcl.add(jar.getAbsolutePath().toString());
+        jcl.add(jar.getAbsolutePathAsString());
 
         jcl.getLocalLoader().setEnabled(true);
         jcl.getOsgiBootLoader().setEnabled(true);
@@ -92,6 +71,25 @@ public class JarLauncher {
         jcl.getCurrentLoader().setEnabled(true);
 
         return jcl;
+    }
+
+    private String getMainClass(Jar jar) {
+        try {
+            JarFile jarFile = new JarFile(jar.getAbsolutePathAsString());
+            Manifest manifest = jarFile.getManifest();
+            Attributes mainAttributes = manifest.getMainAttributes();
+
+            for (Iterator it = mainAttributes.keySet().iterator(); it.hasNext(); ) {
+                Attributes.Name attribute = (Attributes.Name) it.next();
+                if (attribute.toString().equals("Main-Class"))
+                    return (String) mainAttributes.get(attribute);
+            }
+
+            throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setJar(Jar jar) {

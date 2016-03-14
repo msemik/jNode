@@ -21,14 +21,14 @@ public class ExternalTask implements WorkerPoolTask {
     private transient WorkerPoolTask task;
     private transient byte[] serializedTask;
     private String sourceNodeId;
-    private String jarFileName;
+    private String jarName;
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
         if (task == null)
-            throw new IllegalStateException("Can't getFor null task!!");
+            throw new IllegalStateException("Can't create null task!!");
         this.task = task;
         this.sourceNodeId = sourceNodeId;
-        this.jarFileName = getJar().getFileName().toString();
+        this.jarName = getJar().getFileName().toString();
     }
 
     public WorkerPoolTask getTask() {
@@ -63,7 +63,7 @@ public class ExternalTask implements WorkerPoolTask {
     public boolean belongToJar(Jar jar) {
         if (task != null)
             return task.belongToJar(jar);
-        return jarFactory.getFor(sourceNodeId, jarFileName).equals(jar);
+        return jarFactory.getFor(sourceNodeId, jarName).equals(jar);
     }
 
     @Override
@@ -116,5 +116,4 @@ public class ExternalTask implements WorkerPoolTask {
     private void readObjectNoData() throws ObjectStreamException {
 
     }
-
 }

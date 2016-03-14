@@ -128,11 +128,11 @@ public class JarPathWatcher extends Thread {
     /**
      * WatchService returns variable amount of events per paths.
      * These may contain duplicate events, or mix of events like CREATE, MODIFY.
-     * When you getFor a file in Ubuntu there is single CREATE event(in that time file is empty).
-     * When you getFor file in mac, there is single CREATE event and file has already content in it.
+     * When you create a file in Ubuntu there is single CREATE event(in that time file is empty).
+     * When you create file in mac, there is single CREATE event and file has already content in it.
      * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
      * When you delete file there is only a delete event, function will return DELETE event
-     * <p/>
+     * <p>
      * This function should reduce pain to analise all these combinations in later stages.
      * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY event.
      */
@@ -167,6 +167,12 @@ public class JarPathWatcher extends Thread {
         return reducedEvents;
     }
 
+    public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
+        if (osValidator.isUnix())
+            return ENTRY_MODIFY;
+        return ENTRY_CREATE;
+    }
+
     private Map<Path, Set<Kind<Path>>> groupEventsByPaths(List<WatchEvent<?>> watchEvents) {
         Map<Path, Set<Kind<Path>>> pathEventKinds = new HashMap<>();
         for (WatchEvent<?> watchEvent : watchEvents) {
@@ -179,11 +185,5 @@ public class JarPathWatcher extends Thread {
             pathEventKinds.putIfAbsent(path, kinds);
         }
         return pathEventKinds;
-    }
-
-    public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
-        if (osValidator.isUnix())
-            return ENTRY_MODIFY;
-        return ENTRY_CREATE;
     }
 }

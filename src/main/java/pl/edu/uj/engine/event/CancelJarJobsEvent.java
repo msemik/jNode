@@ -10,14 +10,15 @@ public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event or
     private Jar jar;
     private CancellationEventOrigin origin = CancellationEventOrigin.INTERNAL;
 
-    public CancelJarJobsEvent(Object source, Jar jarPath) {
+    public CancelJarJobsEvent(Object source, Jar jar) {
         super(source);
-        this.jar = jarPath;
+        this.jar = jar;
     }
 
-    public CancelJarJobsEvent(Object source, Jar jarPath, CancellationEventOrigin origin) {
+    public CancelJarJobsEvent(Object source, Jar jar, CancellationEventOrigin origin) {
         super(source);
-        this.jar = jarPath;
+        this.jar = jar;
+        this.origin = origin;
     }
 
     public Jar getJar() {

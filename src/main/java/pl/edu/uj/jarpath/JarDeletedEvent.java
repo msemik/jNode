@@ -6,18 +6,18 @@ import org.springframework.context.ApplicationEvent;
  * Created by michal on 22.10.15.
  */
 public class JarDeletedEvent extends ApplicationEvent {
-    private Jar jarPath;
+    private Jar jar;
 
-    public JarDeletedEvent(Object source, Jar jarPath) {
+    public JarDeletedEvent(Object source, Jar jar) {
         super(source);
-        this.jarPath = jarPath;
+        this.jar = jar;
     }
 
-    public Jar getJarPath() {
-        return jarPath;
+    public Jar getJar() {
+        return jar;
     }
 
-    public void setJarPath(Jar jarPath) {
-        this.jarPath = jarPath;
+    public void setJar(Jar jar) {
+        this.jar = jar;
     }
 }

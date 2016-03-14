@@ -20,7 +20,6 @@ import pl.uj.edu.userlib.Callback;
 import java.util.Optional;
 
 import static pl.edu.uj.jarpath.JarExecutionState.NOT_STARTED;
-import static pl.edu.uj.jarpath.JarExecutionState.RUNNING;
 
 @Component
 public class TaskCoordinator {
@@ -61,7 +60,7 @@ public class TaskCoordinator {
 
     @EventListener
     public void onJarDeleted(JarDeletedEvent event) {
-        eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJarPath()));
+        eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJar()));
     }
 
     @EventListener

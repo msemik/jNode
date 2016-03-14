@@ -31,11 +31,6 @@ public class JarPathServices {
         init(event.getCustomJarPath());
     }
 
-    @EventListener
-    public void on(ApplicationInitializedEvent event) {
-        init(Paths.get("jarpath"));
-    }
-
     private void init(Path path) {
         if (this.pathToJarPath != null)
             return;
@@ -61,6 +56,19 @@ public class JarPathServices {
         validateReadWriteAccess(pathToJarPath);
     }
 
+    public void validateReadWriteAccess(Path path) {
+        if (!Files.isReadable(path))
+            throw new IllegalStateException("Read access denied for path '" + path + "'");
+
+        if (!Files.isWritable(path))
+            throw new IllegalStateException("Write access denied for path '" + path + "'");
+    }
+
+    @EventListener
+    public void on(ApplicationInitializedEvent event) {
+        init(Paths.get("jarpath"));
+    }
+
     public Optional<Jar> getJarForProperty(Path path) {
         String strPath = path.toString();
         if (!strPath.endsWith(".properties"))
@@ -77,32 +85,24 @@ public class JarPathServices {
         return isValidExistingJar(path) || isProperties(path);
     }
 
-    public boolean isProperties(Path path) {
-        return Files.isRegularFile(path) && path.toString().endsWith(".properties");
-    }
-
-    public Path getJarPath() {
-        return pathToJarPath;
-    }
-
-    public void validateReadWriteAccess(Path path) {
-        if (!Files.isReadable(path))
-            throw new IllegalStateException("Read access denied for path '" + path + "'");
-
-        if (!Files.isWritable(path))
-            throw new IllegalStateException("Write access denied for path '" + path + "'");
-    }
-
-    public boolean isValidExistingJar(Path absolutePath) {
+    public boolean isValidExistingJar(Path path) {
         try {
-            return jarFactory.getFor(absolutePath).isValidExistingJar();
+            return jarFactory.getFor(path).isValidExistingJar();
         } catch (IllegalArgumentException e) {
             return false;
         }
     }
 
+    public boolean isProperties(Path path) {
+        return Files.isRegularFile(path) && path.toString().endsWith(".properties");
+    }
+
     public Path getPathSinceJarPath(Path pathToJarInJarPath) {
         System.out.println(getJarPath() + " since " + pathToJarInJarPath);
         return getJarPath().relativize(pathToJarInJarPath);
+    }
+
+    public Path getJarPath() {
+        return pathToJarPath;
     }
 }

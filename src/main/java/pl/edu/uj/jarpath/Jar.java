@@ -11,9 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -30,7 +27,6 @@ public class Jar {
     private Path pathRelativeToJarPath;
     private JarLauncher jarLauncher;
 
-
     protected Jar(String nodeId, Path pathRelativeToJarPath) {
         this.nodeId = nodeId;
         this.pathRelativeToJarPath = pathRelativeToJarPath;
@@ -41,29 +37,16 @@ public class Jar {
             throw new IllegalArgumentException("Invalid jar path '" + pathRelativeToJarPath + "'");
     }
 
-    public boolean isValidExistingJar() {
-        Path absolutePath = getAbsolutePath();
-        return Files.exists(absolutePath) && Files.isReadable(absolutePath);
-    }
-
     public String getNodeId() {
         return nodeId;
     }
 
-    public Path getPathRelativeToJarPath() {
-        return pathRelativeToJarPath;
+    public String getAbsolutePathAsString() {
+        return getAbsolutePath().toString();
     }
 
     public Path getAbsolutePath() {
         return jarPathServices.getJarPath().resolve(pathRelativeToJarPath);
-    }
-
-    public JarProperties readProperties() {
-        return JarProperties.readFor(this);
-    }
-
-    public Path getFileName() {
-        return pathRelativeToJarPath.getFileName();
     }
 
     public byte[] readContent() {
@@ -75,6 +58,11 @@ public class Jar {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isValidExistingJar() {
+        Path absolutePath = getAbsolutePath();
+        return Files.exists(absolutePath) && Files.isReadable(absolutePath);
     }
 
     public void storeJarContent(InputStream jarContent) {
@@ -95,6 +83,10 @@ public class Jar {
         jarProperties.setExecutionState(executionState);
         jarProperties.store();
         return jarProperties;
+    }
+
+    public JarProperties readProperties() {
+        return JarProperties.readFor(this);
     }
 
     public JarProperties storeDefaultProperties() {
@@ -125,7 +117,24 @@ public class Jar {
         return getFileName().toString();
     }
 
+    public Path getFileName() {
+        return pathRelativeToJarPath.getFileName();
+    }
+
     public boolean hasRelativePath(Path pathToJar) {
         return getPathRelativeToJarPath().equals(pathToJar);
+    }
+
+    public Path getPathRelativeToJarPath() {
+        return pathRelativeToJarPath;
+    }
+
+    public Object launchMain() {
+        return jarLauncher.launchMain();
+    }
+
+    @Override
+    public String toString() {
+        return getPathRelativeToJarPath().toString();
     }
 }
