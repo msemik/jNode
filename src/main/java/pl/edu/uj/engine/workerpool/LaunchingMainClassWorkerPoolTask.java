@@ -1,20 +1,29 @@
 package pl.edu.uj.engine.workerpool;
 
-import pl.edu.uj.engine.eventloop.EventLoopThread;
+import pl.edu.uj.jarpath.Jar;
 
 /**
  * Created by michal on 22.11.15.
  */
 public class LaunchingMainClassWorkerPoolTask extends BaseWorkerPoolTask {
-    private EventLoopThread eventLoopThread;
+    private transient Jar jar;
 
-    public LaunchingMainClassWorkerPoolTask(EventLoopThread eventLoopThread) {
-        super(eventLoopThread.getJar());
-        this.eventLoopThread = eventLoopThread;
+    public LaunchingMainClassWorkerPoolTask(Jar jar) {
+        super(jar);
+        this.jar = jar;
     }
 
     @Override
     public Object call() throws Exception {
-        return eventLoopThread.getJar().launchMain();
+        return getJar().launchMain();
+    }
+
+    @Override
+    public Jar getJar() {
+        return jar;
+    }
+
+    public void setJar(Jar jar) {
+        this.jar = jar;
     }
 }

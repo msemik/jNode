@@ -49,7 +49,7 @@ public class TaskCoordinator {
         logger.info("Launching main class for jar " + jar);
 
         EventLoopThread eventLoopThread = eventLoopThreadRegistry.create(jar);
-        LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(eventLoopThread);
+        LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(jar);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
         workerPool.submitTask(task);

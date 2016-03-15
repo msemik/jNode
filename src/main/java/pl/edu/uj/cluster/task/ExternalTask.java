@@ -3,6 +3,7 @@ package pl.edu.uj.cluster.task;
 import org.apache.commons.lang3.SerializationUtils;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.crosscuting.ClassLoaderAwareObjectInputStream;
+import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jarpath.JarFactory;
@@ -104,6 +105,9 @@ public class ExternalTask implements WorkerPoolTask {
             Object o = stream.readObject();
             if (!(o instanceof WorkerPoolTask))
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
+            if (o instanceof LaunchingMainClassWorkerPoolTask) {
+                ((LaunchingMainClassWorkerPoolTask) o).setJar(jar);
+            }
             this.task = (WorkerPoolTask) o;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
