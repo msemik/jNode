@@ -93,7 +93,7 @@ public class Nodes {
         }
         computePriorities();
         Node firstNode = findNodeWithHighestPriority();
-        if (!firstNode.canTakeTasks()) {
+        if (firstNode == null || !firstNode.canTakeTasks()) {
             return empty();
         }
         firstNode.drainThread();
