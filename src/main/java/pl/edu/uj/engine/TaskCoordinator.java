@@ -11,7 +11,7 @@ import pl.edu.uj.engine.event.NewTaskReceivedEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
-import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
+import pl.edu.uj.engine.workerpool.MainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.*;
@@ -49,7 +49,7 @@ public class TaskCoordinator {
         logger.info("Launching main class for jar " + jar);
 
         EventLoopThread eventLoopThread = eventLoopThreadRegistry.create(jar);
-        LaunchingMainClassWorkerPoolTask task = new LaunchingMainClassWorkerPoolTask(jar);
+        MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
         workerPool.submitTask(task);

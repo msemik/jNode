@@ -6,10 +6,10 @@ import pl.uj.edu.userlib.Task;
 /**
  * Created by michal on 22.11.15.
  */
-public class UserDoAsyncWorkerPoolTask extends BaseWorkerPoolTask {
+public class DefaultWorkerPoolTask extends BaseWorkerPoolTask {
     private final Task task;
 
-    public UserDoAsyncWorkerPoolTask(Task task, Jar jar) {
+    public DefaultWorkerPoolTask(Task task, Jar jar) {
         super(jar);
         this.task = task;
     }

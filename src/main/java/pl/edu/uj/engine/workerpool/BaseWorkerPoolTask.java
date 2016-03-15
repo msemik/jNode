@@ -60,4 +60,8 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     public void incrementPriority() {
         priority++;
     }
+
+    public void setJar(Jar jar) {
+        this.jar = jar;
+    }
 }

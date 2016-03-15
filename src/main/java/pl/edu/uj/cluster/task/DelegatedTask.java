@@ -6,17 +6,12 @@ import pl.edu.uj.jarpath.Jar;
 /**
  * Created by alanhawrot on 29.02.2016.
  */
-public class DelegatedTask implements WorkerPoolTask {
-    private WorkerPoolTask task;
+public class DelegatedTask extends WorkerPoolTaskDecorator {
     private String destinationNodeId;
 
     public DelegatedTask(WorkerPoolTask task, String destinationNodeId) {
-        this.task = task;
+        super(task);
         this.destinationNodeId = destinationNodeId;
-    }
-
-    public WorkerPoolTask getTask() {
-        return task;
     }
 
     public String getDestinationNodeId() {
@@ -27,38 +22,4 @@ public class DelegatedTask implements WorkerPoolTask {
         this.destinationNodeId = destinationNodeId;
     }
 
-    @Override
-    public Jar getJar() {
-        return task.getJar();
-    }
-
-    @Override
-    public long getTaskId() {
-        return task.getTaskId();
-    }
-
-    @Override
-    public boolean isExternal() {
-        return false;
-    }
-
-    @Override
-    public boolean belongToJar(Jar jar) {
-        return task.belongToJar(jar);
-    }
-
-    @Override
-    public int getPriority() {
-        return task.getPriority();
-    }
-
-    @Override
-    public void incrementPriority() {
-        task.incrementPriority();
-    }
-
-    @Override
-    public Object call() throws Exception {
-        return task.call();
-    }
 }

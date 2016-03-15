@@ -6,26 +6,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.cluster.task.TaskService;
 import pl.edu.uj.engine.EmptyCallback;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.NewTaskReceivedEvent;
-import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathManager;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @Component
 public class JarHandler {
     private Logger logger = LoggerFactory.getLogger(JarHandler.class);
-    private List<ExternalTask> awaitingForJarExternalTasks = new ArrayList<>();
+    private LinkedMultiValueMap awaitingForJarExternalTasks = new LinkedMultiValueMap<>();
     @Autowired
     private JarPathManager jarPathManager;
     @Autowired
@@ -40,28 +38,23 @@ public class JarHandler {
     private TaskService taskService;
 
     public void onTaskDelegation(ExternalTask task) {
-        task.populateJar(jarFactory);
-        Jar jar = task.getJar();
+        Jar jar = jarFactory.getFor(task.getSourceNodeId(), task.getJarName());
         if (!jar.isValidExistingJar())
             synchronized (this) {
                 if (!jar.isValidExistingJar()) {
                     if (notRequestedYet(jar)) {
                         taskService.jarRequest(jar);
                     }
-                    awaitingForJarExternalTasks.add(task);
+                    awaitingForJarExternalTasks.add(jar, task);
                     return;
                 }
             }
-        task.deserialize();
+        task.deserialize(jar);
         publishTaskReceivedEvent(task);
     }
 
     private boolean notRequestedYet(Jar jar) {
-        return !awaitingForJarExternalTasks
-                .stream()
-                .filter(task -> task.belongToJar(jar))
-                .findAny()
-                .isPresent();
+        return !awaitingForJarExternalTasks.containsKey(jar);
     }
 
     private void publishTaskReceivedEvent(ExternalTask task) {
@@ -75,30 +68,20 @@ public class JarHandler {
         jar.storeJarContent(inputStream);
         jar.storeDefaultProperties();
 
+        List<ExternalTask> awaitingTasks;
         synchronized (this) {
-            Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
-            while (it.hasNext()) {
-                ExternalTask task = it.next();
-                if (task.belongToJar(jar)) {
-                    it.remove();
-                    task.deserialize();
-                    publishTaskReceivedEvent(task);
-                }
-            }
+            awaitingTasks = awaitingForJarExternalTasks.remove(jar);
+        }
+        for (ExternalTask task : awaitingTasks) {
+            task.deserialize(jar);
+            publishTaskReceivedEvent(task);
         }
     }
 
     @EventListener
     public synchronized void on(CancelJarJobsEvent event) {
-        Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
         Jar jar = event.getJar();
-        while (it.hasNext()) {
-            ExternalTask task = it.next();
-            if (task.belongToJar(jar)) {
-                it.remove();
-                eventPublisher.publishEvent(new TaskCancelledEvent(this, task, event.getOrigin()));
-            }
-        }
+        awaitingForJarExternalTasks.remove(jar);
     }
 
     public void onJarRequest(String requesterNodeId, String fileName) {

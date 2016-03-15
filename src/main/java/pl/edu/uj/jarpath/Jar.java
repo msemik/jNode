@@ -140,4 +140,23 @@ public class Jar {
     public String toString() {
         return getPathRelativeToJarPath().toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Jar jar = (Jar) o;
+
+        if (!nodeId.equals(jar.nodeId)) return false;
+        return pathRelativeToJarPath.equals(jar.pathRelativeToJarPath);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nodeId.hashCode();
+        result = 31 * result + pathRelativeToJarPath.hashCode();
+        return result;
+    }
 }

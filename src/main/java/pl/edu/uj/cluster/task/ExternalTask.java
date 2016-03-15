@@ -3,10 +3,9 @@ package pl.edu.uj.cluster.task;
 import org.apache.commons.lang3.SerializationUtils;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.crosscuting.ClassLoaderAwareObjectInputStream;
-import pl.edu.uj.engine.workerpool.LaunchingMainClassWorkerPoolTask;
+import pl.edu.uj.engine.workerpool.BaseWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
-import pl.edu.uj.jarpath.JarFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,19 +14,15 @@ import java.io.ObjectStreamException;
 /**
  * Created by alanhawrot on 29.02.2016.
  */
-public class ExternalTask implements WorkerPoolTask {
-    private transient WorkerPoolTask task;
+public class ExternalTask extends WorkerPoolTaskDecorator {
     private transient byte[] serializedTask;
-    private transient Jar jar;
     private String sourceNodeId;
     private String jarName;
     private int priority;
     private long taskId;
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
-        if (task == null)
-            throw new IllegalStateException("Can't create with null task!!");
-        this.task = task;
+        super(task);
         this.sourceNodeId = sourceNodeId;
         this.jarName = getJar().getFileName().toString();
         this.priority = task.getPriority();
@@ -36,11 +31,11 @@ public class ExternalTask implements WorkerPoolTask {
 
     @Override
     public Jar getJar() {
-        if (jar != null)
-            return jar;
-        if (task != null)
-            return task.getJar();
-        throw new IllegalStateException("Jar must be populated before getting it.");
+        WorkerPoolTask task = getTask();
+        if (task == null) {
+            throw new IllegalStateException("Jar must be deserialized before getting it.");
+        }
+        return task.getJar();
     }
 
     @Override
@@ -65,20 +60,12 @@ public class ExternalTask implements WorkerPoolTask {
 
     @Override
     public void incrementPriority() {
-        task.incrementPriority();
-    }
-
-    public void populateJar(JarFactory jarFactory) {
-        this.jar = jarFactory.getFor(sourceNodeId, jarName);
+        this.priority++;
+        super.incrementPriority();
     }
 
     public String getSourceNodeId() {
         return sourceNodeId;
-    }
-
-    @Override
-    public Object call() throws Exception {
-        return task.call();
     }
 
     @Override
@@ -93,15 +80,13 @@ public class ExternalTask implements WorkerPoolTask {
         return sourceNodeId.equals(selectedNode.getNodeId());
     }
 
-    public WorkerPoolTask getTask() {
-        return task;
+    public String getJarName() {
+        return jarName;
     }
 
-    public void deserialize() {
+    public void deserialize(Jar jar) {
         if (serializedTask == null)
             return;
-        if (jar == null)
-            throw new IllegalStateException("Jar must be populated before deserialization");
 
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
@@ -109,10 +94,11 @@ public class ExternalTask implements WorkerPoolTask {
             Object o = stream.readObject();
             if (!(o instanceof WorkerPoolTask))
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
-            if (o instanceof LaunchingMainClassWorkerPoolTask) {
-                ((LaunchingMainClassWorkerPoolTask) o).setJar(jar);
+            if (o instanceof BaseWorkerPoolTask) {
+                ((BaseWorkerPoolTask) o).setJar(jar);
             }
-            this.task = (WorkerPoolTask) o;
+
+            setTask((WorkerPoolTask) o);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -121,6 +107,7 @@ public class ExternalTask implements WorkerPoolTask {
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
+        WorkerPoolTask task = getTask();
         if (serializedTask == null && task != null) {
             this.serializedTask = SerializationUtils.serialize(task);
         }

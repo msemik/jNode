@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
 import pl.edu.uj.engine.event.NewTaskReceivedEvent;
-import pl.edu.uj.engine.workerpool.UserDoAsyncWorkerPoolTask;
+import pl.edu.uj.engine.workerpool.DefaultWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathServices;
@@ -57,7 +57,7 @@ public class DefaultTaskReceiver {
         Task taskToDo = Task.class.cast(task);
         Callback callbackToDo = Callback.class.cast(callback);
 
-        WorkerPoolTask workerPoolTask = new UserDoAsyncWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar));
+        WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar));
         NewTaskReceivedEvent event = new NewTaskReceivedEvent(this, workerPoolTask, callbackToDo);
         eventPublisher.publishEvent(event);
     }
