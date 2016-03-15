@@ -40,7 +40,7 @@ public class JarPathWatcher extends Thread {
         path = jarServices.getJarPath();
         start();
         try {
-            Files.walk(path).forEach(filePath -> {
+            Files.walk(path, 1).forEach(filePath -> {
                 if (jarServices.isValidExistingJar(filePath))
                     jarPathManager.onFoundJarAfterStart(jarFactory.getFor(filePath));
             });
