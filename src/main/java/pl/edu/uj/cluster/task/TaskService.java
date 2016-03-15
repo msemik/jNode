@@ -61,4 +61,12 @@ public class TaskService {
                 .map(DelegatedTask::getTask)
                 .collect(Collectors.toList());
     }
+
+    public void jarDelivery(String requesterNodeId, String fileName, byte[] jarContent) {
+        messageGateway.send(new JarDelivery(jarContent, fileName), requesterNodeId);
+    }
+
+    public void jarRequest(Jar jar) {
+        messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
+    }
 }

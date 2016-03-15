@@ -38,7 +38,9 @@ public class ExternalTask implements WorkerPoolTask {
     public Jar getJar() {
         if (jar != null)
             return jar;
-        return task.getJar();
+        if (task != null)
+            return task.getJar();
+        throw new IllegalStateException("Jar must be populated before getting it.");
     }
 
     @Override
@@ -95,9 +97,11 @@ public class ExternalTask implements WorkerPoolTask {
         return task;
     }
 
-    public void deserialize(Jar jar) {
+    public void deserialize() {
         if (serializedTask == null)
             return;
+        if (jar == null)
+            throw new IllegalStateException("Jar must be populated before deserialization");
 
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);

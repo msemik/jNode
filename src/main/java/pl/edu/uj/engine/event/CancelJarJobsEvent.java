@@ -6,7 +6,7 @@ import pl.edu.uj.jarpath.Jar;
 /**
  * Created by michal on 13.12.15.
  */
-public class CancelJarJobsEvent extends ApplicationEvent { // TODO: Add event origin
+public class CancelJarJobsEvent extends ApplicationEvent {
     private Jar jar;
     private CancellationEventOrigin origin = CancellationEventOrigin.INTERNAL;
 

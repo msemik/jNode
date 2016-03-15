@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.cluster.message.JarDelivery;
-import pl.edu.uj.cluster.message.JarRequest;
 import pl.edu.uj.cluster.task.ExternalTask;
+import pl.edu.uj.cluster.task.TaskService;
 import pl.edu.uj.engine.EmptyCallback;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.NewTaskReceivedEvent;
@@ -37,28 +36,27 @@ public class JarHandler {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private JarFactory jarFactory;
+    @Autowired
+    private TaskService taskService;
 
     public void onTaskDelegation(ExternalTask task) {
+        task.populateJar(jarFactory);
         Jar jar = task.getJar();
         if (!jar.isValidExistingJar())
             synchronized (this) {
                 if (!jar.isValidExistingJar()) {
                     if (notRequestedYet(jar)) {
-                        messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
+                        taskService.jarRequest(jar);
                     }
                     awaitingForJarExternalTasks.add(task);
                     return;
                 }
             }
-        task.deserialize(jar);
+        task.deserialize();
         publishTaskReceivedEvent(task);
     }
 
-    private void publishTaskReceivedEvent(ExternalTask task) {
-        eventPublisher.publishEvent(new NewTaskReceivedEvent(this, task, new EmptyCallback()));
-    }
-
-    private synchronized boolean notRequestedYet(Jar jar) {
+    private boolean notRequestedYet(Jar jar) {
         return !awaitingForJarExternalTasks
                 .stream()
                 .filter(task -> task.belongToJar(jar))
@@ -66,19 +64,26 @@ public class JarHandler {
                 .isPresent();
     }
 
-    public synchronized void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {
+    private void publishTaskReceivedEvent(ExternalTask task) {
+        eventPublisher.publishEvent(new NewTaskReceivedEvent(this, task, new EmptyCallback()));
+    }
+
+    public void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {
         logger.debug(fileName + " delivery from " + nodeId);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(jarContent);
         Jar jar = jarFactory.getFor(nodeId, fileName);
         jar.storeJarContent(inputStream);
         jar.storeDefaultProperties();
-        Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
-        while (it.hasNext()) {
-            ExternalTask task = it.next();
-            if (task.belongToJar(jar)) {
-                it.remove();
-                task.deserialize(jar);
-                publishTaskReceivedEvent(task);
+
+        synchronized (this) {
+            Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
+            while (it.hasNext()) {
+                ExternalTask task = it.next();
+                if (task.belongToJar(jar)) {
+                    it.remove();
+                    task.deserialize();
+                    publishTaskReceivedEvent(task);
+                }
             }
         }
     }
@@ -104,6 +109,6 @@ public class JarHandler {
             logger.warn("jar content missing for " + jar);
             return;
         }
-        messageGateway.send(new JarDelivery(jarContent, fileName), requesterNodeId);
+        taskService.jarDelivery(requesterNodeId, fileName, jarContent);
     }
 }
