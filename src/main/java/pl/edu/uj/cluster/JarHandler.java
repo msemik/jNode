@@ -70,8 +70,8 @@ public class JarHandler {
         logger.debug(fileName + " delivery from " + nodeId);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(jarContent);
         Jar jar = jarFactory.getFor(nodeId, fileName);
-        jar.storeDefaultProperties();
         jar.storeJarContent(inputStream);
+        jar.storeDefaultProperties();
         Iterator<ExternalTask> it = awaitingForJarExternalTasks.iterator();
         while (it.hasNext()) {
             ExternalTask task = it.next();

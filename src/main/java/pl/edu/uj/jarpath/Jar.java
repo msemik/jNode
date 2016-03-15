@@ -67,7 +67,6 @@ public class Jar {
 
     public void storeJarContent(InputStream jarContent) {
         try {
-
             Path absolutePath = getAbsolutePath();
             Path dir = absolutePath.getParent();
             if (!Files.exists(dir))
