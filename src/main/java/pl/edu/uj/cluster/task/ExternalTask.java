@@ -102,7 +102,7 @@ public class ExternalTask implements WorkerPoolTask {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
             ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getClassLoader());
             Object o = stream.readObject();
-            if (!(o instanceof ExternalTask))
+            if (!(o instanceof WorkerPoolTask))
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
             this.task = (WorkerPoolTask) o;
         } catch (IOException | ClassNotFoundException e) {
