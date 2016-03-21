@@ -157,7 +157,7 @@ public class EventLoopThread extends Thread {
         interrupt();
         yield();
         if (isAlive()) {
-            eventLoopThreadRegistry.unregister(jar);
+            eventLoopThreadRegistry.unregisterUnconditionally(jar);
             stop();
         }
         logger.info(getJar() + " shutdown() method execution finished");

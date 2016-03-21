@@ -27,6 +27,10 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         return entry.getRequestCounter() == 0 ? of(map.remove(jar).getEventLoopThread()) : empty();
     }
 
+    public synchronized Optional<EventLoopThread> unregisterUnconditionally(Jar jar) {
+        return ofNullable(map.remove(jar).getEventLoopThread());
+    }
+
     @EventListener
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
         try {
@@ -98,11 +102,11 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
     }
 
     @Override
-    public Iterator<EventLoopThread> iterator() {
+    public synchronized Iterator<EventLoopThread> iterator() {
         return map.values().stream().map(EventLoopThreadRegistryEntry::getEventLoopThread).iterator();
     }
 
-    public Set<Jar> getJars() {
+    public synchronized Set<Jar> getJars() {
         return map.keySet();
     }
 }
