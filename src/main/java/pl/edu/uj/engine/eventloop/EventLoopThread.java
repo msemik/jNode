@@ -116,8 +116,8 @@ public class EventLoopThread extends Thread {
 
             if (eventLoopThreadRegistry.returnEventLoopThread(jar) == 0 && callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
                 logger.info("No more callbacks to execute, shutting down");
-                eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
                 if (eventLoopThreadRegistry.unregister(jar).isPresent()) {
+                    eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
                     logger.info(getJar() + " loop shutdown successfully");
                     break;
                 } else {

@@ -85,13 +85,13 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         return eventLoopThread;
     }
 
-    public synchronized EventLoopThread create(Jar jar) {
+    public EventLoopThread create(Jar jar) {
         EventLoopThread eventLoopThread = createWithoutRegistration(jar);
         register(jar, eventLoopThread);
         return eventLoopThread;
     }
 
-    private void register(Jar jar, EventLoopThread eventLoopThread) {
+    private synchronized void register(Jar jar, EventLoopThread eventLoopThread) {
         EventLoopThreadRegistryEntry entry = new EventLoopThreadRegistryEntry(eventLoopThread);
         entry.incrementAndGetRequestCounter();
         map.put(jar, entry);
