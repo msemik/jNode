@@ -114,15 +114,17 @@ public class EventLoopThread extends Thread {
                 }
             }
 
-            if (callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
+            if (eventLoopThreadRegistry.returnEventLoopThread(jar) == 0 && callbackStorage.isEmpty() && eventLoopQueue.isEmpty()) {
                 logger.info("No more callbacks to execute, shutting down");
                 eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
-                break;
+                if (eventLoopThreadRegistry.unregister(jar).isPresent()) {
+                    logger.info(getJar() + " loop shutdown successfully");
+                    break;
+                } else {
+                    logger.info("Aborting shutdown procedure for " + getJar() + " loop. Cause: new task arrived");
+                }
             }
         }
-
-        eventLoopThreadRegistry.unregister(jar);
-        logger.info(getJar() + " loop shutdown successfully");
     }
 
     public Jar getJar() {
