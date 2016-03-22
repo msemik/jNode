@@ -111,6 +111,7 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
+    @EventListener
     public void on(TaskFinishedEvent event) {
         if (!event.getTask().isExternal())
             return;
@@ -122,8 +123,8 @@ public class DefaultDistributor implements Distributor {
         }
     }
 
-    @EventListener
     @Override
+    @EventListener
     public void on(CancelJarJobsEvent event) {
         if (!event.getJar().isValidExistingJar()) {
             return;
