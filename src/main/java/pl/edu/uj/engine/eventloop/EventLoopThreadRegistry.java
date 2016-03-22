@@ -15,7 +15,7 @@ import java.util.*;
 import static java.util.Optional.*;
 
 @Component
-public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
+public class EventLoopThreadRegistry {
     private Logger logger = LoggerFactory.getLogger(EventLoopThreadRegistry.class);
     private Map<Jar, EventLoopThreadRegistryEntry> map = new HashMap<>();
 
@@ -71,10 +71,8 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
     }
 
     @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        for (EventLoopThread eventLoopThread : this) {
-            eventLoopThread.shutDown();
-        }
+    public synchronized void onApplicationShutdown(ApplicationShutdownEvent e) {
+        map.values().stream().map(EventLoopThreadRegistryEntry::getEventLoopThread).forEach(EventLoopThread::shutDown);
     }
 
     public synchronized EventLoopThread getOrCreate(Jar jar) {
@@ -99,11 +97,6 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         EventLoopThreadRegistryEntry entry = new EventLoopThreadRegistryEntry(eventLoopThread);
         entry.incrementAndGetRequestCounter();
         map.put(jar, entry);
-    }
-
-    @Override
-    public synchronized Iterator<EventLoopThread> iterator() {
-        return map.values().stream().map(EventLoopThreadRegistryEntry::getEventLoopThread).iterator();
     }
 
     public synchronized Set<Jar> getJars() {
