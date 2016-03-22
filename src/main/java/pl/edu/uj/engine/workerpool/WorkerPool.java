@@ -125,7 +125,7 @@ public class WorkerPool {
         int corePoolSize = executor.getCorePoolSize();
         int tasksInPool = executingTasks.size();
         logger.debug("Pool size: " + corePoolSize + " , tasksInPool: " + tasksInPool);
-        if (corePoolSize - tasksInPool < 0 && !silently) {
+        if (!silently && corePoolSize - tasksInPool < 0) {
             eventPublisher.publishEvent(new WorkerPoolOverflowEvent(this));
         }
     }

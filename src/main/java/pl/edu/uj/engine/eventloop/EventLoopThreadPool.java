@@ -50,6 +50,10 @@ public class EventLoopThreadPool {
     }
 
     public synchronized Optional<EventLoopThread> get(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.get(jar);
+        if (entry == null) {
+            return empty();
+        }
         return ofNullable(map.get(jar).getEventLoopThread());
     }
 
@@ -59,7 +63,11 @@ public class EventLoopThreadPool {
     }
 
     public synchronized long returnEventLoopThread(Jar jar) {
-        long eventLoopRequestCounter = map.get(jar).decrementAndGetRequestCounter();
+        EventLoopThreadPoolEntry entry = map.get(jar);
+        if (entry == null) {
+            return 0;
+        }
+        long eventLoopRequestCounter = entry.decrementAndGetRequestCounter();
         if (eventLoopRequestCounter == 0) {
             remove(jar);
         }
@@ -67,7 +75,11 @@ public class EventLoopThreadPool {
     }
 
     public synchronized EventLoopThread remove(Jar jar) {
-        return map.remove(jar).getEventLoopThread();
+        EventLoopThreadPoolEntry entry = map.remove(jar);
+        if (entry == null) {
+            return null;
+        }
+        return entry.getEventLoopThread();
     }
 
     @EventListener
