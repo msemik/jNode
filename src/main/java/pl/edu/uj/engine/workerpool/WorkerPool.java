@@ -118,15 +118,14 @@ public class WorkerPool {
             public void onSuccess(Object result) {
                 executingTasks.remove(task.getJar(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
-                if (!silently)
-                    eventPublisher.publishEvent(new TaskFinishedEvent(this, task, result));
+                eventPublisher.publishEvent(new TaskFinishedEvent(this, task, result));
             }
         });
 
         int corePoolSize = executor.getCorePoolSize();
         int tasksInPool = executingTasks.size();
         logger.debug("Pool size: " + corePoolSize + " , tasksInPool: " + tasksInPool);
-        if (corePoolSize - tasksInPool < 0) {
+        if (corePoolSize - tasksInPool < 0 && !silently) {
             eventPublisher.publishEvent(new WorkerPoolOverflowEvent(this));
         }
     }
