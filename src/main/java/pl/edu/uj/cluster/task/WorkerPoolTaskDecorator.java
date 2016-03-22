@@ -4,7 +4,7 @@ import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
 
 public class WorkerPoolTaskDecorator implements WorkerPoolTask {
-    private WorkerPoolTask task;
+    private transient WorkerPoolTask task;
 
     protected WorkerPoolTaskDecorator(WorkerPoolTask task) {
         this.task = task;
