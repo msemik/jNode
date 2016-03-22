@@ -10,7 +10,7 @@ import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.NewTaskReceivedEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
-import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
+import pl.edu.uj.engine.eventloop.EventLoopThreadPool;
 import pl.edu.uj.engine.workerpool.MainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
@@ -27,11 +27,9 @@ public class TaskCoordinator {
     @Autowired
     private WorkerPool workerPool;
     @Autowired
-    private EventLoopThreadRegistry eventLoopThreadRegistry;
+    private EventLoopThreadPool eventLoopThreadPool;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-    @Autowired
-    private JarPathManager jarPathManager;
 
     @EventListener
     public void onJarStateChanged(JarStateChangedEvent event) {
@@ -39,8 +37,9 @@ public class TaskCoordinator {
 
         logger.info("Got jar " + jar + " with properties " + event.getProperties());
 
-        if (event.getProperties().getExecutionState() != NOT_STARTED)
+        if (event.getProperties().getExecutionState() != NOT_STARTED) {
             return;
+        }
 
         startJarJob(jar);
     }
@@ -48,7 +47,7 @@ public class TaskCoordinator {
     private void startJarJob(Jar jar) {
         logger.info("Launching main class for jar " + jar);
 
-        EventLoopThread eventLoopThread = eventLoopThreadRegistry.create(jar);
+        EventLoopThread eventLoopThread = eventLoopThreadPool.takeOrCreate(jar);
         MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
@@ -63,7 +62,7 @@ public class TaskCoordinator {
     @EventListener
     public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
         Jar jar = event.getJar();
-        if (eventLoopThreadRegistry.get(jar).isPresent()) {
+        if (eventLoopThreadPool.get(jar).isPresent()) {
             eventPublisher.publishEvent(new CancelJarJobsEvent(this, jar));
         } else {
             startJarJob(jar);
@@ -80,11 +79,11 @@ public class TaskCoordinator {
         EventLoopThread eventLoopThread;
         Jar jar = task.getJar();
         if (task.isExternal()) { //might be recreated for external tasks.
-            eventLoopThread = eventLoopThreadRegistry.getOrCreate(jar);
+            eventLoopThread = eventLoopThreadPool.takeOrCreate(jar);
         } else {
-            eventLoopThread = eventLoopThreadRegistry.get(jar).orElse(null);
+            eventLoopThread = eventLoopThreadPool.take(jar).orElse(null);
             if (eventLoopThread == null) {
-                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
+                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadPool);
                 return;
             }
         }
@@ -96,7 +95,7 @@ public class TaskCoordinator {
     public void onTaskFinished(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadPool.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread missing for given task: " + task);
             return;

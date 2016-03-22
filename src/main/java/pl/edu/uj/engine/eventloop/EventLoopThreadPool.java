@@ -10,26 +10,20 @@ import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jarpath.Jar;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 @Component
-public class EventLoopThreadRegistry {
-    private Logger logger = LoggerFactory.getLogger(EventLoopThreadRegistry.class);
-    private Map<Jar, EventLoopThreadRegistryEntry> map = new HashMap<>();
-
+public class EventLoopThreadPool {
+    private Logger logger = LoggerFactory.getLogger(EventLoopThreadPool.class);
+    private Map<Jar, EventLoopThreadPoolEntry> map = new HashMap<>();
     @Autowired
     private ApplicationContext context;
-
-    public synchronized Optional<EventLoopThread> unregister(Jar jar) {
-        EventLoopThreadRegistryEntry entry = map.get(jar);
-        return entry.getRequestCounter() == 0 ? of(map.remove(jar).getEventLoopThread()) : empty();
-    }
-
-    public synchronized Optional<EventLoopThread> unregisterUnconditionally(Jar jar) {
-        return ofNullable(map.remove(jar).getEventLoopThread());
-    }
 
     @EventListener
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
@@ -56,47 +50,50 @@ public class EventLoopThreadRegistry {
     }
 
     public synchronized Optional<EventLoopThread> get(Jar jar) {
-        EventLoopThreadRegistryEntry entry = map.get(jar);
-        entry.incrementAndGetRequestCounter();
-        return ofNullable(entry.getEventLoopThread());
+        return ofNullable(map.get(jar).getEventLoopThread());
     }
 
     @Override
     public String toString() {
-        return "EventLoopThreadRegistry" + map;
+        return "EventLoopThreadPool" + map;
     }
 
     public synchronized long returnEventLoopThread(Jar jar) {
-        return map.get(jar).decrementAndGetRequestCounter();
+        long eventLoopRequestCounter = map.get(jar).decrementAndGetRequestCounter();
+        if (eventLoopRequestCounter == 0) {
+            remove(jar);
+        }
+        return eventLoopRequestCounter;
+    }
+
+    public synchronized EventLoopThread remove(Jar jar) {
+        return map.remove(jar).getEventLoopThread();
     }
 
     @EventListener
     public synchronized void onApplicationShutdown(ApplicationShutdownEvent e) {
-        map.values().stream().map(EventLoopThreadRegistryEntry::getEventLoopThread).forEach(EventLoopThread::shutDown);
+        map.values().stream().map(EventLoopThreadPoolEntry::getEventLoopThread).forEach(EventLoopThread::shutDown);
     }
 
-    public synchronized EventLoopThread getOrCreate(Jar jar) {
-        EventLoopThreadRegistryEntry entry = map.computeIfAbsent(jar, jar0 -> new EventLoopThreadRegistryEntry(createWithoutRegistration(jar0)));
+    public synchronized EventLoopThread takeOrCreate(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.computeIfAbsent(jar, jar0 -> new EventLoopThreadPoolEntry(createEventLoopThread(jar0)));
         entry.incrementAndGetRequestCounter();
         return entry.getEventLoopThread();
     }
 
-    private EventLoopThread createWithoutRegistration(Jar jar) {
+    private EventLoopThread createEventLoopThread(Jar jar) {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
         eventLoopThread.startLoop(jar);
         return eventLoopThread;
     }
 
-    public EventLoopThread create(Jar jar) {
-        EventLoopThread eventLoopThread = createWithoutRegistration(jar);
-        register(jar, eventLoopThread);
-        return eventLoopThread;
-    }
-
-    private synchronized void register(Jar jar, EventLoopThread eventLoopThread) {
-        EventLoopThreadRegistryEntry entry = new EventLoopThreadRegistryEntry(eventLoopThread);
+    public synchronized Optional<EventLoopThread> take(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.get(jar);
+        if (entry == null) {
+            return empty();
+        }
         entry.incrementAndGetRequestCounter();
-        map.put(jar, entry);
+        return ofNullable(entry.getEventLoopThread());
     }
 
     public synchronized Set<Jar> getJars() {
