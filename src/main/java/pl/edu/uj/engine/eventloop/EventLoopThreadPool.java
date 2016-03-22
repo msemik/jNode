@@ -10,32 +10,20 @@ import pl.edu.uj.ApplicationShutdownEvent;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jarpath.Jar;
 
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 @Component
-public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
-
-    private Map<Jar, EventLoopThread> map = new ConcurrentHashMap<>();
-
-    private Logger logger = LoggerFactory.getLogger(EventLoopThreadRegistry.class);
-
+public class EventLoopThreadPool {
+    private Logger logger = LoggerFactory.getLogger(EventLoopThreadPool.class);
+    private Map<Jar, EventLoopThreadPoolEntry> map = new HashMap<>();
     @Autowired
     private ApplicationContext context;
-
-    public void register(Jar jar, EventLoopThread eventLoopThread) {
-        map.put(jar, eventLoopThread);
-    }
-
-    public EventLoopThread unregister(Jar jar) {
-        EventLoopThread eventLoopThread = map.remove(jar);
-        return eventLoopThread;
-    }
 
     @EventListener
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
@@ -61,44 +49,54 @@ public class EventLoopThreadRegistry implements Iterable<EventLoopThread> {
         }
     }
 
+    public synchronized Optional<EventLoopThread> get(Jar jar) {
+        return ofNullable(map.get(jar).getEventLoopThread());
+    }
+
     @Override
     public String toString() {
-        return "EventLoopThreadRegistry" + map;
+        return "EventLoopThreadPool" + map;
+    }
+
+    public synchronized long returnEventLoopThread(Jar jar) {
+        long eventLoopRequestCounter = map.get(jar).decrementAndGetRequestCounter();
+        if (eventLoopRequestCounter == 0) {
+            remove(jar);
+        }
+        return eventLoopRequestCounter;
+    }
+
+    public synchronized EventLoopThread remove(Jar jar) {
+        return map.remove(jar).getEventLoopThread();
     }
 
     @EventListener
-    public void onApplicationShutdown(ApplicationShutdownEvent e) {
-        for (EventLoopThread eventLoopThread : this) {
-            eventLoopThread.shutDown();
-        }
+    public synchronized void onApplicationShutdown(ApplicationShutdownEvent e) {
+        map.values().stream().map(EventLoopThreadPoolEntry::getEventLoopThread).forEach(EventLoopThread::shutDown);
     }
 
-    public Optional<EventLoopThread> get(Jar jar) {
-        return ofNullable(map.get(jar));
+    public synchronized EventLoopThread takeOrCreate(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.computeIfAbsent(jar, jar0 -> new EventLoopThreadPoolEntry(createEventLoopThread(jar0)));
+        entry.incrementAndGetRequestCounter();
+        return entry.getEventLoopThread();
     }
 
-    public EventLoopThread getOrCreate(Jar jar) {
-        return map.computeIfAbsent(jar, jar0 -> createWithoutRegistration(jar0));
-    }
-
-    public EventLoopThread create(Jar jar) {
-        EventLoopThread eventLoopThread = createWithoutRegistration(jar);
-        register(jar, eventLoopThread);
-        return eventLoopThread;
-    }
-
-    private EventLoopThread createWithoutRegistration(Jar jar) {
+    private EventLoopThread createEventLoopThread(Jar jar) {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
         eventLoopThread.startLoop(jar);
         return eventLoopThread;
     }
 
-    @Override
-    public Iterator<EventLoopThread> iterator() {
-        return map.values().iterator();
+    public synchronized Optional<EventLoopThread> take(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.get(jar);
+        if (entry == null) {
+            return empty();
+        }
+        entry.incrementAndGetRequestCounter();
+        return ofNullable(entry.getEventLoopThread());
     }
 
-    public Set<Jar> getJars() {
+    public synchronized Set<Jar> getJars() {
         return map.keySet();
     }
 }

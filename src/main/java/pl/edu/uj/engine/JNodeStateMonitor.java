@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.cluster.node.Nodes;
-import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
+import pl.edu.uj.engine.eventloop.EventLoopThreadPool;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class JNodeStateMonitor {
     public static final int TEN_SECONDS_IN_MILLIS = 10000;
     public static final int THREE_SECONDS_IN_MILLIS = 3000;
     @Autowired
-    private EventLoopThreadRegistry eventLoopThreadRegistry;
+    private EventLoopThreadPool eventLoopThreadPool;
     @Autowired
     private WorkerPool workerPool;
     @Autowired
@@ -36,9 +36,9 @@ public class JNodeStateMonitor {
     }
 
     private List<String> getJars() {
-        return eventLoopThreadRegistry.getJars()
-                .stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        return eventLoopThreadPool.getJars()
+                                  .stream()
+                                  .map(Object::toString)
+                                  .collect(Collectors.toList());
     }
 }
