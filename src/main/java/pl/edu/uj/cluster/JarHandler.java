@@ -72,6 +72,11 @@ public class JarHandler {
         synchronized (this) {
             awaitingTasks = awaitingForJarExternalTasks.remove(jar);
         }
+
+        if (awaitingTasks == null) {
+            return;
+        }
+
         for (ExternalTask task : awaitingTasks) {
             task.deserialize(jar);
             publishTaskReceivedEvent(task);
