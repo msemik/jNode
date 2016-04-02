@@ -16,6 +16,7 @@ import pl.edu.uj.options.NodeIdOptionEvent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -149,6 +150,16 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         membersInLastView.stream()
                 .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
                 .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
+    }
+
+    //@Scheduled(fixedDelay = 2000, initialDelay = 2000)
+    public void asd() {
+
+        View view = channel.getView();
+        System.out.println("view" + view);
+        System.out.println("view.getMembers" + view.getMembers());
+        System.out.println("view.getMembersRaw" + Arrays.deepToString(view.getMembersRaw()));
+        System.out.println("view.getViewId" + view.getViewId());
     }
 
     @Override

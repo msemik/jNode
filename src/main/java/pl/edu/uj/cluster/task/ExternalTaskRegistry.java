@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import pl.edu.uj.jarpath.Jar;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -44,5 +46,9 @@ public class ExternalTaskRegistry {
         });
         set.removeAll(removedExternalTasks);
         return removedExternalTasks;
+    }
+
+    public List<Long> getTaskIds() {
+        return set.stream().map(ExternalTask::getTaskId).collect(Collectors.toList());
     }
 }
