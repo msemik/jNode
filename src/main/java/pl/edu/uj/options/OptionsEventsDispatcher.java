@@ -45,6 +45,10 @@ public class OptionsEventsDispatcher {
                 eventPublisher.publishEvent(new HelpOptionEvent(this));
             }
 
+            if (cmd.hasOption("n")) {
+                eventPublisher.publishEvent(new NodeIdOptionEvent(this, cmd.getOptionValue("n")));
+            }
+
             if (cmd.hasOption("z")) {
                 eventPublisher.publishEvent(new CustomJarPathEvent(this, cmd.getOptionValue("z")));
             }
@@ -52,9 +56,7 @@ public class OptionsEventsDispatcher {
             if (cmd.hasOption("j")) {
                 eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
             }
-            if (cmd.hasOption("n")) {
-                eventPublisher.publishEvent(new NodeIdOptionEvent(this, cmd.getOptionValue("n")));
-            }
+
             if (cmd.hasOption("p")) {
                 int p = Integer.parseInt(cmd.getOptionValue("p"));
                 if (p < 1) {

@@ -9,7 +9,6 @@ import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.engine.workerpool.PriorityThreadPoolTaskExecutor;
 import pl.edu.uj.options.OptionsEventsDispatcher;
 import pl.edu.uj.options.PoolSizeOptionEvent;
@@ -44,6 +43,7 @@ public class JNodeApplication {
         OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
         optionsEventsDispatcher.dispatchOptionsEvents(args);
 
+        applicationContext.publishEvent(new OptionsDispatchedEvent(applicationContext));
         applicationContext.publishEvent(new ApplicationInitializedEvent(applicationContext));
         isInitialized = true;
         logger.info("jNode application has started, args:" + String.join(" ", args));

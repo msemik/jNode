@@ -10,6 +10,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.ApplicationInitializedEvent;
 import pl.edu.uj.ApplicationShutdownEvent;
+import pl.edu.uj.OptionsDispatchedEvent;
 import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.options.NodeIdOptionEvent;
 
@@ -39,10 +40,13 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     @EventListener
     public void on(NodeIdOptionEvent event) {
         this.nodeId = event.getNodeId();
+        if (channel != null) {
+            throw new IllegalStateException("channel initialized before getting node id");
+        }
     }
 
     @EventListener
-    public void on(ApplicationInitializedEvent event) {
+    public void on(OptionsDispatchedEvent event) {
         init();
     }
 
@@ -69,6 +73,11 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
     @EventListener
+    public void on(ApplicationInitializedEvent event) {
+        init();
+    }
+
+    @EventListener
     public void on(ApplicationShutdownEvent event) {
         if (channel != null)
             channel.close();
@@ -90,16 +99,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         } else {
             logger.warn("Unexpected message body type: " + messageBody.getClass().getSimpleName());
         }
-    }    @Override
-    public void send(Serializable obj, String destinationNodeId) {
-        init();
-        try {
-            logger.debug("Sending message " + obj + " to " + (destinationNodeId == null ? "all" : destinationNodeId));
-            channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -117,9 +116,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
             distributeNewNodeForEachNewNode(membersInLastView);
             distributeNodeGoneForEachGoneNode(membersInLastView);
         }
-    }    @Override
-    public void send(Serializable obj) {
-        send(obj, null);
     }
 
     private List<String> getCurrentViewAsString(View view) {
@@ -127,13 +123,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 .stream()
                 .map(Address::toString)
                 .collect(Collectors.toList());
-    }    @Override
-    public String getCurrentNodeId() {
-        if (nodeId == null) {
-            init();
-            nodeId = channel.getAddressAsString();
-        }
-        return nodeId;
     }
 
     private void distributeNewNodeForEachNewNode(List<String> membersInLastView) {
@@ -143,9 +132,18 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                     if (!newNodeId.equals(getCurrentNodeId()))
                         distributor.onNewNode(newNodeId);
                 });
-    }    private Address getAddressByNodeId(String destinationNodeId) {
-        //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
-        return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
+    }
+
+    @Override
+    public void send(Serializable obj, String destinationNodeId) {
+        init();
+        try {
+            logger.debug("Sending message " + obj + " to " + (destinationNodeId == null ? "all" : destinationNodeId));
+            channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
@@ -155,10 +153,26 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
 
+    @Override
+    public void send(Serializable obj) {
+        send(obj, null);
+    }
 
 
+    @Override
+    public String getCurrentNodeId() {
+        if (nodeId == null) {
+            init();
+            nodeId = channel.getAddressAsString();
+        }
+        return nodeId;
+    }
 
 
+    private Address getAddressByNodeId(String destinationNodeId) {
+        //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
+        return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
+    }
 
 
 }
