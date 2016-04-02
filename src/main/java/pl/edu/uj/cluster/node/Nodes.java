@@ -37,6 +37,8 @@ public class Nodes {
     }
 
     public synchronized void add(Node node) {
+        if (nodes.contains(node))
+            return;
         node.setArrivalOrder(nodes.size());
         nodes.add(node);
     }

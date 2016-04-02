@@ -18,7 +18,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -29,13 +30,14 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     private static final String DEFAULT_JNODE_CHANNEL = "DefaultJNodeChannel";
     private Logger logger = LoggerFactory.getLogger(JGroups.class);
     private JChannel channel;
-
+    private ExecutorService executorService;
     @Autowired
     private Distributor distributor;
     private List<String> membersInCurrentView = new ArrayList<>();
     private String nodeId;
 
     public JGroups() {
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     @EventListener
@@ -86,7 +88,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @Override
     public void receive(Message msg) {
-        CompletableFuture.runAsync(() -> handleOnReceive(msg));
+        executorService.execute(() -> handleOnReceive(msg));
     }
 
     private void handleOnReceive(Message msg) {
@@ -108,7 +110,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @Override
     public void viewAccepted(View view) {
-        CompletableFuture.runAsync(() -> handleViewAccepted(view));
+        executorService.execute(() -> handleViewAccepted(view));
     }
 
     private void handleViewAccepted(View view) {
