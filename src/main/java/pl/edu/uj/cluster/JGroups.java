@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -85,6 +86,10 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @Override
     public void receive(Message msg) {
+        CompletableFuture.runAsync(() -> handleOnRecive(msg));
+    }
+
+    private void handleOnRecive(Message msg) {
         String sourceNodeId = msg.src().toString();
         Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
         Object messageBody = msg.getObject();
@@ -103,6 +108,10 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @Override
     public void viewAccepted(View view) {
+        CompletableFuture.runAsync(() -> handleViewAccepted(view));
+    }
+
+    private void handleViewAccepted(View view) {
         logger.debug(String.join(", "
                 , "View creator:" + view.getCreator()
                 , "View id:" + view.getViewId()
@@ -110,7 +119,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 , "jNodes number:" + view.size()
                 , "changed view" + view.getMembers()));
 
-        synchronized (this) {
+        synchronized (JGroups.this) {
             List<String> membersInLastView = membersInCurrentView;
             membersInCurrentView = getCurrentViewAsString(view);
             distributeNewNodeForEachNewNode(membersInLastView);
@@ -134,6 +143,12 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 });
     }
 
+    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
+        membersInLastView.stream()
+                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
+                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
+    }
+
     @Override
     public void send(Serializable obj, String destinationNodeId) {
         init();
@@ -144,12 +159,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-    }
-
-    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
-        membersInLastView.stream()
-                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
-                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
     }
 
 
