@@ -29,15 +29,14 @@ public class EventLoopThreadPool {
     public void onCancelJarJobsEvent(CancelJarJobsEvent event) {
         try {
             Jar jar = event.getJar();
-            Optional<EventLoopThread> optEventLoopThread = get(jar);
+            EventLoopThread eventLoopThread = remove(jar);
 
-            if (!optEventLoopThread.isPresent()) {
+            if (eventLoopThread == null) {
                 logger.info("There was no EventLoopThread for the jar " + jar + ",  " + toString());
                 return;
             }
 
             logger.info("Forcing EventLoopThread " + jar + " to shutdown");
-            EventLoopThread eventLoopThread = optEventLoopThread.get();
             if (eventLoopThread.equals(event.getSource())) {
                 //if EventLoopThread pushed that event, we don't need to shutdown it as it is already done.
                 return;
@@ -49,17 +48,25 @@ public class EventLoopThreadPool {
         }
     }
 
+    public synchronized EventLoopThread remove(Jar jar) {
+        EventLoopThreadPoolEntry entry = map.remove(jar);
+        if (entry == null) {
+            return null;
+        }
+        return entry.getEventLoopThread();
+    }
+
+    @Override
+    public String toString() {
+        return "EventLoopThreadPool" + map;
+    }
+
     public synchronized Optional<EventLoopThread> get(Jar jar) {
         EventLoopThreadPoolEntry entry = map.get(jar);
         if (entry == null) {
             return empty();
         }
         return ofNullable(map.get(jar).getEventLoopThread());
-    }
-
-    @Override
-    public String toString() {
-        return "EventLoopThreadPool" + map;
     }
 
     public synchronized long returnEventLoopThread(Jar jar) {
@@ -72,14 +79,6 @@ public class EventLoopThreadPool {
             remove(jar);
         }
         return eventLoopRequestCounter;
-    }
-
-    public synchronized EventLoopThread remove(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.remove(jar);
-        if (entry == null) {
-            return null;
-        }
-        return entry.getEventLoopThread();
     }
 
     @EventListener
