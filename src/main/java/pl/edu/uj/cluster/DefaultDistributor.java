@@ -12,6 +12,7 @@ import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.cluster.task.*;
+import pl.edu.uj.crosscuting.LogInvocations;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
@@ -31,6 +32,7 @@ import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
  * Created by alanhawrot on 01.03.2016.
  */
 @Component
+@LogInvocations
 public class DefaultDistributor implements Distributor {
     @Autowired
     JarHandler jarHandler;
