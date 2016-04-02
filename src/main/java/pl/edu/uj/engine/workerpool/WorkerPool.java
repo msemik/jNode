@@ -16,11 +16,13 @@ import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jarpath.Jar;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.FutureTask;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -136,5 +138,10 @@ public class WorkerPool {
 
     public long poolSize() {
         return getTaskExecutor().getCorePoolSize();
+    }
+
+    public List<Long> getIdsOfTasksInPool() {
+        return executingTasks.getTasks().stream().map(t -> t.getTaskId()).collect(Collectors.toList());
+
     }
 }

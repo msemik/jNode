@@ -30,7 +30,7 @@ public class JNodeStateMonitor {
         List<String> jars = getJars();
         StringBuilder b = new StringBuilder();
         b.append("EventLoopThreads: " + String.join(", ", jars) + "\n");
-        b.append("Jobs in pool: " + workerPool.jobsInPool() + "\n");
+        b.append("Jobs in pool: " + workerPool.jobsInPool() + ", ids: " + workerPool.getIdsOfTasksInPool() + "\n");
         b.append("node:\n" + nodes);
         System.out.println(b.toString());
     }

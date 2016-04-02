@@ -3,11 +3,13 @@ package pl.edu.uj.engine.workerpool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.crosscuting.ReflectionUtils;
 import pl.edu.uj.jarpath.Jar;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static java.util.Collections.emptyList;
 
@@ -18,6 +20,7 @@ import static java.util.Collections.emptyList;
 public class ExecutingTasks {
     private Map<Jar, List<Future<Object>>> futureMap = new HashMap<>();
     private Logger logger = LoggerFactory.getLogger(ExecutingTasks.class);
+    private String ids;
 
     public synchronized void put(Jar jar, Future<Object> future) {
         List<Future<Object>> futures = futureMap.getOrDefault(jar, new ArrayList<>());
@@ -72,5 +75,15 @@ public class ExecutingTasks {
             }
         }
         logger.error("No future task found");
+    }
+
+    public synchronized List<WorkerPoolTask> getTasks() {
+        List<WorkerPoolTask> tasks = new ArrayList<>();
+        futureMap.values().forEach(l -> l.forEach(f -> tasks.add(getTaskFromFuture(f))));
+        return tasks;
+    }
+
+    private WorkerPoolTask getTaskFromFuture(Future<Object> f) {
+        return (WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, f, "callable");
     }
 }
