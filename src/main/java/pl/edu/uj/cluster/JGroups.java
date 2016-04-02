@@ -1,7 +1,6 @@
 package pl.edu.uj.cluster;
 
 import org.jgroups.*;
-import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
@@ -34,7 +32,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     private ExecutorService executorService;
     @Autowired
     private Distributor distributor;
-    private List<String> membersInCurrentView = new ArrayList<>();
+    private List<Address> membersInCurrentView = new ArrayList<>();
     private String nodeId;
 
     public JGroups() {
@@ -123,33 +121,33 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 , "changed view" + view.getMembers()));
 
         synchronized (JGroups.this) {
-            List<String> membersInLastView = membersInCurrentView;
+            List<Address> membersInLastView = membersInCurrentView;
             membersInCurrentView = getCurrentViewAsString(view);
             distributeNewNodeForEachNewNode(membersInLastView);
             distributeNodeGoneForEachGoneNode(membersInLastView);
         }
     }
 
-    private List<String> getCurrentViewAsString(View view) {
-        return view.getMembers()
-                .stream()
-                .map(Address::toString)
-                .collect(Collectors.toList());
+    private List<Address> getCurrentViewAsString(View view) {
+        return view.getMembers();
     }
 
-    private void distributeNewNodeForEachNewNode(List<String> membersInLastView) {
+    private void distributeNewNodeForEachNewNode(List<Address> membersInLastView) {
         membersInCurrentView.stream()
                 .filter(nodeIdInNewView -> !membersInLastView.contains(nodeIdInNewView))
-                .forEach(newNodeId -> {
-                    if (!newNodeId.equals(getCurrentNodeId()))
+                .forEach(newNode -> {
+                    View view = channel.getView();
+                    String newNodeId = newNode.toString();
+                    if (!newNodeId.equals(getCurrentNodeId())) {
                         distributor.onNewNode(newNodeId);
+                    }
                 });
     }
 
-    private void distributeNodeGoneForEachGoneNode(List<String> membersInLastView) {
+    private void distributeNodeGoneForEachGoneNode(List<Address> membersInLastView) {
         membersInLastView.stream()
                 .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
-                .forEach(goneNodeId -> distributor.onNodeGone(goneNodeId));
+                .forEach(goneNode -> distributor.onNodeGone(goneNode.toString()));
     }
 
     //@Scheduled(fixedDelay = 2000, initialDelay = 2000)
@@ -166,7 +164,6 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     public void send(Serializable obj, String destinationNodeId) {
         init();
         try {
-            logger.debug("Sending message " + obj + " to " + (destinationNodeId == null ? "all" : destinationNodeId));
             channel.send(new Message(getAddressByNodeId(destinationNodeId), obj));
         } catch (Exception e) {
             e.printStackTrace();
@@ -192,8 +189,13 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
 
     private Address getAddressByNodeId(String destinationNodeId) {
-        //Uwaga!! nie jestem pewny tej linijki i póki co nie mam jak spr.
-        return destinationNodeId != null ? UUID.getByName(destinationNodeId) : null;
+        if (destinationNodeId == null)
+            return null;
+        for (Address address : membersInCurrentView) {
+            if (address.toString().equals(destinationNodeId))
+                return address;
+        }
+        throw new IllegalStateException("Couldn't find addres in current view for node " + destinationNodeId);
     }
 
 
