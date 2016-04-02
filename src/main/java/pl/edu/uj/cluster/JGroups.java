@@ -86,10 +86,10 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @Override
     public void receive(Message msg) {
-        CompletableFuture.runAsync(() -> handleOnRecive(msg));
+        CompletableFuture.runAsync(() -> handleOnReceive(msg));
     }
 
-    private void handleOnRecive(Message msg) {
+    private void handleOnReceive(Message msg) {
         String sourceNodeId = msg.src().toString();
         Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
         Object messageBody = msg.getObject();
