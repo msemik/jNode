@@ -4,19 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.engine.JarLauncher;
-import pl.edu.uj.engine.NodeIdFactory;
+import pl.edu.uj.engine.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.nio.file.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Component
 @Scope(scopeName = "prototype")
-public class Jar {
+public class Jar
+{
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -27,136 +26,188 @@ public class Jar {
     private Path pathRelativeToJarPath;
     private JarLauncher jarLauncher;
 
-    protected Jar(String nodeId, Path pathRelativeToJarPath) {
+    protected Jar(String nodeId, Path pathRelativeToJarPath)
+    {
         this.nodeId = nodeId;
         this.pathRelativeToJarPath = pathRelativeToJarPath;
     }
 
-    public void validate() {
-        if (!pathRelativeToJarPath.toString().endsWith(".jar"))
+    public void validate()
+    {
+        if(!pathRelativeToJarPath.toString().endsWith(".jar"))
             throw new IllegalArgumentException("Invalid jar path '" + pathRelativeToJarPath + "'");
     }
 
-    public String getNodeId() {
+    public String getNodeId()
+    {
         return nodeId;
     }
 
-    public String getAbsolutePathAsString() {
+    public String getAbsolutePathAsString()
+    {
         return getAbsolutePath().toString();
     }
 
-    public Path getAbsolutePath() {
+    public Path getAbsolutePath()
+    {
         return jarPathServices.getJarPath().resolve(pathRelativeToJarPath);
     }
 
-    public byte[] readContent() {
-        if (!isValidExistingJar()) {
+    public byte[] readContent()
+    {
+        if(!isValidExistingJar())
+        {
             return new byte[0];
         }
-        try {
+        try
+        {
             return Files.readAllBytes(getAbsolutePath());
-        } catch (IOException e) {
+        }
+        catch(IOException e)
+        {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean isValidExistingJar() {
+    public boolean isValidExistingJar()
+    {
         Path absolutePath = getAbsolutePath();
         return Files.exists(absolutePath) && Files.isReadable(absolutePath);
     }
 
-    public void storeJarContent(InputStream jarContent) {
-        try {
+    public void storeJarContent(InputStream jarContent)
+    {
+        try
+        {
             Path absolutePath = getAbsolutePath();
             Path dir = absolutePath.getParent();
-            if (!Files.exists(dir))
+            if(!Files.exists(dir))
                 Files.createDirectory(dir);
             Files.copy(jarContent, absolutePath, REPLACE_EXISTING);
-        } catch (IOException e) {
+        }
+        catch(IOException e)
+        {
             throw new RuntimeException(e);
         }
     }
 
-    public JarProperties storeExecutionState(JarExecutionState executionState) {
+    public JarProperties storeExecutionState(JarExecutionState executionState)
+    {
         JarProperties jarProperties = readProperties();
         jarProperties.setExecutionState(executionState);
         jarProperties.store();
         return jarProperties;
     }
 
-    public JarProperties readProperties() {
+    public JarProperties readProperties()
+    {
         return JarProperties.readFor(this);
     }
 
-    public JarProperties storeDefaultProperties() {
+    public JarProperties storeDefaultProperties()
+    {
         JarProperties jarProperties = JarProperties.createFor(this);
         jarProperties.store();
         return jarProperties;
     }
 
-    public JarProperties deleteProperties() {
+    public JarProperties deleteProperties()
+    {
         JarProperties jarProperties = JarProperties.readFor(this);
         jarProperties.delete();
         return jarProperties;
     }
 
-    public boolean isLocal() {
+    public boolean isLocal()
+    {
         return nodeId.equals(nodeIdFactory.getCurrentNodeId());
     }
 
-    public ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader()
+    {
         return getJarLauncher().getClassLoader();
     }
 
-    private JarLauncher getJarLauncher() {
-        if (jarLauncher == null) {
+    private JarLauncher getJarLauncher()
+    {
+        if(jarLauncher == null)
+        {
             jarLauncher = applicationContext.getBean(JarLauncher.class);
             jarLauncher.setJar(this);
         }
         return jarLauncher;
     }
 
-    public String getFileNameAsString() {
+    public String getFileNameAsString()
+    {
         return getFileName().toString();
     }
 
-    public Path getFileName() {
+    public Path getFileName()
+    {
         return pathRelativeToJarPath.getFileName();
     }
 
-    public boolean hasRelativePath(Path pathToJar) {
+    public boolean hasRelativePath(Path pathToJar)
+    {
         return getPathRelativeToJarPath().equals(pathToJar);
     }
 
-    public Path getPathRelativeToJarPath() {
+    public Path getPathRelativeToJarPath()
+    {
         return pathRelativeToJarPath;
     }
 
-    public Object launchMain() {
+    public Object launchMain()
+    {
         return getJarLauncher().launchMain();
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return getPathRelativeToJarPath().toString();
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if(this == o)
+            return true;
+        if(o == null || getClass() != o.getClass())
+            return false;
 
         Jar jar = (Jar) o;
 
-        if (!nodeId.equals(jar.nodeId)) return false;
+        if(!nodeId.equals(jar.nodeId))
+            return false;
         return pathRelativeToJarPath.equals(jar.pathRelativeToJarPath);
 
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         int result = nodeId.hashCode();
         result = 31 * result + pathRelativeToJarPath.hashCode();
         return result;
+    }
+
+    public Class<?> getClass(String canonicalName)
+    {
+        ClassLoader classLoader = getClassLoader();
+        try
+        {
+            return Class.forName(canonicalName, true, classLoader);
+        }
+        catch(ClassNotFoundException e)
+        {
+            return null;
+        }
+    }
+
+    public Class<Annotation> getAnnotation(String canonicalName)
+    {
+        return (Class<Annotation>) getClass(canonicalName);
     }
 }

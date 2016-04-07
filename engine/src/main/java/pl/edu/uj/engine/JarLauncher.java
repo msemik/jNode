@@ -63,12 +63,12 @@ public class JarLauncher {
         jcl = new JarClassLoader();
         jcl.add(jar.getAbsolutePathAsString());
 
-        jcl.getLocalLoader().setEnabled(true);
-        jcl.getOsgiBootLoader().setEnabled(true);
-        jcl.getParentLoader().setEnabled(true);
-        jcl.getSystemLoader().setEnabled(true);
-        jcl.getThreadLoader().setEnabled(true);
-        jcl.getCurrentLoader().setEnabled(true);
+        jcl.getLocalLoader().setEnabled(false);
+        jcl.getOsgiBootLoader().setEnabled(false);
+        jcl.getParentLoader().setEnabled(false);
+        jcl.getSystemLoader().setEnabled(false);
+        jcl.getThreadLoader().setEnabled(false);
+        jcl.getCurrentLoader().setEnabled(false);
 
         return jcl;
     }
