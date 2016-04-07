@@ -98,8 +98,9 @@ public class JarPathServices {
     }
 
     public Path getPathSinceJarPath(Path pathToJarInJarPath) {
-        System.out.println(getJarPath() + " since " + pathToJarInJarPath);
-        return getJarPath().relativize(pathToJarInJarPath);
+        Path relativized = getJarPath().relativize(pathToJarInJarPath);
+        System.out.println(pathToJarInJarPath  + " since " + getJarPath() + " is " + relativized);
+        return relativized;
     }
 
     public Path getJarPath() {
