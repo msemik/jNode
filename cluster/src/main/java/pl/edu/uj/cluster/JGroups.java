@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.main.ApplicationInitializedEvent;
 import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.main.OptionsDispatchedEvent;
-import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.main.options.NodeIdOptionEvent;
 
 import java.io.Serializable;
@@ -53,15 +53,18 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
     private void init() {
-        if (channel != null)
+        if (channel != null) {
             return;
+        }
         synchronized (this) {
-            if (channel != null)
+            if (channel != null) {
                 return;
+            }
             try {
                 channel = new JChannel();
-                if (nodeId != null)
+                if (nodeId != null) {
                     channel.setName(nodeId);
+                }
                 channel.setReceiver(this);
                 channel.connect(DEFAULT_JNODE_CHANNEL);
 
@@ -81,8 +84,9 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     @EventListener
     public void on(ApplicationShutdownEvent event) {
-        if (channel != null)
+        if (channel != null) {
             channel.close();
+        }
     }
 
     @Override
@@ -113,12 +117,8 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
     private void handleViewAccepted(View view) {
-        logger.debug(String.join(", "
-                , "View creator:" + view.getCreator()
-                , "View id:" + view.getViewId()
-                , "Current nodeId:" + getCurrentNodeId()
-                , "jNodes number:" + view.size()
-                , "changed view" + view.getMembers()));
+        logger.debug(String.join(", ", "View creator:" + view.getCreator(), "View id:" + view.getViewId(), "Current nodeId:" + getCurrentNodeId(),
+                                 "jNodes number:" + view.size(), "changed view" + view.getMembers()));
 
         synchronized (JGroups.this) {
             List<Address> membersInLastView = membersInCurrentView;
@@ -133,21 +133,18 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     }
 
     private void distributeNewNodeForEachNewNode(List<Address> membersInLastView) {
-        membersInCurrentView.stream()
-                .filter(nodeIdInNewView -> !membersInLastView.contains(nodeIdInNewView))
-                .forEach(newNode -> {
-                    View view = channel.getView();
-                    String newNodeId = newNode.toString();
-                    if (!newNodeId.equals(getCurrentNodeId())) {
-                        distributor.onNewNode(newNodeId);
-                    }
-                });
+        membersInCurrentView.stream().filter(nodeIdInNewView -> !membersInLastView.contains(nodeIdInNewView)).forEach(newNode -> {
+            View view = channel.getView();
+            String newNodeId = newNode.toString();
+            if (!newNodeId.equals(getCurrentNodeId())) {
+                distributor.onNewNode(newNodeId);
+            }
+        });
     }
 
     private void distributeNodeGoneForEachGoneNode(List<Address> membersInLastView) {
-        membersInLastView.stream()
-                .filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
-                .forEach(goneNode -> distributor.onNodeGone(goneNode.toString()));
+        membersInLastView.stream().filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
+                         .forEach(goneNode -> distributor.onNodeGone(goneNode.toString()));
     }
 
     //@Scheduled(fixedDelay = 2000, initialDelay = 2000)
@@ -171,12 +168,10 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         }
     }
 
-
     @Override
     public void send(Serializable obj) {
         send(obj, null);
     }
-
 
     @Override
     public String getCurrentNodeId() {
@@ -187,16 +182,15 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         return nodeId;
     }
 
-
     private Address getAddressByNodeId(String destinationNodeId) {
-        if (destinationNodeId == null)
+        if (destinationNodeId == null) {
             return null;
+        }
         for (Address address : membersInCurrentView) {
-            if (address.toString().equals(destinationNodeId))
+            if (address.toString().equals(destinationNodeId)) {
                 return address;
+            }
         }
         throw new IllegalStateException("Couldn't find addres in current view for node " + destinationNodeId);
     }
-
-
 }

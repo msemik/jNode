@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.engine.NodeIdFactory;
 import pl.edu.uj.engine.events.CancelJarJobsEvent;
 import pl.edu.uj.engine.events.JarJobsCompletedEvent;
 import pl.edu.uj.engine.events.JarJobsExecutionStartedEvent;
+import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.main.options.JarOptionEvent;
 
 import java.io.IOException;
@@ -19,13 +19,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static pl.edu.uj.main.ApplicationShutdownEvent.ShutdownReason.INVALID_JAR_FILE;
 import static pl.edu.uj.jarpath.JarExecutionState.*;
+import static pl.edu.uj.main.ApplicationShutdownEvent.ShutdownReason.INVALID_JAR_FILE;
 
 /**
  * Created by michal on 28.10.15.
  */
-
 @Component
 public class JarPathManager {
     Logger logger = LoggerFactory.getLogger(JarPathManager.class);
@@ -96,8 +95,9 @@ public class JarPathManager {
 
     public void onDeleteProperties(Path propertiesPath) {
         Optional<Jar> optionalJar = jarPathServices.getJarForProperty(propertiesPath);
-        if (!optionalJar.isPresent())
+        if (!optionalJar.isPresent()) {
             return;
+        }
         Jar jar = optionalJar.get();
         jar.storeDefaultProperties();
         eventPublisher.publishEvent(new JarPropertiesDeletedEvent(this, jar));

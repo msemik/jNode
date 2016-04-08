@@ -32,16 +32,13 @@ public class EventLoopResponse {
         return type;
     }
 
-
     public Object getTaskResult() {
         return taskResult;
     }
 
-
     public Throwable getException() {
         return exception;
     }
-
 
     public Task getTask() {
         return task;

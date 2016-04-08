@@ -21,7 +21,6 @@ import static java.util.Optional.of;
 import static pl.edu.uj.cluster.delegation.DefaultState.NO_DELEGATION;
 import static pl.edu.uj.cluster.delegation.DefaultTaskDelegationEvent.*;
 
-
 /**
  * Simulates Finite State Machine,
  * for given pair events, state:
@@ -83,7 +82,6 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
                 do {
                     prevState = delegationState.get();
                     nextState = event.nextState(this, prevState);
-
                 } while (!delegationState.compareAndSet(prevState, nextState));
                 logger.info("Changing state from " + prevState + " to " + nextState);
                 //Executing action after atomically changed state

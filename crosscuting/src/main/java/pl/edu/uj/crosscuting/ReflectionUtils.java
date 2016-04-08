@@ -13,7 +13,6 @@ public class ReflectionUtils {
         } catch (IllegalAccessException e) {
             //shouldn't happen according to readDeclaredField with forceAccess set to true.
             throw new AssertionError(e);
-
         }
     }
 

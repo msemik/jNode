@@ -8,8 +8,9 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
 
     protected WorkerPoolTaskDecorator(WorkerPoolTask task) {
         this.task = task;
-        if (task == null)
+        if (task == null) {
             throw new IllegalStateException("Can't create with null task!!");
+        }
     }
 
     @Override

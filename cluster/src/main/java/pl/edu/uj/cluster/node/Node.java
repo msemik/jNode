@@ -63,8 +63,12 @@ public class Node implements Comparable<Node> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Node node = (Node) o;
 
@@ -74,11 +78,11 @@ public class Node implements Comparable<Node> {
     @Override
     public String toString() {
         return "{" +
-                "nodeId=" + nodeId +
-                ", availableThreads=" + availableThreads +
-                ", poolSize=" + poolSize +
-                ", priority=" + priority +
-                '}';
+               "nodeId=" + nodeId +
+               ", availableThreads=" + availableThreads +
+               ", poolSize=" + poolSize +
+               ", priority=" + priority +
+               '}';
     }
 
     public String getNodeId() {

@@ -71,9 +71,9 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
     @Override
     public String toString() {
         return "ExternalTask{" +
-                "task=" + taskId +
-                ", sourceNodeId='" + sourceNodeId + '\'' +
-                '}';
+               "task=" + taskId +
+               ", sourceNodeId='" + sourceNodeId + '\'' +
+               '}';
     }
 
     public boolean isOriginatedAt(Node selectedNode) {
@@ -85,15 +85,17 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
     }
 
     public void deserialize(Jar jar) {
-        if (serializedTask == null)
+        if (serializedTask == null) {
             return;
+        }
 
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
             ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getClassLoader());
             Object o = stream.readObject();
-            if (!(o instanceof WorkerPoolTask))
+            if (!(o instanceof WorkerPoolTask)) {
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
+            }
             if (o instanceof BaseWorkerPoolTask) {
                 ((BaseWorkerPoolTask) o).setJar(jar);
             }

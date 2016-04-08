@@ -20,7 +20,6 @@ import pl.edu.uj.main.options.OptionsEventsDispatcher;
 public class JNodeApplication {
     private static Logger logger = LoggerFactory.getLogger(JNodeApplication.class);
     private static String[] args;
-
     @Autowired
     private ApplicationContext applicationContext;
     private volatile boolean isInitialized = false;
@@ -28,8 +27,7 @@ public class JNodeApplication {
     public static void main(String[] args) {
         JNodeApplication.args = args;
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(JNodeApplication.class);
-        applicationContext.getBean(JNodeApplication.class)
-                .initialize();
+        applicationContext.getBean(JNodeApplication.class).initialize();
     }
 
     public void initialize() {

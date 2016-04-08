@@ -10,11 +10,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
-import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.crosscuting.ReflectionUtils;
 import pl.edu.uj.engine.events.CancelJarJobsEvent;
 import pl.edu.uj.engine.events.TaskFinishedEvent;
 import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.main.ApplicationShutdownEvent;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,8 +46,9 @@ public class WorkerPool {
 
     @EventListener
     public void on(ApplicationShutdownEvent e) {
-        if (taskExecutor != null)
+        if (taskExecutor != null) {
             taskExecutor.shutdown();
+        }
     }
 
     @EventListener
@@ -73,10 +74,9 @@ public class WorkerPool {
         FutureTask<Callable> futureTask = (FutureTask<Callable>) polledItem;
         executingTasks.remove(futureTask);
         if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
-            String message = join("\n"
-                    , "Prepare for a nice day because you really did a bad thing."
-                    , "I mean taking out this task from internal executor queue."
-                    , "Unfortunately its started executing, not as you expected");
+            String message =
+                    join("\n", "Prepare for a nice day because you really did a bad thing.", "I mean taking out this task from internal executor queue.",
+                         "Unfortunately its started executing, not as you expected");
             throw new AssertionError(message);
         }
         return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));
@@ -90,8 +90,9 @@ public class WorkerPool {
     }
 
     private ThreadPoolTaskExecutor getTaskExecutor() {
-        if (taskExecutor == null)
+        if (taskExecutor == null) {
             taskExecutor = applicationContext.getBean(ThreadPoolTaskExecutor.class);
+        }
         return taskExecutor;
     }
 
@@ -109,8 +110,9 @@ public class WorkerPool {
             @Override
             public void onFailure(Throwable ex) {
                 executingTasks.remove(task.getJar(), taskResultFuture);
-                if (ex instanceof CancellationException)
+                if (ex instanceof CancellationException) {
                     return;
+                }
                 logger.info("Execution of task " + task.toString() + " has failed, thrown " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
                 ex.printStackTrace();
                 eventPublisher.publishEvent(new TaskFinishedEvent(this, task, ex));
@@ -142,6 +144,5 @@ public class WorkerPool {
 
     public List<Long> getIdsOfTasksInPool() {
         return executingTasks.getTasks().stream().map(t -> t.getTaskId()).collect(Collectors.toList());
-
     }
 }

@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.crosscuting.OSValidator;
 import pl.edu.uj.main.ApplicationInitializedEvent;
 import pl.edu.uj.main.ApplicationShutdownEvent;
-import pl.edu.uj.crosscuting.OSValidator;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -41,13 +41,13 @@ public class JarPathWatcher extends Thread {
         start();
         try {
             Files.walk(path, 1).forEach(filePath -> {
-                if (jarServices.isValidExistingJar(filePath))
+                if (jarServices.isValidExistingJar(filePath)) {
                     jarPathManager.onFoundJarAfterStart(jarFactory.getFor(filePath));
+                }
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @EventListener
@@ -68,12 +68,14 @@ public class JarPathWatcher extends Thread {
 
 
                 while (true) {
-                    if (shutDown)
+                    if (shutDown) {
                         return;
+                    }
 
                     WatchKey key = service.poll(SCAN_PERIOD, TimeUnit.MILLISECONDS);
-                    if (key == null)
+                    if (key == null) {
                         continue;
+                    }
 
                     List<WatchEvent<?>> watchEvents = reducePathsToOnlySingleEventForPath(key);
                     for (WatchEvent<?> watchEvent : watchEvents) {
@@ -89,24 +91,26 @@ public class JarPathWatcher extends Thread {
 
                         Kind<Path> createdFileWithContent = getEventAppearingWhenCopyingFileHasFinished();
                         if (createdFileWithContent == kind) {
-                            if (!jarServices.isJarOrProperty(eventPath))
+                            if (!jarServices.isJarOrProperty(eventPath)) {
                                 continue;
+                            }
                             jarServices.validateReadWriteAccess(eventPath);
 
                             logger.info("File created: " + eventPath);
-                            if (jarServices.isValidExistingJar(eventPath))
+                            if (jarServices.isValidExistingJar(eventPath)) {
                                 jarPathManager.onCreateJar(jarFactory.getFor(eventPath));
-
+                            }
                         } else if (ENTRY_DELETE == kind) {
-                            if (!eventPath.toString().endsWith(".jar") && !eventPath.toString().endsWith(".properties"))
+                            if (!eventPath.toString().endsWith(".jar") && !eventPath.toString().endsWith(".properties")) {
                                 continue;
+                            }
                             logger.info("File deleted: " + eventPath);
 
-                            if (eventPath.toString().endsWith(".jar"))
+                            if (eventPath.toString().endsWith(".jar")) {
                                 jarPathManager.onDeleteJar(jarFactory.getFor(eventPath));
-                            else
+                            } else {
                                 jarPathManager.onDeleteProperties(eventPath);
-
+                            }
                         }
                     }
                     if (!key.reset()) {
@@ -116,7 +120,6 @@ public class JarPathWatcher extends Thread {
 
                     Thread.sleep(SCAN_PERIOD);
                 }
-
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -152,14 +155,17 @@ public class JarPathWatcher extends Thread {
             logger.debug(path + " with events kinds: " + kinds);
             if (kinds.size() == 1) {
                 if (osValidator.isUnix() && watchEvent.kind() == ENTRY_CREATE) //ignore empty file on linux
+                {
                     continue;
+                }
                 reducedEvents.add(watchEvent);
                 continue;
             }
 
             if (kinds.size() == 3 || kinds.size() == 2) {
-                if (watchEvent.kind() == ENTRY_MODIFY)
+                if (watchEvent.kind() == ENTRY_MODIFY) {
                     reducedEvents.add(watchEvent);
+                }
                 continue;
             }
         }
@@ -168,8 +174,9 @@ public class JarPathWatcher extends Thread {
     }
 
     public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
-        if (osValidator.isUnix())
+        if (osValidator.isUnix()) {
             return ENTRY_MODIFY;
+        }
         return ENTRY_CREATE;
     }
 
@@ -177,8 +184,9 @@ public class JarPathWatcher extends Thread {
         Map<Path, Set<Kind<Path>>> pathEventKinds = new HashMap<>();
         for (WatchEvent<?> watchEvent : watchEvents) {
             Kind<?> kind = watchEvent.kind();
-            if (kind == OVERFLOW)
+            if (kind == OVERFLOW) {
                 continue;
+            }
             Path path = (Path) watchEvent.context();
             Set<Kind<Path>> kinds = pathEventKinds.getOrDefault(path, new HashSet<Kind<Path>>());
             kinds.add((Kind<Path>) kind);

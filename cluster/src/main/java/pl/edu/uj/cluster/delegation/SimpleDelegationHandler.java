@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static pl.edu.uj.cluster.delegation.SimpleDelegationHandler.State.*;
 
-
 /**
  * GIVEN					WHEN				CHANGE STATE TO			AND EXECUTE
  * NO_DELEGATION			OVERFLOW			DURING_DELEGATION		delegateTasks()

@@ -46,10 +46,7 @@ public class TaskService {
     }
 
     public Stream<String> getNodeIds(Set<DelegatedTask> delegatedTasks) {
-        return delegatedTasks
-                .stream()
-                .map(DelegatedTask::getDestinationNodeId)
-                .distinct();
+        return delegatedTasks.stream().map(DelegatedTask::getDestinationNodeId).distinct();
     }
 
     public void taskExecutionCompleted(ExternalTask task, Object taskResult) {
@@ -57,9 +54,7 @@ public class TaskService {
     }
 
     public List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {
-        return delegatedTasks.stream()
-                .map(DelegatedTask::getTask)
-                .collect(Collectors.toList());
+        return delegatedTasks.stream().map(DelegatedTask::getTask).collect(Collectors.toList());
     }
 
     public void jarDelivery(String requesterNodeId, String fileName, byte[] jarContent) {

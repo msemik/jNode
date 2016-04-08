@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 /**
  * Created by michal on 02.04.16. Dupa
  */
-
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface LogInvocations {

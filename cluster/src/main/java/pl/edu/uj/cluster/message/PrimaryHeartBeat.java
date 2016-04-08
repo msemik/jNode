@@ -6,7 +6,6 @@ import pl.edu.uj.cluster.Distributor;
 import java.io.Serializable;
 import java.util.Optional;
 
-
 public class PrimaryHeartBeat implements Serializable, Distributable {
     private long poolSize;
     private long jobsInPool;
@@ -53,24 +52,30 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         PrimaryHeartBeat that = (PrimaryHeartBeat) o;
 
-        if (poolSize != that.poolSize) return false;
-        if (jobsInPool != that.jobsInPool) return false;
+        if (poolSize != that.poolSize) {
+            return false;
+        }
+        if (jobsInPool != that.jobsInPool) {
+            return false;
+        }
         return expectedHeartBeatType != null ? expectedHeartBeatType.equals(that.expectedHeartBeatType) : that.expectedHeartBeatType == null;
-
     }
 
     @Override
     public String toString() {
         return "PrimaryHeartBeat{" +
-                "poolSize=" + poolSize +
-                ", jobsInPool=" + jobsInPool +
-                ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
-                '}';
+               "poolSize=" + poolSize +
+               ", jobsInPool=" + jobsInPool +
+               ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
+               '}';
     }
-
 }

@@ -39,7 +39,7 @@ public class JarHandler {
 
     public void onTaskDelegation(ExternalTask task) {
         Jar jar = jarFactory.getFor(task.getSourceNodeId(), task.getJarName());
-        if (!jar.isValidExistingJar())
+        if (!jar.isValidExistingJar()) {
             synchronized (this) {
                 if (!jar.isValidExistingJar()) {
                     if (notRequestedYet(jar)) {
@@ -49,6 +49,7 @@ public class JarHandler {
                     return;
                 }
             }
+        }
         task.deserialize(jar);
         publishTaskReceivedEvent(task);
     }

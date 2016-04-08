@@ -16,35 +16,15 @@ public class JNodeOptions {
 
         options = new Options();
 
-        options.addOption(Option.builder("h")
-                .longOpt("help")
-                .desc("Shows this info")
-                .build());
+        options.addOption(Option.builder("h").longOpt("help").desc("Shows this info").build());
 
-        options.addOption(Option.builder("j")
-                .hasArgs()
-                .desc("paths to jar files to execute")
-                .longOpt("jar")
-                .build());
+        options.addOption(Option.builder("j").hasArgs().desc("paths to jar files to execute").longOpt("jar").build());
 
-        options.addOption(Option.builder("n")
-                .hasArgs()
-                .desc("node identifier")
-                .longOpt("nodeId")
-                .build());
+        options.addOption(Option.builder("n").hasArgs().desc("node identifier").longOpt("nodeId").build());
 
-        options.addOption(Option.builder("p")
-                .hasArgs()
-                .type(Integer.class)
-                .desc("size of worker pool used by this node")
-                .longOpt("pool-size")
-                .build());
+        options.addOption(Option.builder("p").hasArgs().type(Integer.class).desc("size of worker pool used by this node").longOpt("pool-size").build());
 
-        options.addOption(Option.builder("z")
-                .hasArgs()
-                .desc("path to jar path (by default $JNODE_HOME/jarpath")
-                .longOpt("jar-path")
-                .build());
+        options.addOption(Option.builder("z").hasArgs().desc("path to jar path (by default $JNODE_HOME/jarpath").longOpt("jar-path").build());
     }
 
     public void printHelp() {

@@ -19,7 +19,6 @@ import java.util.jar.Manifest;
 /**
  * Created by michal on 31.10.15.
  */
-
 @Component
 @Scope("prototype")
 public class JarLauncher {
@@ -57,8 +56,9 @@ public class JarLauncher {
     }
 
     public ClassLoader getClassLoader() {
-        if (jcl != null)
+        if (jcl != null) {
             return jcl;
+        }
 
         jcl = new JarClassLoader();
         jcl.add(jar.getAbsolutePathAsString());
@@ -81,12 +81,12 @@ public class JarLauncher {
 
             for (Iterator it = mainAttributes.keySet().iterator(); it.hasNext(); ) {
                 Attributes.Name attribute = (Attributes.Name) it.next();
-                if (attribute.toString().equals("Main-Class"))
+                if (attribute.toString().equals("Main-Class")) {
                     return (String) mainAttributes.get(attribute);
+                }
             }
 
             throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

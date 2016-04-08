@@ -33,8 +33,9 @@ public class Jar {
     }
 
     public void validate() {
-        if (!pathRelativeToJarPath.toString().endsWith(".jar"))
+        if (!pathRelativeToJarPath.toString().endsWith(".jar")) {
             throw new IllegalArgumentException("Invalid jar path '" + pathRelativeToJarPath + "'");
+        }
     }
 
     public String getNodeId() {
@@ -69,8 +70,9 @@ public class Jar {
         try {
             Path absolutePath = getAbsolutePath();
             Path dir = absolutePath.getParent();
-            if (!Files.exists(dir))
+            if (!Files.exists(dir)) {
                 Files.createDirectory(dir);
+            }
             Files.copy(jarContent, absolutePath, REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -137,26 +139,31 @@ public class Jar {
     }
 
     @Override
-    public String toString() {
-        return getPathRelativeToJarPath().toString();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Jar jar = (Jar) o;
-
-        if (!nodeId.equals(jar.nodeId)) return false;
-        return pathRelativeToJarPath.equals(jar.pathRelativeToJarPath);
-
-    }
-
-    @Override
     public int hashCode() {
         int result = nodeId.hashCode();
         result = 31 * result + pathRelativeToJarPath.hashCode();
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Jar jar = (Jar) o;
+
+        if (!nodeId.equals(jar.nodeId)) {
+            return false;
+        }
+        return pathRelativeToJarPath.equals(jar.pathRelativeToJarPath);
+    }
+
+    @Override
+    public String toString() {
+        return getPathRelativeToJarPath().toString();
     }
 }

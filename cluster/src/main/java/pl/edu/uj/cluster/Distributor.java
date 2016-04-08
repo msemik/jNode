@@ -11,7 +11,6 @@ import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
  * Created by alanhawrot on 29.02.2016.
  */
 public interface Distributor {
-
     void on(WorkerPoolOverflowEvent event);
 
     void onTaskDelegation(ExternalTask externalTask);

@@ -9,7 +9,6 @@ import static java.lang.Integer.signum;
  * Prioritize distance. if two node has same distance, higher priority gets node with more availaible threads.
  */
 public class NearestDistancePriority implements Priority {
-
     public NearestDistancePriority() {
     }
 
@@ -22,8 +21,9 @@ public class NearestDistancePriority implements Priority {
 
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);
-            if (node.isCurrent())
+            if (node.isCurrent()) {
                 continue;
+            }
             int dst = distances.get(i);
             int availableThreads = node.getAvailableThreads();
             node.setPriority(signum(availableThreads) * (maxDistance - dst + 1) + availableThreads / (maxPoolSize + 1));
@@ -31,10 +31,7 @@ public class NearestDistancePriority implements Priority {
     }
 
     private Node getCurrentNode(List<Node> nodes) {
-        return nodes.stream()
-                .filter(Node::isCurrent)
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Expected current node in the list"));
+        return nodes.stream().filter(Node::isCurrent).findAny().orElseThrow(() -> new IllegalStateException("Expected current node in the list"));
     }
 
     private int computeMaxPoolSize(List<Node> nodes) {

@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
-    private static final Map<String, Class<?>> primitiveTypes =
-            new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> primitiveTypes = new HashMap<String, Class<?>>();
     private final ClassLoader classLoader;
 
     /**
@@ -61,5 +60,4 @@ public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
             }
         }
     }
-
 }

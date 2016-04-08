@@ -32,8 +32,9 @@ public class JarPathServices {
     }
 
     private void init(Path path) {
-        if (this.pathToJarPath != null)
+        if (this.pathToJarPath != null) {
             return;
+        }
 
         if (path.isAbsolute()) {
             pathToJarPath = path;
@@ -45,23 +46,27 @@ public class JarPathServices {
             }
         }
 
-        if (Files.notExists(pathToJarPath))
+        if (Files.notExists(pathToJarPath)) {
             try {
                 Files.createDirectory(pathToJarPath);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        if (!Files.isDirectory(pathToJarPath))
+        }
+        if (!Files.isDirectory(pathToJarPath)) {
             throw new IllegalArgumentException("Path: '" + pathToJarPath + "' is not a directory");
+        }
         validateReadWriteAccess(pathToJarPath);
     }
 
     public void validateReadWriteAccess(Path path) {
-        if (!Files.isReadable(path))
+        if (!Files.isReadable(path)) {
             throw new IllegalStateException("Read access denied for path '" + path + "'");
+        }
 
-        if (!Files.isWritable(path))
+        if (!Files.isWritable(path)) {
             throw new IllegalStateException("Write access denied for path '" + path + "'");
+        }
     }
 
     @EventListener
@@ -71,8 +76,9 @@ public class JarPathServices {
 
     public Optional<Jar> getJarForProperty(Path path) {
         String strPath = path.toString();
-        if (!strPath.endsWith(".properties"))
+        if (!strPath.endsWith(".properties")) {
             throw new IllegalArgumentException("not a property file '" + path + "'");
+        }
         String pathToJar = strPath.substring(0, strPath.length() - ".properties".length()) + ".pathToJar";
         try {
             return of(jarFactory.getFor(pathToJar));
@@ -99,7 +105,7 @@ public class JarPathServices {
 
     public Path getPathSinceJarPath(Path pathToJarInJarPath) {
         Path relativized = getJarPath().relativize(pathToJarInJarPath);
-        System.out.println(pathToJarInJarPath  + " since " + getJarPath() + " is " + relativized);
+        System.out.println(pathToJarInJarPath + " since " + getJarPath() + " is " + relativized);
         return relativized;
     }
 

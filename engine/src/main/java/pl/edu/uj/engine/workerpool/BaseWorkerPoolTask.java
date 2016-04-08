@@ -15,8 +15,9 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof WorkerPoolTask))
+        if (o == null || !(o instanceof WorkerPoolTask)) {
             return false;
+        }
         WorkerPoolTask task = (WorkerPoolTask) o;
         return getTaskId() == task.getTaskId();
     }
@@ -24,10 +25,10 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     @Override
     public String toString() {
         return "WorkerPoolTask{" +
-                "task=" +
-                " jar=" + getJar() +
-                ", taskId=" + getTaskId() +
-                '}';
+               "task=" +
+               " jar=" + getJar() +
+               ", taskId=" + getTaskId() +
+               '}';
     }
 
     @Override

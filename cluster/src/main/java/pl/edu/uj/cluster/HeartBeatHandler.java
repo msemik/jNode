@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.main.JNodeApplication;
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.cluster.node.Node;
 import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.engine.workerpool.WorkerPool;
+import pl.edu.uj.main.JNodeApplication;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +27,6 @@ public class HeartBeatHandler {
     private Nodes nodes;
     @Autowired
     private NodeFactory nodeFactory;
-
     private PrimaryHeartBeat last = PrimaryHeartBeat.empty();
     private AtomicBoolean forceHeartBeat = new AtomicBoolean();
 

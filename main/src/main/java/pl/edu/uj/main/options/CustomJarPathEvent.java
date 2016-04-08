@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CustomJarPathEvent extends ApplicationEvent {
-
     private String customJarPath;
 
     public CustomJarPathEvent(Object source, String customJarPath) {
@@ -17,5 +16,4 @@ public class CustomJarPathEvent extends ApplicationEvent {
     public Path getCustomJarPath() {
         return Paths.get(customJarPath);
     }
-
 }

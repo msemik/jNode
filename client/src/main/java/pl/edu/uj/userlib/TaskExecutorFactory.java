@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
  * Created by alanhawrot on 15.11.2015.
  */
 public class TaskExecutorFactory {
-
     public static TaskExecutor createTaskExecutor() {
         return new UserTaskReceiver();
     }

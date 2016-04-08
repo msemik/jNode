@@ -45,7 +45,6 @@ enum DefaultState implements State {
         public State nextStateOnNoThreads(DelegationHandler handler) {
             return NO_DELEGATION;
         }
-
     },
     DURING_DELEGATION {
         @Override
@@ -87,7 +86,6 @@ enum DefaultState implements State {
         public State nextStateOnNoThreads(DelegationHandler handler) {
             return AWAITING_THREADS;
         }
-
     },
     SCHEDULED_RE_EXECUTION {
         @Override
@@ -129,7 +127,6 @@ enum DefaultState implements State {
         public State nextStateOnNoThreads(DelegationHandler handler) {
             return AWAITING_THREADS;
         }
-
     },
     AWAITING_THREADS {
         @Override
@@ -171,6 +168,5 @@ enum DefaultState implements State {
         public State nextStateOnNoThreads(DelegationHandler handler) {
             return AWAITING_THREADS;
         }
-
     };
 }

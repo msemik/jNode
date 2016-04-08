@@ -14,7 +14,6 @@ public class ApplicationShutdownEvent extends ApplicationEvent {
         this.shutdownReason = reason;
     }
 
-
     public ApplicationShutdownEvent(Object source, ShutdownReason reason, String message) {
         super(source);
         this.message = message;

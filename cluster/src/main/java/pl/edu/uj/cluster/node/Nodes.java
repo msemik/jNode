@@ -19,15 +19,12 @@ import static java.util.Optional.of;
  */
 @Component
 public class Nodes {
-
     @Autowired
     private NodeFactory nodeFactory;
-
     /**
      * List of node (without current node), may be in no particular order (its ordered on demand)
      */
     private List<Node> nodes = new ArrayList<>();
-
 
     @EventListener
     public void on(ApplicationInitializedEvent event) {
@@ -37,8 +34,9 @@ public class Nodes {
     }
 
     public synchronized void add(Node node) {
-        if (nodes.contains(node))
+        if (nodes.contains(node)) {
             return;
+        }
         node.setArrivalOrder(nodes.size());
         nodes.add(node);
     }
@@ -50,8 +48,9 @@ public class Nodes {
     public synchronized boolean remove(String nodeId) {
         Optional<Node> node = removeNode(nodeId);
 
-        if (!node.isPresent())
+        if (!node.isPresent()) {
             return false;
+        }
 
         int arrivalOrder = node.get().getArrivalOrder();
         fixArrivalOrdersAfterRemovingNode(arrivalOrder);
@@ -112,8 +111,9 @@ public class Nodes {
         Node n = null;
         for (int i = 0; i < nodes.size(); i++) {
             Node node = nodes.get(i);
-            if (node.getPriority() > max)
+            if (node.getPriority() > max) {
                 n = node;
+            }
         }
         return n;
     }

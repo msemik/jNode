@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 /**
  * Created by michal on 13.12.15.
  */
-
 @Component
 public class JNodeStateMonitor {
     public static final int TEN_SECONDS_IN_MILLIS = 10000;
@@ -44,9 +43,6 @@ public class JNodeStateMonitor {
     }
 
     private List<String> getJars() {
-        return eventLoopThreadRegistry.getJars()
-                                      .stream()
-                                      .map(Object::toString)
-                                      .collect(Collectors.toList());
+        return eventLoopThreadRegistry.getJars().stream().map(Object::toString).collect(Collectors.toList());
     }
 }

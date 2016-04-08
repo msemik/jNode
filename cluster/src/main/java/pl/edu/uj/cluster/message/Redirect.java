@@ -31,8 +31,8 @@ public class Redirect implements Serializable, Distributable {
     @Override
     public String toString() {
         return "Redirect{" +
-                "destinationNodeId='" + destinationNodeId + '\'' +
-                ", taskId=" + taskId +
-                '}';
+               "destinationNodeId='" + destinationNodeId + '\'' +
+               ", taskId=" + taskId +
+               '}';
     }
 }

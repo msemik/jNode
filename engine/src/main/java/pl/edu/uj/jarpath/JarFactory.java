@@ -45,10 +45,7 @@ public class JarFactory {
     }
 
     private Jar find(Path pathToJar) {
-        return jars.stream()
-                .filter(jar -> jar.hasRelativePath(pathToJar))
-                .findAny()
-                .orElse(null);
+        return jars.stream().filter(jar -> jar.hasRelativePath(pathToJar)).findAny().orElse(null);
     }
 
     private boolean isFileName(Path pathToJar) {
@@ -66,5 +63,4 @@ public class JarFactory {
     public Jar getFor(String nodeId, Path fileName) {
         return findAndStoreIfAbsent(nodeIdFactory.getCurrentNodeId().equals(nodeId) ? fileName : Paths.get(nodeId).resolve(fileName));
     }
-
 }

@@ -28,9 +28,7 @@ public class InvocationLogger {
     }
 
     private String getConcatenatedArgsClassNames(JoinPoint joinPoint) {
-        return Stream.of(joinPoint.getArgs())
-                .map(o -> o.getClass().getSimpleName())
-                .collect(Collectors.joining(", "));
+        return Stream.of(joinPoint.getArgs()).map(o -> o.getClass().getSimpleName()).collect(Collectors.joining(", "));
     }
 
     @After("PointcutArchitecture.logClassPublicMethodsInvocations() || PointcutArchitecture.logMethodInvocation()")

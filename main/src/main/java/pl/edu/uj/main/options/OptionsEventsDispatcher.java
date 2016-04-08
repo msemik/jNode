@@ -22,11 +22,9 @@ import static pl.edu.uj.main.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_
 public class OptionsEventsDispatcher {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
     @Autowired
     private JNodeOptions jNodeOptions;
     private Optional<Integer> poolSize;
-
 
     public OptionsEventsDispatcher() {
     }
@@ -66,12 +64,8 @@ public class OptionsEventsDispatcher {
                 this.poolSize = ofNullable(p);
                 eventPublisher.publishEvent(new PoolSizeOptionEvent(p, this));
             }
-
         } catch (ParseException e) {
             eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e.getMessage()));
         }
-
-
     }
-
 }
