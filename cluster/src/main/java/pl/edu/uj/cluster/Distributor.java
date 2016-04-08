@@ -1,5 +1,6 @@
 package pl.edu.uj.cluster;
 
+import pl.edu.uj.cluster.callback.SerializableCallback;
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
@@ -31,7 +32,7 @@ public interface Distributor {
 
     void on(ExternalSubTaskReceivedEvent event);
 
-    void onRegisterDelegatedSubTask(String sourceNodeId, ExternalTask externalTask, Callback callback);
+    void onRegisterDelegatedSubTask(String sourceNodeId, ExternalTask externalTask, SerializableCallback callback);
 
     void onNodeGone(String nodeId);
 

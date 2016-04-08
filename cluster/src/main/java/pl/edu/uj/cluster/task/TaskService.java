@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.cluster.MessageGateway;
+import pl.edu.uj.cluster.callback.SerializableCallback;
 import pl.edu.uj.cluster.message.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
@@ -66,7 +67,7 @@ public class TaskService {
         messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
     }
 
-    public void registerSubTask(ExternalTask externalTask, Callback callback, String nodeId) {
+    public void registerSubTask(ExternalTask externalTask, SerializableCallback callback, String nodeId) {
         messageGateway.send(new RegisterDelegatedSubTask(externalTask, callback), nodeId);
     }
 }
