@@ -2,7 +2,7 @@ package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-import pl.uj.edu.userlib.Callback;
+import pl.edu.uj.userlib.Callback;
 
 public class NewTaskReceivedEvent extends ApplicationEvent {
     private WorkerPoolTask task;

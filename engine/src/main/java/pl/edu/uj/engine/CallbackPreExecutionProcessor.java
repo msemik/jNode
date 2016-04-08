@@ -1,6 +1,6 @@
 package pl.edu.uj.engine;
 
-import pl.uj.edu.userlib.Callback;
+import pl.edu.uj.userlib.Callback;
 
 public interface CallbackPreExecutionProcessor
 {

@@ -2,7 +2,7 @@ package pl.edu.uj.engine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.uj.edu.userlib.Callback;
+import pl.edu.uj.userlib.Callback;
 
 /**
  * Created by michal on 22.11.15.

@@ -1,4 +1,4 @@
-package pl.uj.edu.userlib;
+package pl.edu.uj.userlib;
 
 
 /**

@@ -18,7 +18,7 @@ import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jarpath.JarDeletedEvent;
 import pl.edu.uj.jarpath.JarPropertiesDeletedEvent;
 import pl.edu.uj.jarpath.JarStateChangedEvent;
-import pl.uj.edu.userlib.Callback;
+import pl.edu.uj.userlib.Callback;
 
 import java.util.Optional;
 

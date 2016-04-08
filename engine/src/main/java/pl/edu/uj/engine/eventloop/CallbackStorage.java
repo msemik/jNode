@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-import pl.uj.edu.userlib.Callback;
-import pl.uj.edu.userlib.Task;
+import pl.edu.uj.userlib.Callback;
+import pl.edu.uj.userlib.Task;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

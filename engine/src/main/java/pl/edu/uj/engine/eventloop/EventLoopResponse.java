@@ -1,7 +1,7 @@
 package pl.edu.uj.engine.eventloop;
 
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-import pl.uj.edu.userlib.Task;
+import pl.edu.uj.userlib.Task;
 
 /**
  * Created by alanhawrot on 14.11.2015.

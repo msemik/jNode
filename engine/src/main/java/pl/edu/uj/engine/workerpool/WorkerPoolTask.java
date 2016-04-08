@@ -1,7 +1,7 @@
 package pl.edu.uj.engine.workerpool;
 
 import pl.edu.uj.jarpath.Jar;
-import pl.uj.edu.userlib.Task;
+import pl.edu.uj.userlib.Task;
 
 /**
  * Created by michal on 22.11.15.

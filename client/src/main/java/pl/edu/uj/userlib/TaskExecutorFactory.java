@@ -1,4 +1,4 @@
-package pl.uj.edu.userlib;
+package pl.edu.uj.userlib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

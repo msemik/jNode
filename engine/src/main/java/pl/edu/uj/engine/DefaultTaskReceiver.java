@@ -10,8 +10,8 @@ import pl.edu.uj.engine.workerpool.DefaultWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathServices;
-import pl.uj.edu.userlib.Callback;
-import pl.uj.edu.userlib.Task;
+import pl.edu.uj.userlib.Callback;
+import pl.edu.uj.userlib.Task;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
