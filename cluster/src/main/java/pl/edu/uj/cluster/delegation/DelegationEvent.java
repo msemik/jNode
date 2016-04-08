@@ -6,7 +6,7 @@ interface DelegationEvent {
     State nextState(DelegationHandler handler, State state);
 
     /**
-     * Executes action bound with pair events and state.
+     * Executes action bound with pair event and state.
      *
      * @param state state before transition
      * @return next operation to execute (if any)

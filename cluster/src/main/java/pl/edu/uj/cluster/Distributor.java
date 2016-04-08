@@ -2,10 +2,10 @@ package pl.edu.uj.cluster;
 
 import pl.edu.uj.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.cluster.task.ExternalTask;
-import pl.edu.uj.engine.events.CancelJarJobsEvent;
-import pl.edu.uj.engine.events.ExternalSubTaskReceivedEvent;
-import pl.edu.uj.engine.events.TaskCancelledEvent;
-import pl.edu.uj.engine.events.TaskFinishedEvent;
+import pl.edu.uj.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.engine.event.ExternalSubTaskReceivedEvent;
+import pl.edu.uj.engine.event.TaskCancelledEvent;
+import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.userlib.Callback;
 

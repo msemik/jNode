@@ -1,4 +1,4 @@
-package pl.edu.uj.engine.events;
+package pl.edu.uj.engine.event;
 
 /**
  * Created by alanhawrot on 01.03.2016.

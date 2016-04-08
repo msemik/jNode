@@ -16,7 +16,7 @@ import pl.edu.uj.crosscuting.LogInvocations;
 import pl.edu.uj.engine.EmptyCallback;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
-import pl.edu.uj.engine.events.*;
+import pl.edu.uj.engine.event.*;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
@@ -28,8 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static pl.edu.uj.engine.events.CancellationEventOrigin.EXTERNAL;
-import static pl.edu.uj.engine.events.CancellationEventOrigin.INTERNAL;
+import static pl.edu.uj.engine.event.CancellationEventOrigin.EXTERNAL;
+import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
 
 /**
  * Created by alanhawrot on 01.03.2016.

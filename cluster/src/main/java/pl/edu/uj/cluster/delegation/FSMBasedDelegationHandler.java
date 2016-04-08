@@ -23,7 +23,7 @@ import static pl.edu.uj.cluster.delegation.DefaultTaskDelegationEvent.*;
 
 /**
  * Simulates Finite State Machine,
- * for given pair events, state:
+ * for given pair event, state:
  * - change to appropriate state
  * - execute related action.
  * <p/>

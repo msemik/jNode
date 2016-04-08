@@ -1,4 +1,4 @@
-package pl.edu.uj.engine.events;
+package pl.edu.uj.engine.event;
 
 import org.springframework.context.ApplicationEvent;
 import pl.edu.uj.jarpath.Jar;
