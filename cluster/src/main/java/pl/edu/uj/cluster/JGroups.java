@@ -95,7 +95,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         Optional<String> destinationNodeId = ofNullable(msg.getDest()).map(adr -> adr.toString());
         Object messageBody = msg.getObject();
 
-        logger.debug(" received " + messageBody + " from " + sourceNodeId);
+        logger.debug("Received " + messageBody + " from " + sourceNodeId);
         // , "Headers: " + msg.printHeaders()
         // , "Flags: " + msg.getFlags()));
 

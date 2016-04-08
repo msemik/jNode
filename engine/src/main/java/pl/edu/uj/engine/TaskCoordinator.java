@@ -10,11 +10,14 @@ import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.engine.event.NewTaskReceivedEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
-import pl.edu.uj.engine.eventloop.EventLoopThreadPool;
+import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.workerpool.MainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
-import pl.edu.uj.jarpath.*;
+import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.jarpath.JarDeletedEvent;
+import pl.edu.uj.jarpath.JarPropertiesDeletedEvent;
+import pl.edu.uj.jarpath.JarStateChangedEvent;
 import pl.uj.edu.userlib.Callback;
 
 import java.util.Optional;
@@ -27,7 +30,7 @@ public class TaskCoordinator {
     @Autowired
     private WorkerPool workerPool;
     @Autowired
-    private EventLoopThreadPool eventLoopThreadPool;
+    private EventLoopThreadRegistry eventLoopThreadRegistry;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
@@ -47,7 +50,7 @@ public class TaskCoordinator {
     private void startJarJob(Jar jar) {
         logger.info("Launching main class for jar " + jar);
 
-        EventLoopThread eventLoopThread = eventLoopThreadPool.takeOrCreate(jar);
+        EventLoopThread eventLoopThread = eventLoopThreadRegistry.getOrCreate(jar);
         MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar);
         EmptyCallback callback = new EmptyCallback();
         eventLoopThread.registerTask(task, callback);
@@ -62,7 +65,7 @@ public class TaskCoordinator {
     @EventListener
     public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
         Jar jar = event.getJar();
-        if (eventLoopThreadPool.get(jar).isPresent()) {
+        if (eventLoopThreadRegistry.get(jar).isPresent()) {
             eventPublisher.publishEvent(new CancelJarJobsEvent(this, jar));
         } else {
             startJarJob(jar);
@@ -74,34 +77,34 @@ public class TaskCoordinator {
         WorkerPoolTask task = event.getTask();
         Callback callback = event.getCallback();
 
-        logger.info("Submitting newly received task to pool and saving callback in EventLoopThread " + task);
-
-        EventLoopThread eventLoopThread;
-        Jar jar = task.getJar();
-        if (task.isExternal()) { //might be recreated for external tasks.
-            eventLoopThread = eventLoopThreadPool.takeOrCreate(jar);
-        } else {
-            eventLoopThread = eventLoopThreadPool.take(jar).orElse(null);
-            if (eventLoopThread == null) {
-                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadPool);
+        if (!task.isExternal()) {
+            logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
+            Jar jar = task.getJar();
+            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(jar);
+            if (!eventLoopThread.isPresent()) {
+                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
                 return;
             }
+            eventLoopThread.get().registerTask(task, callback);
         }
-        eventLoopThread.registerTask(task, callback);
+        logger.info("Submitting newly received task " + task + " to pool");
         workerPool.submitTask(task);
     }
 
     @EventListener
     public void onTaskFinished(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
+        if (task.isExternal()) {
+            return;
+        }
 
-        Optional<EventLoopThread> eventLoopThread = eventLoopThreadPool.get(task.getJar());
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread missing for given task: " + task);
             return;
         }
 
-        if (event.withSuccess()) {
+        if (event.isSuccess()) {
             eventLoopThread.get().submitTaskResult(task, event.getTaskResultOrException());
         } else {
             eventLoopThread.get().submitTaskFailure(task, (Throwable) event.getTaskResultOrException());

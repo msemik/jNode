@@ -27,13 +27,11 @@ public class DefaultTaskReceiver {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private JarFactory jarFactory;
-
-
     private Logger logger = LoggerFactory.getLogger(DefaultTaskReceiver.class);
 
     public void doAsync(Object task, Object callback) {
         Class callbackClass = callback.getClass();
-        System.out.println(callbackClass.getName());
+        logger.info("Callback class name: " + callbackClass.getName());
         URL resource = callbackClass.getResource('/' + callbackClass.getName().replace('.', '/') + ".class");
 
         if (resource == null) {
@@ -42,14 +40,16 @@ public class DefaultTaskReceiver {
         }
 
         String[] resourcePartition = resource.toString().split("!");
-        if (resourcePartition == null || resourcePartition.length != 2)
+        if (resourcePartition == null || resourcePartition.length != 2) {
             throw new IllegalStateException("Unexpected jar resource format occurred:" + resource);
+        }
 
         Path pathToJar;
         try {
             String decodedPath = URLDecoder.decode(resourcePartition[0], "utf-8");
-            if (decodedPath.startsWith("jar:file:"))
+            if (decodedPath.startsWith("jar:file:")) {
                 decodedPath = decodedPath.substring("jar:file:".length());
+            }
             pathToJar = jarPathServices.getPathSinceJarPath(Paths.get(decodedPath).normalize());
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("Decoded path has unexpected format " + resourcePartition[0], e);
@@ -62,5 +62,4 @@ public class DefaultTaskReceiver {
         NewTaskReceivedEvent event = new NewTaskReceivedEvent(this, workerPoolTask, callbackToDo);
         eventPublisher.publishEvent(event);
     }
-
 }

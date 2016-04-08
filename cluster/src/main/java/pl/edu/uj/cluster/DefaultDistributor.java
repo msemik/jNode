@@ -66,7 +66,6 @@ public class DefaultDistributor implements Distributor {
         delegationHandler.handleDuringOnWorkerPoolEvent();
     }
 
-
     @Override
     public void onTaskDelegation(ExternalTask externalTask) {
         if (externalTaskRegistry.add(externalTask)) {
@@ -115,9 +114,11 @@ public class DefaultDistributor implements Distributor {
     @Override
     @EventListener
     public void on(TaskFinishedEvent event) {
-        if (!event.getTask().isExternal())
+        if (!event.getTask().isExternal()) {
             return;
+        }
         ExternalTask externalTask = (ExternalTask) event.getTask();
+        logger.info("Sending execution result of task " + externalTask + " to source node");
         if (externalTaskRegistry.remove(externalTask)) {
             taskService.taskExecutionCompleted(externalTask, event.getTaskResultOrException());
         } else {
@@ -139,8 +140,9 @@ public class DefaultDistributor implements Distributor {
     @Override
     @EventListener
     public void on(TaskCancelledEvent event) {
-        if (!event.getTask().isExternal())
+        if (!event.getTask().isExternal()) {
             return;
+        }
         ExternalTask task = (ExternalTask) event.getTask();
         if (event.getOrigin() == INTERNAL) {
             taskService.sry(task.getSourceNodeId(), task.getTaskId());
@@ -157,22 +159,15 @@ public class DefaultDistributor implements Distributor {
         taskService.unwrapTasks(delegatedTasks).forEach(workerPool::submitTask);
         Set<ExternalTask> externalTasks = externalTaskRegistry.removeAll(nodeId);
         sendCancelJarJobsForEachJar(externalTasks);
-        logger.debug(String.join(", "
-                , "onNodeGone: " + nodeId
-                , "removed from nodes: " + removedFromNodes
-                , "removed delegated tasks:" + delegatedTasks.size()
-                , "removed external tasks:" + externalTasks.size()));
+        logger.debug(String.join(", ", "onNodeGone: " + nodeId, "removed from nodes: " + removedFromNodes, "removed delegated tasks:" + delegatedTasks.size(),
+                                 "removed external tasks:" + externalTasks.size()));
     }
 
     private void sendCancelJarJobsForEachJar(Set<ExternalTask> externalTasks) {
-        externalTasks
-                .stream()
-                .map(ExternalTask::getJar)
-                .distinct()
-                .forEach(jar -> {
-                    CancelJarJobsEvent event = new CancelJarJobsEvent(this, jar, EXTERNAL);
-                    eventPublisher.publishEvent(event);
-                });
+        externalTasks.stream().map(ExternalTask::getJar).distinct().forEach(jar -> {
+            CancelJarJobsEvent event = new CancelJarJobsEvent(this, jar, EXTERNAL);
+            eventPublisher.publishEvent(event);
+        });
     }
 
     @Override

@@ -6,22 +6,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.main.ApplicationShutdownEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 @Component
-public class EventLoopThreadPool {
-    private Logger logger = LoggerFactory.getLogger(EventLoopThreadPool.class);
-    private Map<Jar, EventLoopThreadPoolEntry> map = new HashMap<>();
+public class EventLoopThreadRegistry {
+    private Logger logger = LoggerFactory.getLogger(EventLoopThreadRegistry.class);
+    private Map<Jar, EventLoopThread> map = new HashMap<>();
     @Autowired
     private ApplicationContext context;
 
@@ -49,11 +48,7 @@ public class EventLoopThreadPool {
     }
 
     public synchronized EventLoopThread remove(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.remove(jar);
-        if (entry == null) {
-            return null;
-        }
-        return entry.getEventLoopThread();
+        return map.remove(jar);
     }
 
     @Override
@@ -61,50 +56,23 @@ public class EventLoopThreadPool {
         return "EventLoopThreadPool" + map;
     }
 
-    public synchronized Optional<EventLoopThread> get(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.get(jar);
-        if (entry == null) {
-            return empty();
-        }
-        return ofNullable(map.get(jar).getEventLoopThread());
-    }
-
-    public synchronized long returnEventLoopThread(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.get(jar);
-        if (entry == null) {
-            return 0;
-        }
-        long eventLoopRequestCounter = entry.decrementAndGetRequestCounter();
-        if (eventLoopRequestCounter == 0) {
-            remove(jar);
-        }
-        return eventLoopRequestCounter;
-    }
-
     @EventListener
     public synchronized void onApplicationShutdown(ApplicationShutdownEvent e) {
-        map.values().stream().map(EventLoopThreadPoolEntry::getEventLoopThread).forEach(EventLoopThread::shutDown);
+        map.values().stream().forEach(EventLoopThread::shutDown);
     }
 
-    public synchronized EventLoopThread takeOrCreate(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.computeIfAbsent(jar, jar0 -> new EventLoopThreadPoolEntry(createEventLoopThread(jar0)));
-        entry.incrementAndGetRequestCounter();
-        return entry.getEventLoopThread();
+    public synchronized Optional<EventLoopThread> get(Jar jar) {
+        return ofNullable(map.get(jar));
+    }
+
+    public synchronized EventLoopThread getOrCreate(Jar jar) {
+        return map.computeIfAbsent(jar, this::createEventLoopThread);
     }
 
     private EventLoopThread createEventLoopThread(Jar jar) {
         EventLoopThread eventLoopThread = context.getBean(EventLoopThread.class);
         eventLoopThread.startLoop(jar);
         return eventLoopThread;
-    }
-
-    public synchronized Optional<EventLoopThread> take(Jar jar) {
-        EventLoopThreadPoolEntry entry = map.get(jar);
-        if (entry == null) {
-            return empty();
-        }
-        entry.incrementAndGetRequestCounter();
-        return ofNullable(entry.getEventLoopThread());
     }
 
     public synchronized Set<Jar> getJars() {

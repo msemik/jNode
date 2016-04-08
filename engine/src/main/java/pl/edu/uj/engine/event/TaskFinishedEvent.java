@@ -28,7 +28,7 @@ public class TaskFinishedEvent extends ApplicationEvent {
         return taskResultOrException;
     }
 
-    public boolean withSuccess() {
+    public boolean isSuccess() {
         return !(taskResultOrException instanceof Throwable);
     }
 }

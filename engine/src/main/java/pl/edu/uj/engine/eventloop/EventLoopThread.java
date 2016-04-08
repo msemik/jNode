@@ -23,7 +23,7 @@ public class EventLoopThread extends Thread
     @Autowired
     private ApplicationContext context;
     @Autowired
-    private EventLoopThreadPool eventLoopThreadPool;
+    private EventLoopThreadRegistry eventLoopThreadRegistry;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     @Autowired(required = false)
@@ -140,14 +140,19 @@ public class EventLoopThread extends Thread
                 }
             }
 
-            if(eventLoopThreadPool.returnEventLoopThread(jar) == 0 && callbackStorage.isEmpty() && eventLoopQueue.isEmpty())
+            if(callbackStorage.isEmpty() && eventLoopQueue.isEmpty())
             {
-                logger.info("No more callbacks to execute, shutting down");
-                eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
-                logger.info(getJar() + " loop shutdown successfully");
+                closeLoop();
                 break;
             }
         }
+    }
+
+    private void closeLoop() {
+        logger.info("No more callbacks to execute, shutting down");
+        eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
+        eventLoopThreadRegistry.remove(jar);
+        logger.info(getJar() + " loop shutdown successfully");
     }
 
     public Jar getJar()
@@ -188,7 +193,7 @@ public class EventLoopThread extends Thread
         yield();
         if(isAlive())
         {
-            eventLoopThreadPool.remove(jar);
+            eventLoopThreadRegistry.remove(jar);
             stop();
         }
         logger.info(getJar() + " shutdown() method execution finished");
