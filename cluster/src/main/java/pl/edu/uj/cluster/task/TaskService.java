@@ -8,6 +8,7 @@ import pl.edu.uj.cluster.MessageGateway;
 import pl.edu.uj.cluster.message.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.userlib.Callback;
 
 import java.util.Collection;
 import java.util.List;
@@ -63,5 +64,9 @@ public class TaskService {
 
     public void jarRequest(Jar jar) {
         messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
+    }
+
+    public void registerSubTask(ExternalTask externalTask, Callback callback, String nodeId) {
+        messageGateway.send(new RegisterDelegatedSubTask(externalTask, callback), nodeId);
     }
 }

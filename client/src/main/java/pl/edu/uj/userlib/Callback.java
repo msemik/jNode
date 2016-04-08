@@ -1,6 +1,8 @@
 package pl.edu.uj.userlib;
 
-public interface Callback {
+import java.io.Serializable;
+
+public interface Callback extends Serializable {
     void onSuccess(Object taskResult);
 
     void onFailure(Throwable ex);

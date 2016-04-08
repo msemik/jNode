@@ -13,13 +13,16 @@ import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.cluster.task.*;
 import pl.edu.uj.crosscuting.LogInvocations;
-import pl.edu.uj.engine.events.CancelJarJobsEvent;
-import pl.edu.uj.engine.events.TaskCancelledEvent;
-import pl.edu.uj.engine.events.TaskFinishedEvent;
+import pl.edu.uj.engine.EmptyCallback;
+import pl.edu.uj.engine.eventloop.EventLoopThread;
+import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
+import pl.edu.uj.engine.events.*;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
+import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathManager;
+import pl.edu.uj.userlib.Callback;
 
 import java.util.Optional;
 import java.util.Set;
@@ -34,9 +37,9 @@ import static pl.edu.uj.engine.events.CancellationEventOrigin.INTERNAL;
 @Component
 @LogInvocations
 public class DefaultDistributor implements Distributor {
-    @Autowired
-    JarHandler jarHandler;
     private Logger logger = LoggerFactory.getLogger(DefaultDistributor.class);
+    @Autowired
+    private JarHandler jarHandler;
     @Autowired
     private DelegatedTaskRegistry delegatedTaskRegistry;
     @Autowired
@@ -59,6 +62,8 @@ public class DefaultDistributor implements Distributor {
     private JarPathManager jarPathManager;
     @Autowired
     private JarFactory jarFactory;
+    @Autowired
+    private EventLoopThreadRegistry eventLoopThreadRegistry;
 
     @Override
     @EventListener
@@ -150,6 +155,34 @@ public class DefaultDistributor implements Distributor {
         if (!externalTaskRegistry.remove(task)) {
             logger.debug("Task absent in registry: " + task);
         }
+    }
+
+    @Override
+    @EventListener
+    public void on(ExternalSubTaskReceivedEvent event) {
+        ExternalTask externalTask = new ExternalTask(event.getTask(), event.getSourceNodeId());
+        if (!externalTaskRegistry.add(externalTask)) {
+            logger.debug("Task with taskId: " + externalTask.getTaskId() + " is already in registry");
+            return;
+        }
+        taskService.registerSubTask(externalTask, event.getCallback(), externalTask.getSourceNodeId());
+        eventPublisher.publishEvent(new TaskReceivedEvent(this, externalTask, new EmptyCallback()));
+    }
+
+    @Override
+    public void onRegisterDelegatedSubTask(String sourceNodeId, ExternalTask externalTask, Callback callback) {
+        WorkerPoolTask task = externalTask.getTask();
+        if (!delegatedTaskRegistry.add(new DelegatedTask(task, sourceNodeId))) {
+            logger.debug("Task with taskId: " + externalTask.getTaskId() + " is already in registry");
+            return;
+        }
+        logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
+        Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
+        if (!eventLoopThread.isPresent()) {
+            logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
+            return;
+        }
+        eventLoopThread.get().registerTask(task, callback);
     }
 
     @Override

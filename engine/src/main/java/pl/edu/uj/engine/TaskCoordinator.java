@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import pl.edu.uj.engine.eventloop.EventLoopThread;
 import pl.edu.uj.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.engine.events.CancelJarJobsEvent;
-import pl.edu.uj.engine.events.NewTaskReceivedEvent;
+import pl.edu.uj.engine.events.TaskReceivedEvent;
 import pl.edu.uj.engine.events.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.MainClassWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPool;
@@ -35,21 +35,17 @@ public class TaskCoordinator {
     private ApplicationEventPublisher eventPublisher;
 
     @EventListener
-    public void onJarStateChanged(JarStateChangedEvent event) {
+    public void on(JarStateChangedEvent event) {
         Jar jar = event.getJar();
-
         logger.info("Got jar " + jar + " with properties " + event.getProperties());
-
         if (event.getProperties().getExecutionState() != NOT_STARTED) {
             return;
         }
-
         startJarJob(jar);
     }
 
     private void startJarJob(Jar jar) {
         logger.info("Launching main class for jar " + jar);
-
         EventLoopThread eventLoopThread = eventLoopThreadRegistry.getOrCreate(jar);
         MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar);
         EmptyCallback callback = new EmptyCallback();
@@ -58,12 +54,12 @@ public class TaskCoordinator {
     }
 
     @EventListener
-    public void onJarDeleted(JarDeletedEvent event) {
+    public void on(JarDeletedEvent event) {
         eventPublisher.publishEvent(new CancelJarJobsEvent(this, event.getJar()));
     }
 
     @EventListener
-    public void onJarPropertiesDeleted(JarPropertiesDeletedEvent event) {
+    public void on(JarPropertiesDeletedEvent event) {
         Jar jar = event.getJar();
         if (eventLoopThreadRegistry.get(jar).isPresent()) {
             eventPublisher.publishEvent(new CancelJarJobsEvent(this, jar));
@@ -73,14 +69,12 @@ public class TaskCoordinator {
     }
 
     @EventListener
-    public void onNewTaskReceived(NewTaskReceivedEvent event) {
+    public void on(TaskReceivedEvent event) {
         WorkerPoolTask task = event.getTask();
         Callback callback = event.getCallback();
-
         if (!task.isExternal()) {
             logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
-            Jar jar = task.getJar();
-            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(jar);
+            Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
             if (!eventLoopThread.isPresent()) {
                 logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
                 return;
@@ -92,18 +86,16 @@ public class TaskCoordinator {
     }
 
     @EventListener
-    public void onTaskFinished(TaskFinishedEvent event) {
+    public void on(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
         if (task.isExternal()) {
             return;
         }
-
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
             logger.error("Event loop thread missing for given task: " + task);
             return;
         }
-
         if (event.isSuccess()) {
             eventLoopThread.get().submitTaskResult(task, event.getTaskResultOrException());
         } else {

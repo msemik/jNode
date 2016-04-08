@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
-import pl.edu.uj.engine.events.NewTaskReceivedEvent;
+import pl.edu.uj.engine.events.ExternalSubTaskReceivedEvent;
+import pl.edu.uj.engine.events.TaskReceivedEvent;
 import pl.edu.uj.engine.workerpool.DefaultWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarFactory;
@@ -54,12 +55,15 @@ public class DefaultTaskReceiver {
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("Decoded path has unexpected format " + resourcePartition[0], e);
         }
-        logger.info("Discovered jar filename from task:" + pathToJar);
+        logger.info("Discovered jar filename: " + pathToJar);
         Task taskToDo = Task.class.cast(task);
         Callback callbackToDo = Callback.class.cast(callback);
 
         WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar));
-        NewTaskReceivedEvent event = new NewTaskReceivedEvent(this, workerPoolTask, callbackToDo);
-        eventPublisher.publishEvent(event);
+        if (workerPoolTask.getJar().getPathRelativeToJarPath().getNameCount() == 1) {
+            eventPublisher.publishEvent(new TaskReceivedEvent(this, workerPoolTask, callbackToDo));
+        } else {
+            eventPublisher.publishEvent(new ExternalSubTaskReceivedEvent(this, workerPoolTask, callbackToDo));
+        }
     }
 }

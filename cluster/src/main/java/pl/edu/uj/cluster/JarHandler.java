@@ -11,7 +11,7 @@ import pl.edu.uj.cluster.task.ExternalTask;
 import pl.edu.uj.cluster.task.TaskService;
 import pl.edu.uj.engine.EmptyCallback;
 import pl.edu.uj.engine.events.CancelJarJobsEvent;
-import pl.edu.uj.engine.events.NewTaskReceivedEvent;
+import pl.edu.uj.engine.events.TaskReceivedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jarpath.JarFactory;
@@ -59,7 +59,7 @@ public class JarHandler {
     }
 
     private void publishTaskReceivedEvent(ExternalTask task) {
-        eventPublisher.publishEvent(new NewTaskReceivedEvent(this, task, new EmptyCallback()));
+        eventPublisher.publishEvent(new TaskReceivedEvent(this, task, new EmptyCallback()));
     }
 
     public void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {

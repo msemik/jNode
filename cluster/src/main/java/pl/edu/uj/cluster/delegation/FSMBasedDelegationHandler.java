@@ -108,7 +108,7 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
     }
 
     public Optional<DelegationEvent> delegateTasks() {
-        logger.debug("task delegation started");
+        logger.debug("Task delegation started");
 
         while (true) {
             Optional<Node> selectedNode;
