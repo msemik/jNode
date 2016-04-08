@@ -13,7 +13,7 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static pl.edu.uj.main.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
-//import org.springframework.context.event.EventListener;
+//import org.springframework.context.events.EventListener;
 
 /**
  * Created by michal on 21.10.15.

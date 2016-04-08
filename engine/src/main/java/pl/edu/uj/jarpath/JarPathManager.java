@@ -8,9 +8,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.engine.NodeIdFactory;
-import pl.edu.uj.engine.event.CancelJarJobsEvent;
-import pl.edu.uj.engine.event.JarJobsCompletedEvent;
-import pl.edu.uj.engine.event.JarJobsExecutionStartedEvent;
+import pl.edu.uj.engine.events.CancelJarJobsEvent;
+import pl.edu.uj.engine.events.JarJobsCompletedEvent;
+import pl.edu.uj.engine.events.JarJobsExecutionStartedEvent;
 import pl.edu.uj.main.options.JarOptionEvent;
 
 import java.io.IOException;

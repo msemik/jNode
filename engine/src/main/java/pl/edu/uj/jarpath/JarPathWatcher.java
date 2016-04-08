@@ -80,7 +80,7 @@ public class JarPathWatcher extends Thread {
                         Kind<?> kind = watchEvent.kind();
 
                         if (kind == OVERFLOW) {
-                            logger.warn("Watch event overflow");
+                            logger.warn("Watch events overflow");
                             continue;
                         }
 
@@ -128,13 +128,13 @@ public class JarPathWatcher extends Thread {
     /**
      * WatchService returns variable amount of events per paths.
      * These may contain duplicate events, or mix of events like CREATE, MODIFY.
-     * When you create a file in Ubuntu there is single CREATE event(in that time file is empty).
-     * When you create file in mac, there is single CREATE event and file has already content in it.
-     * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
-     * When you delete file there is only a delete event, function will return DELETE event
+     * When you create a file in Ubuntu there is single CREATE events(in that time file is empty).
+     * When you create file in mac, there is single CREATE events and file has already content in it.
+     * When file is filled there will be events MODIFY (or it might be CREATE+MODIFY).
+     * When you delete file there is only a delete events, function will return DELETE events
      * <p/>
      * This function should reduce pain to analise all these combinations in later stages.
-     * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY event.
+     * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY events.
      */
     private List<WatchEvent<?>> reducePathsToOnlySingleEventForPath(WatchKey key) {
         List<WatchEvent<?>> watchEvents = key.pollEvents();
@@ -149,7 +149,7 @@ public class JarPathWatcher extends Thread {
             }
             Path path = (Path) watchEvent.context();
             Set<Kind<Path>> kinds = pathEventKinds.get(path);
-            logger.debug(path + " with event kinds: " + kinds);
+            logger.debug(path + " with events kinds: " + kinds);
             if (kinds.size() == 1) {
                 if (osValidator.isUnix() && watchEvent.kind() == ENTRY_CREATE) //ignore empty file on linux
                     continue;

@@ -13,9 +13,9 @@ import pl.edu.uj.cluster.node.NodeFactory;
 import pl.edu.uj.cluster.node.Nodes;
 import pl.edu.uj.cluster.task.*;
 import pl.edu.uj.crosscuting.LogInvocations;
-import pl.edu.uj.engine.event.CancelJarJobsEvent;
-import pl.edu.uj.engine.event.TaskCancelledEvent;
-import pl.edu.uj.engine.event.TaskFinishedEvent;
+import pl.edu.uj.engine.events.CancelJarJobsEvent;
+import pl.edu.uj.engine.events.TaskCancelledEvent;
+import pl.edu.uj.engine.events.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPool;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
 import pl.edu.uj.jarpath.JarFactory;
@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static pl.edu.uj.engine.event.CancellationEventOrigin.EXTERNAL;
-import static pl.edu.uj.engine.event.CancellationEventOrigin.INTERNAL;
+import static pl.edu.uj.engine.events.CancellationEventOrigin.EXTERNAL;
+import static pl.edu.uj.engine.events.CancellationEventOrigin.INTERNAL;
 
 /**
  * Created by alanhawrot on 01.03.2016.

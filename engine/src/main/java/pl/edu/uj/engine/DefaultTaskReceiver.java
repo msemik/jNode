@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
-import pl.edu.uj.engine.event.NewTaskReceivedEvent;
+import pl.edu.uj.engine.events.NewTaskReceivedEvent;
 import pl.edu.uj.engine.workerpool.DefaultWorkerPoolTask;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.JarFactory;
@@ -36,7 +36,7 @@ public class DefaultTaskReceiver {
 
         if (resource == null) {
             logger.error("null resource occurred");
-            return; // event, log
+            return; // events, log
         }
 
         String[] resourcePartition = resource.toString().split("!");

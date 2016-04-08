@@ -12,8 +12,8 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import pl.edu.uj.main.ApplicationShutdownEvent;
 import pl.edu.uj.crosscuting.ReflectionUtils;
-import pl.edu.uj.engine.event.CancelJarJobsEvent;
-import pl.edu.uj.engine.event.TaskFinishedEvent;
+import pl.edu.uj.engine.events.CancelJarJobsEvent;
+import pl.edu.uj.engine.events.TaskFinishedEvent;
 import pl.edu.uj.jarpath.Jar;
 
 import java.util.List;
