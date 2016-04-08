@@ -47,6 +47,7 @@ public class JarContextTest
         doReturn(this.getClass().getClassLoader()) //execution duration problem
                 .when(jar)
                 .getClassLoader();
+        Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
         jarContext = applicationContext.getBean(JarContext.class, jar);
     }
 

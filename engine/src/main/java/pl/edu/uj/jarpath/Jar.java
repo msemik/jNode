@@ -9,8 +9,10 @@ import pl.edu.uj.engine.*;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.nio.file.*;
+import java.util.Optional;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.util.Optional.*;
 
 @Component
 @Scope(scopeName = "prototype")
@@ -206,8 +208,15 @@ public class Jar
         }
     }
 
-    public Class<Annotation> getAnnotation(String canonicalName)
+    public Optional<Class<Annotation>> getAnnotation(String canonicalName)
     {
-        return (Class<Annotation>) getClass(canonicalName);
+        Class<?> cls = getClass(canonicalName);
+        if(cls == null)
+            return empty();
+        if(!cls.isAnnotation())
+        {
+            throw new IllegalStateException("Given type is not annotation: " + canonicalName);
+        }
+        return of((Class<Annotation>) cls);
     }
 }
