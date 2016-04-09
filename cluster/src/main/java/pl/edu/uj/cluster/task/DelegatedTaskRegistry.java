@@ -16,12 +16,8 @@ public class DelegatedTaskRegistry {
     private Logger logger = LoggerFactory.getLogger(DelegatedTaskRegistry.class);
     private Map<Long, DelegatedTask> map = new HashMap<>();
 
-    public synchronized boolean add(DelegatedTask delegatedTask) {
-        return map.putIfAbsent(delegatedTask.getTaskId(), delegatedTask) == null;
-    }
-
-    public synchronized boolean remove(DelegatedTask delegatedTask) {
-        return map.remove(delegatedTask.getTaskId(), delegatedTask);
+    public synchronized boolean add(long taskId, DelegatedTask delegatedTask) {
+        return map.putIfAbsent(taskId, delegatedTask) == null;
     }
 
     public synchronized Optional<DelegatedTask> remove(long taskId) {

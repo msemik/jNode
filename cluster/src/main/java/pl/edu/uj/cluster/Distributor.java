@@ -8,7 +8,6 @@ import pl.edu.uj.engine.event.ExternalSubTaskReceivedEvent;
 import pl.edu.uj.engine.event.TaskCancelledEvent;
 import pl.edu.uj.engine.event.TaskFinishedEvent;
 import pl.edu.uj.engine.workerpool.WorkerPoolOverflowEvent;
-import pl.edu.uj.userlib.Callback;
 
 /**
  * Created by alanhawrot on 29.02.2016.

@@ -9,7 +9,6 @@ import pl.edu.uj.cluster.callback.SerializableCallback;
 import pl.edu.uj.cluster.message.*;
 import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
-import pl.edu.uj.userlib.Callback;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +28,7 @@ public class TaskService {
 
     public void delegateTask(WorkerPoolTask task, String destinationNodeId) {
         DelegatedTask delegatedTask = new DelegatedTask(task, destinationNodeId);
-        delegatedTaskRegistry.add(delegatedTask);
+        delegatedTaskRegistry.add(task.getTaskId(), delegatedTask);
 
         ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
         messageGateway.send(new TaskDelegation(externalTask), destinationNodeId);
@@ -67,7 +66,7 @@ public class TaskService {
         messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
     }
 
-    public void registerSubTask(ExternalTask externalTask, SerializableCallback callback, String nodeId) {
+    public void registerDelegatedSubTask(ExternalTask externalTask, SerializableCallback callback, String nodeId) {
         messageGateway.send(new RegisterDelegatedSubTask(externalTask, callback), nodeId);
     }
 }

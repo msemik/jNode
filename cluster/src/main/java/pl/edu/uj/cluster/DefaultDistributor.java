@@ -24,7 +24,6 @@ import pl.edu.uj.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jarpath.JarFactory;
 import pl.edu.uj.jarpath.JarPathManager;
-import pl.edu.uj.userlib.Callback;
 
 import java.util.Optional;
 import java.util.Set;
@@ -167,7 +166,7 @@ public class DefaultDistributor implements Distributor {
             logger.debug("Task with taskId: " + externalTask.getTaskId() + " is already in registry");
             return;
         }
-        taskService.registerSubTask(externalTask, new SerializableCallback(event.getCallback()), externalTask.getSourceNodeId());
+        taskService.registerDelegatedSubTask(externalTask, new SerializableCallback(event.getCallback()), externalTask.getSourceNodeId());
         eventPublisher.publishEvent(new TaskReceivedEvent(this, externalTask, new EmptyCallback()));
     }
 
@@ -177,8 +176,9 @@ public class DefaultDistributor implements Distributor {
         externalTask.deserialize(jar);
         callback.deserialize(jar);
         WorkerPoolTask task = externalTask.getTask();
-        if (!delegatedTaskRegistry.add(new DelegatedTask(task, sourceNodeId))) {
-            logger.debug("Task with taskId: " + externalTask.getTaskId() + " is already in registry");
+        long taskId = externalTask.getTaskId();
+        if (!delegatedTaskRegistry.add(taskId, new DelegatedTask(task, externalTask.getSourceNodeId()))) {
+            logger.debug("Task with taskId: " + taskId + " is already in registry");
             return;
         }
         logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);

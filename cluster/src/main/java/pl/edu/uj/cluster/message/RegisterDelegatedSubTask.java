@@ -4,7 +4,6 @@ import pl.edu.uj.cluster.Distributable;
 import pl.edu.uj.cluster.Distributor;
 import pl.edu.uj.cluster.callback.SerializableCallback;
 import pl.edu.uj.cluster.task.ExternalTask;
-import pl.edu.uj.userlib.Callback;
 
 import java.io.Serializable;
 import java.util.Optional;
