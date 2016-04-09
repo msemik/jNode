@@ -46,10 +46,11 @@ public class JarContext
         List<Class<?>> classes = findClassesWithAnnotation(jar, contextAnnotation.get());
         if(classes.isEmpty())
         {
-            logger.warn("No context injecting annotations found on class path");
+            logger.warn("No context beans found on class path");
         }
         for(Class<?> cls : classes)
         {
+            logger.debug("Found context bean definition:" + cls.getCanonicalName());
             if(!ClassUtils.hasConstructor(cls))
             {
                 logger.warn(cls.getCanonicalName() + " is declared as context bean, but doesn't provide default constructor");
@@ -75,7 +76,7 @@ public class JarContext
         DefaultResourceLoader resourceLoader = new DefaultResourceLoader(classLoader);
         provider.setResourceLoader(resourceLoader);
         // Filter to include only classes that have a particular annotation.
-            provider.addIncludeFilter(new AnnotationTypeFilter(contextAnnotation));
+        provider.addIncludeFilter(new AnnotationTypeFilter(contextAnnotation));
 
         // Find classes in the given package (or subpackages)
         Set<BeanDefinition> beans = provider.findCandidateComponents("");
