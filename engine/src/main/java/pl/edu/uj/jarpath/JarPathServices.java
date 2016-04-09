@@ -4,8 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import pl.edu.uj.main.ApplicationInitializedEvent;
-import pl.edu.uj.main.JNodeApplication;
+import pl.edu.uj.main.*;
 import pl.edu.uj.main.options.CustomJarPathEvent;
 
 import java.io.IOException;
@@ -65,7 +64,7 @@ public class JarPathServices {
     }
 
     @EventListener
-    public void on(ApplicationInitializedEvent event) {
+    public void on(OptionsDispatchedEvent event) {
         init(Paths.get("jarpath"));
     }
 
