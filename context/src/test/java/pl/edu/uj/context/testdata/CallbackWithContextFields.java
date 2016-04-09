@@ -1,16 +1,11 @@
-package pl.edu.uj.contexttestdata;
+package pl.edu.uj.context.testdata;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import pl.edu.uj.context.InjectContext;
 import pl.uj.edu.userlib.Callback;
 
 public class CallbackWithContextFields implements Callback
 {
-    public void setAutowiredContextClass(ContextClass autowiredContextClass)
-    {
-        this.autowiredContextClass = autowiredContextClass;
-    }
-
-    @Autowired
+    @InjectContext
     private ContextClass autowiredContextClass;
     private ContextClass notAutowiredContextClass;
     private Object nonContextClass;
@@ -23,6 +18,11 @@ public class CallbackWithContextFields implements Callback
     public ContextClass getAutowiredContextClass()
     {
         return autowiredContextClass;
+    }
+
+    public void setAutowiredContextClass(ContextClass autowiredContextClass)
+    {
+        this.autowiredContextClass = autowiredContextClass;
     }
 
     public ContextClass getNotAutowiredContextClass()

@@ -28,8 +28,7 @@ public class JarContext
     public JarContext(Jar jar)
     {
         contextAnnotation = jar.getAnnotation(Context.class.getCanonicalName());
-        Class<InjectContext> injectContextClass = InjectContext.class;
-        jar.getAnnotation(injectContextClass.getCanonicalName()).ifPresent(contextInjectors::add);
+        jar.getAnnotation(InjectContext.class.getCanonicalName()).ifPresent(contextInjectors::add);
         jar.getAnnotation(Autowired.class.getCanonicalName()).ifPresent(contextInjectors::add);
 
         if(contextInjectors.isEmpty())
@@ -44,7 +43,11 @@ public class JarContext
             return;
         }
 
-        List<Class<?>> classes = findClassesWithAnyOfAnnotations(jar, contextInjectors);
+        List<Class<?>> classes = findClassesWithAnnotation(jar, contextAnnotation.get());
+        if(classes.isEmpty())
+        {
+            logger.warn("No context injecting annotations found on class path");
+        }
         for(Class<?> cls : classes)
         {
             if(!ClassUtils.hasConstructor(cls))
@@ -65,17 +68,14 @@ public class JarContext
         }
     }
 
-    private List<Class<?>> findClassesWithAnyOfAnnotations(Jar jar, List<Class<Annotation>> annotations)
+    private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation)
     {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(jar.getClassLoader());
+        ClassLoader classLoader = jar.getClassLoader();
+        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(classLoader);
         provider.setResourceLoader(resourceLoader);
         // Filter to include only classes that have a particular annotation.
-
-        for(Class<Annotation> annotation : annotations)
-        {
-            provider.addIncludeFilter(new AnnotationTypeFilter(annotation));
-        }
+            provider.addIncludeFilter(new AnnotationTypeFilter(contextAnnotation));
 
         // Find classes in the given package (or subpackages)
         Set<BeanDefinition> beans = provider.findCandidateComponents("");
@@ -89,7 +89,7 @@ public class JarContext
         return classes;
     }
 
-    public void autowire(Callback callback)
+    public void injectContext(Callback callback)
     {
         for(Class<Annotation> contextInjector : contextInjectors)
         {
@@ -109,11 +109,14 @@ public class JarContext
                     {
                         Object autowiredBean = findBean(field.getType());
                         field.set(callback, autowiredBean);
-                        logger.debug("Successfully autowired field '" + field.getName() + "' with " + autowiredBean);
-                    }
-                    else
-                    {
-                        logger.warn("No suitable bean found for '" + field.getName() + "' in " + callback);
+                        if(autowiredBean != null)
+                        {
+                            logger.debug("Successfully injected field '" + field.getName() + "' with " + autowiredBean);
+                        }
+                        else
+                        {
+                            logger.warn("No suitable bean found for '" + field.getName() + "' in " + callback);
+                        }
                     }
                 }
                 catch(IllegalAccessException e)

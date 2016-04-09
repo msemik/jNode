@@ -8,10 +8,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.xeustechnologies.jcl.JarClassLoader;
-import pl.edu.uj.contexttestdata.*;
+import pl.edu.uj.context.testdata.*;
+import pl.edu.uj.context.testdata.*;
 import pl.edu.uj.jarpath.Jar;
 
 import java.nio.file.Paths;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -35,16 +37,7 @@ public class JarContextTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-/*        JarClassLoader jarClassLoader = new JarClassLoader();
-        jarClassLoader.getLocalLoader().setEnabled(false);
-        jarClassLoader.getOsgiBootLoader().setEnabled(false);
-        jarClassLoader.getParentLoader().setEnabled(false);
-        jarClassLoader.getSystemLoader().setEnabled(false);
-        jarClassLoader.getThreadLoader().setEnabled(false);
-        jarClassLoader.getCurrentLoader().setEnabled(false);
-        jarClassLoader.add(ContextClass.class.getCanonicalName());
-        jarClassLoader.add(JarContext.class.getCanonicalName());*/
-        doReturn(this.getClass().getClassLoader()) //execution duration problem
+        doReturn(ClassLoader.getSystemClassLoader())
                 .when(jar)
                 .getClassLoader();
         Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
@@ -57,30 +50,30 @@ public class JarContextTest
     }
 
     @Test
-    public void autowiredWhenAutowiredAnnotationIsPresentOnContextBean() throws Exception
+    public void injectedWhenInjectContextAnnotationIsPresentOnContextBean() throws Exception
     {
         CallbackWithContextFields callback = new CallbackWithContextFields();
-        jarContext.autowire(callback);
+        jarContext.injectContext(callback);
 
         ContextClass contextField = callback.getAutowiredContextClass();
         assertThat(contextField, notNullValue());
     }
 
     @Test
-    public void notAutowiredWhenAutowiredAnnotationIsNotPresentOnContextBean() throws Exception
+    public void notInjectedWhenInjectContextAnnotationIsNotPresentOnContextBean() throws Exception
     {
         CallbackWithContextFields callback = new CallbackWithContextFields();
-        jarContext.autowire(callback);
+        jarContext.injectContext(callback);
 
         ContextClass contextField = callback.getNotAutowiredContextClass();
         assertThat(contextField, nullValue());
     }
 
     @Test
-    public void notAutowiredWhenContextAnnotationIsNotPresent() throws Exception
+    public void notInjectedWhenContextAnnotationIsNotPresent() throws Exception
     {
         CallbackWithContextFields callback = new CallbackWithContextFields();
-        jarContext.autowire(callback);
+        jarContext.injectContext(callback);
 
         Object nonContextField = callback.getNonContextClass();
         assertThat(nonContextField, nullValue());

@@ -1,4 +1,4 @@
-package pl.edu.uj.contexttestdata;
+package pl.edu.uj.context.testdata;
 
 import pl.edu.uj.context.Context;
 

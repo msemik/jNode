@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import pl.edu.uj.contexttestdata.*;
+import pl.edu.uj.context.testdata.*;
+import pl.edu.uj.context.testdata.*;
 import pl.edu.uj.jarpath.Jar;
 import pl.uj.edu.userlib.Callback;
 
@@ -40,7 +41,7 @@ public class ContextInjectingCallbackPreExecutionProcessorTest
         MockitoAnnotations.initMocks(this);
         doReturn(jarContext).when(jarContextRegistry).get(jar);
         doReturn(this.getClass().getClassLoader()).when(jar).getClassLoader();
-        jarContext.autowire(Mockito.anyObject());
+        jarContext.injectContext(Mockito.anyObject());
 
         Mockito.doAnswer(invocation -> {
             if(invocation.getArgumentAt(0, Object.class) instanceof CallbackWithContextFields)
@@ -50,7 +51,7 @@ public class ContextInjectingCallbackPreExecutionProcessorTest
             }
             return callback;
         }).when(jarContext)
-                .autowire(Mockito.anyObject());
+                .injectContext(Mockito.anyObject());
     }
 
     @After
@@ -64,7 +65,7 @@ public class ContextInjectingCallbackPreExecutionProcessorTest
     {
         Callback processedCallback = processor.process(jar, callback);
         assertThat(processedCallback, sameInstance(callback));
-        Mockito.verify(jarContext).autowire(callback);
+        Mockito.verify(jarContext).injectContext(callback);
     }
 
     @Test

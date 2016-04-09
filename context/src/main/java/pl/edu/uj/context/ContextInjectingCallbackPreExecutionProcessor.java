@@ -15,7 +15,7 @@ public class ContextInjectingCallbackPreExecutionProcessor implements CallbackPr
     @Override public Callback process(Jar jar, Callback callback)
     {
         JarContext context = jarContextRegistry.get(jar);
-        context.autowire(callback);
+        context.injectContext(callback);
         return callback;
     }
 }
