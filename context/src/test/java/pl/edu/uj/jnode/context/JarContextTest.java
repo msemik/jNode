@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestsConfig.class)
@@ -36,7 +36,10 @@ public class JarContextTest
         MockitoAnnotations.initMocks(this);
         doReturn(ClassLoader.getSystemClassLoader())
                 .when(jar)
-                .getClassLoader();
+                .getChildFirstClassLoader();
+
+        doReturn(ClassLoader.getSystemClassLoader()).when(jar).getJarOnlyClassLoader();
+
         Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
         jarContext = applicationContext.getBean(JarContext.class, jar);
     }

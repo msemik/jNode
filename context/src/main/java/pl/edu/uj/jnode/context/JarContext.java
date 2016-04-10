@@ -5,7 +5,7 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
-import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.support.*;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
@@ -72,14 +72,14 @@ public class JarContext
     private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation)
     {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        ClassLoader classLoader = jar.getClassLoader();
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(classLoader);
+        ClassLoader classLoader = jar.getJarOnlyClassLoader();
+        ResourcePatternResolver resourceLoader = new PathMatchingResourcePatternResolver(classLoader);
         provider.setResourceLoader(resourceLoader);
         // Filter to include only classes that have a particular annotation.
         provider.addIncludeFilter(new AnnotationTypeFilter(contextAnnotation));
 
         // Find classes in the given package (or subpackages)
-        Set<BeanDefinition> beans = provider.findCandidateComponents("");
+        Set<BeanDefinition> beans = provider.findCandidateComponents("pl");
         List<Class<?>> classes = new ArrayList<>();
         for(BeanDefinition bd : beans)
         {

@@ -25,7 +25,7 @@ public class JarContextRegistryTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        Mockito.doReturn(this.getClass().getClassLoader()).when(jar).getClassLoader();
+        Mockito.doReturn(this.getClass().getClassLoader()).when(jar).getChildFirstClassLoader();
         Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
     }
 

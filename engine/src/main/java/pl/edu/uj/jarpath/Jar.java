@@ -120,14 +120,14 @@ public class Jar
         return jarProperties;
     }
 
-    public boolean isLocal()
+    public ClassLoader getChildFirstClassLoader()
     {
-        return nodeId.equals(nodeIdFactory.getCurrentNodeId());
+        return  getJarLauncher().getClassLoader();
     }
 
-    public ClassLoader getClassLoader()
+    public ClassLoader getJarOnlyClassLoader()
     {
-        return getJarLauncher().getClassLoader();
+        return jarLauncher.getJarOnlyClassLoader();
     }
 
     private JarLauncher getJarLauncher()
@@ -197,7 +197,7 @@ public class Jar
 
     public Class<?> getClass(String canonicalName)
     {
-        ClassLoader classLoader = getClassLoader();
+        ClassLoader classLoader = getChildFirstClassLoader();
         try
         {
             return Class.forName(canonicalName, true, classLoader);
@@ -219,4 +219,5 @@ public class Jar
         }
         return of((Class<Annotation>) cls);
     }
+
 }

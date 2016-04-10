@@ -39,7 +39,7 @@ public class ContextInjectingCallbackPreExecutionProcessorTest
     {
         MockitoAnnotations.initMocks(this);
         doReturn(jarContext).when(jarContextRegistry).get(jar);
-        doReturn(this.getClass().getClassLoader()).when(jar).getClassLoader();
+        doReturn(this.getClass().getClassLoader()).when(jar).getChildFirstClassLoader();
         jarContext.injectContext(Mockito.anyObject());
 
         Mockito.doAnswer(invocation -> {

@@ -90,7 +90,7 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
 
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
-            ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getClassLoader());
+            ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader());
             Object o = stream.readObject();
             if (!(o instanceof WorkerPoolTask))
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());
