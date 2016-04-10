@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.xeustechnologies.jcl.JarClassLoader;
+import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.jarpath.JarPathServices;
 
@@ -27,23 +27,17 @@ public class JarLauncher {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     private Jar jar;
-    private JarClassLoader jcl;
+    private ChildFirstJarClassLoader childFirstJarClassLoader;
 
     public JarLauncher() {
     }
 
     public Object launchMain() {
+        Class<?> mainClass = loadMainClass();
         try {
-            ClassLoader classLoader = getClassLoader();
-            String mainClassName = getMainClass(jar);
-            Class<?> mainClass = classLoader.loadClass(mainClassName);
-
             Method main = mainClass.getMethod("main", String[].class);
             String[] args = new String[0];
             return main.invoke(null, new Object[]{args});
-        } catch (ClassNotFoundException e) {
-            String message = "Declared main class doesn't exist:" + e.getMessage();
-            throw new InvalidJarFileException(message, e);
         } catch (InvocationTargetException e) {
             throw new UserApplicationException(e.getCause());
         } catch (NoSuchMethodException e) {
@@ -55,22 +49,19 @@ public class JarLauncher {
         }
     }
 
-    public ClassLoader getClassLoader() {
-        if (jcl != null) {
-            return jcl;
+    private Class<?> loadMainClass() {
+        try {
+            ClassLoader classLoader = getClassLoader();
+            String mainClassName = getMainClass(jar);
+            return classLoader.loadClass(mainClassName);
+        } catch (ClassNotFoundException e) {
+            String message = "Declared main class doesn't exist:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
         }
+    }
 
-        jcl = new JarClassLoader();
-        jcl.add(jar.getAbsolutePathAsString());
-
-        jcl.getLocalLoader().setEnabled(true);
-        jcl.getOsgiBootLoader().setEnabled(true);
-        jcl.getParentLoader().setEnabled(true);
-        jcl.getSystemLoader().setEnabled(true);
-        jcl.getThreadLoader().setEnabled(true);
-        jcl.getCurrentLoader().setEnabled(true);
-
-        return jcl;
+    public ClassLoader getClassLoader() {
+        return getChildFirstClassLoader();
     }
 
     private String getMainClass(Jar jar) {
@@ -90,6 +81,19 @@ public class JarLauncher {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ChildFirstJarClassLoader getChildFirstClassLoader() {
+        if (childFirstJarClassLoader != null) {
+            return childFirstJarClassLoader;
+        }
+        ClassLoader parentClassLoader = this.getClass().getClassLoader();
+        childFirstJarClassLoader = new ChildFirstJarClassLoader(jar.getAbsolutePathAsString(), parentClassLoader);
+        return childFirstJarClassLoader;
+    }
+
+    public ClassLoader getJarOnlyClassLoader() {
+        return getChildFirstClassLoader().getChildOnlyJarClassLoader();
     }
 
     public void setJar(Jar jar) {

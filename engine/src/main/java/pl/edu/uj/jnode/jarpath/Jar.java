@@ -106,8 +106,8 @@ public class Jar {
         return jarProperties;
     }
 
-    public boolean isLocal() {
-        return nodeId.equals(nodeIdFactory.getCurrentNodeId());
+    public ClassLoader getJarOnlyClassLoader() {
+        return jarLauncher.getJarOnlyClassLoader();
     }
 
     public String getFileNameAsString() {
@@ -179,7 +179,7 @@ public class Jar {
     }
 
     public Class<?> getClass(String canonicalName) {
-        ClassLoader classLoader = getClassLoader();
+        ClassLoader classLoader = getChildFirstClassLoader();
         try {
             return Class.forName(canonicalName, true, classLoader);
         } catch (ClassNotFoundException e) {
@@ -187,7 +187,7 @@ public class Jar {
         }
     }
 
-    public ClassLoader getClassLoader() {
+    public ClassLoader getChildFirstClassLoader() {
         return getJarLauncher().getClassLoader();
     }
 }
