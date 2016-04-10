@@ -2,6 +2,7 @@ package pl.edu.uj.jarpath;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.engine.NodeIdFactory;
 
@@ -18,6 +19,8 @@ public class JarFactory {
     private JarPathServices jarPathServices;
     @Autowired
     private NodeIdFactory nodeIdFactory;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     private List<Jar> jars = new CopyOnWriteArrayList<>();
 
     public Jar getFor(Path pathToJar) {
@@ -40,6 +43,7 @@ public class JarFactory {
             jar = applicationContext.getBean(Jar.class, nodeId, pathToJar);
             jar.validate();
             jars.add(jar);
+            eventPublisher.publishEvent(new NewJarCreatedEvent(this, jar));
         }
         return jar;
     }

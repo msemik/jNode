@@ -61,7 +61,7 @@ public class EventLoopThread extends Thread {
             Task task = eventLoopResponse.getTask();
             Callback callback = callbackStorage.remove(task);
             for (CallbackPreExecutionProcessor processor : callbackPreExecutionProcessors) {
-                callback = processor.process(callback);
+                callback = processor.process(jar, callback);
             }
 
             if (eventLoopResponse.getType() == EventLoopResponse.Type.SUCCESS) {

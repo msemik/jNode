@@ -9,10 +9,14 @@ import pl.edu.uj.engine.NodeIdFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 @Component
 @Scope(scopeName = "prototype")
@@ -106,18 +110,6 @@ public class Jar {
         return nodeId.equals(nodeIdFactory.getCurrentNodeId());
     }
 
-    public ClassLoader getClassLoader() {
-        return getJarLauncher().getClassLoader();
-    }
-
-    private JarLauncher getJarLauncher() {
-        if (jarLauncher == null) {
-            jarLauncher = applicationContext.getBean(JarLauncher.class);
-            jarLauncher.setJar(this);
-        }
-        return jarLauncher;
-    }
-
     public String getFileNameAsString() {
         return getFileName().toString();
     }
@@ -136,6 +128,14 @@ public class Jar {
 
     public Object launchMain() {
         return getJarLauncher().launchMain();
+    }
+
+    private JarLauncher getJarLauncher() {
+        if (jarLauncher == null) {
+            jarLauncher = applicationContext.getBean(JarLauncher.class);
+            jarLauncher.setJar(this);
+        }
+        return jarLauncher;
     }
 
     @Override
@@ -165,5 +165,29 @@ public class Jar {
     @Override
     public String toString() {
         return getPathRelativeToJarPath().toString();
+    }
+
+    public Optional<Class<Annotation>> getAnnotation(String canonicalName) {
+        Class<?> cls = getClass(canonicalName);
+        if (cls == null) {
+            return empty();
+        }
+        if (!cls.isAnnotation()) {
+            throw new IllegalStateException("Given type is not annotation: " + canonicalName);
+        }
+        return of((Class<Annotation>) cls);
+    }
+
+    public Class<?> getClass(String canonicalName) {
+        ClassLoader classLoader = getClassLoader();
+        try {
+            return Class.forName(canonicalName, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
+    public ClassLoader getClassLoader() {
+        return getJarLauncher().getClassLoader();
     }
 }
