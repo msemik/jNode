@@ -2,9 +2,9 @@ package pl.edu.uj.jnode.context;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.edu.uj.engine.CallbackPreExecutionProcessor;
-import pl.edu.uj.jarpath.Jar;
-import pl.edu.uj.userlib.Callback;
+import pl.edu.uj.jnode.engine.CallbackPreExecutionProcessor;
+import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.userlib.Callback;
 
 @Component
 public class ContextInjectingCallbackPreExecutionProcessor implements CallbackPreExecutionProcessor {

@@ -11,8 +11,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
-import pl.edu.uj.jarpath.Jar;
-import pl.edu.uj.userlib.Callback;
+import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.userlib.Callback;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jnode-platform</artifactId>
-        <groupId>pl.edu.uj</groupId>
+        <groupId>pl.edu.uj.jnode</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>jnode</artifactId>
+    <artifactId>jnode-client</artifactId>
     <description>
         Platform for asynchronous procedure execution on cluster.
         This module is supposed to be used by user to execute asynchronous tasks.

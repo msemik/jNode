@@ -8,6 +8,6 @@ import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 @Configuration
 @EnableAspectJAutoProxy
 @EnableSpringConfigured
-@ComponentScan({"pl.edu.uj.context", "pl.edu.uj.contexttestdata"})
+@ComponentScan({"pl.edu.uj.jnode.context", "pl.edu.uj.jnode.contexttestdata"})
 public class TestsConfig {
 }

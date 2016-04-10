@@ -1,7 +1,7 @@
 package pl.edu.uj.jnode.context.testdata;
 
 import pl.edu.uj.jnode.context.InjectContext;
-import pl.edu.uj.userlib.Callback;
+import pl.edu.uj.jnode.userlib.Callback;
 
 public class CallbackWithContextFields implements Callback {
     @InjectContext

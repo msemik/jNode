@@ -1,6 +1,6 @@
 package pl.edu.uj.jnode.context;
 
-import pl.edu.uj.jarpath.Jar;
+import pl.edu.uj.jnode.jarpath.Jar;
 
 import java.nio.file.Path;
 
