@@ -1,15 +1,18 @@
 package pl.edu.uj.jarpath;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.engine.*;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.nio.file.*;
-import java.util.Optional;
+import java.util.*;
+import java.util.jar.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Optional.*;
@@ -24,9 +27,11 @@ public class Jar
     private NodeIdFactory nodeIdFactory;
     @Autowired
     private JarPathServices jarPathServices;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     private String nodeId;
     private Path pathRelativeToJarPath;
-    private JarLauncher jarLauncher;
+    private ChildFirstJarClassLoader childFirstJarClassLoader;
 
     protected Jar(String nodeId, Path pathRelativeToJarPath)
     {
@@ -120,25 +125,6 @@ public class Jar
         return jarProperties;
     }
 
-    public ClassLoader getChildFirstClassLoader()
-    {
-        return  getJarLauncher().getClassLoader();
-    }
-
-    public ClassLoader getJarOnlyClassLoader()
-    {
-        return jarLauncher.getJarOnlyClassLoader();
-    }
-
-    private JarLauncher getJarLauncher()
-    {
-        if(jarLauncher == null)
-        {
-            jarLauncher = applicationContext.getBean(JarLauncher.class);
-            jarLauncher.setJar(this);
-        }
-        return jarLauncher;
-    }
 
     public String getFileNameAsString()
     {
@@ -158,11 +144,6 @@ public class Jar
     public Path getPathRelativeToJarPath()
     {
         return pathRelativeToJarPath;
-    }
-
-    public Object launchMain()
-    {
-        return getJarLauncher().launchMain();
     }
 
     @Override
@@ -197,7 +178,7 @@ public class Jar
 
     public Class<?> getClass(String canonicalName)
     {
-        ClassLoader classLoader = getChildFirstClassLoader();
+        ClassLoader classLoader = getJarOnlyClassLoader();
         try
         {
             return Class.forName(canonicalName, true, classLoader);
@@ -220,4 +201,85 @@ public class Jar
         return of((Class<Annotation>) cls);
     }
 
+    public Object launchMain()
+    {
+        Class<?> mainClass = loadMainClass();
+        try
+        {
+            Method main = mainClass.getMethod("main", String[].class);
+            String[] args = new String[0];
+            return main.invoke(null, new Object[] { args });
+        }
+        catch(InvocationTargetException e)
+        {
+            throw new UserApplicationException(e.getCause());
+        }
+        catch(NoSuchMethodException e)
+        {
+            String message = "Declared main class doesn't have proper main method:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
+        }
+        catch(IllegalAccessException e)
+        {
+            String message = "Declared main class is not accessible:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
+        }
+    }
+
+    private Class<?> loadMainClass()
+    {
+        try
+        {
+            ClassLoader classLoader = getChildFirstClassLoader();
+            String mainClassName = getMainClass();
+            return classLoader.loadClass(mainClassName);
+        }
+        catch(ClassNotFoundException e)
+        {
+            String message = "Declared main class doesn't exist:" + e.getMessage();
+            throw new InvalidJarFileException(message, e);
+        }
+    }
+
+    public ClassLoader getChildFirstClassLoader()
+    {
+        return getChildFirstClassLoaderAndCreateIfNeed();
+    }
+
+    public ClassLoader getJarOnlyClassLoader()
+    {
+        return getChildFirstClassLoaderAndCreateIfNeed().getChildOnlyJarClassLoader();
+    }
+
+    private ChildFirstJarClassLoader getChildFirstClassLoaderAndCreateIfNeed()
+    {
+        if(childFirstJarClassLoader != null)
+            return childFirstJarClassLoader;
+        childFirstJarClassLoader = new ChildFirstJarClassLoader(getAbsolutePathAsString());
+        return childFirstJarClassLoader;
+    }
+
+    private String getMainClass()
+    {
+        try
+        {
+            JarFile jarFile = new JarFile(getAbsolutePathAsString());
+            Manifest manifest = jarFile.getManifest();
+            Attributes mainAttributes = manifest.getMainAttributes();
+
+            for(Iterator it = mainAttributes.keySet().iterator(); it.hasNext(); )
+            {
+                Attributes.Name attribute = (Attributes.Name) it.next();
+                if(attribute.toString().equals("Main-Class"))
+                    return (String) mainAttributes.get(attribute);
+            }
+
+            throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");
+
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }

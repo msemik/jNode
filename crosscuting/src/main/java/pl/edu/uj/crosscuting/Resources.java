@@ -1,6 +1,7 @@
-package pl.edu.uj.crosscutting;
+package pl.edu.uj.crosscuting;
 
 import java.net.URL;
+import java.nio.file.*;
 
 public class Resources
 {
@@ -19,5 +20,11 @@ public class Resources
         URL url = Thread.currentThread().getContextClassLoader().getResource(path);
         String file = url.getFile();
         return file;
+    }
+
+    public Path getPath(String path)
+    {
+        String pathAsString = getPathAsString(path);
+        return Paths.get(pathAsString);
     }
 }

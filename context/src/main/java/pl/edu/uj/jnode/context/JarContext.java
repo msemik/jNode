@@ -21,6 +21,12 @@ import java.util.*;
 public class JarContext
 {
     private final Logger logger = LoggerFactory.getLogger(JarContext.class);
+
+    public List<Object> getBeans()
+    {
+        return beans;
+    }
+
     private final List<Object> beans = new ArrayList<>();
     private final List<Class<Annotation>> contextInjectors = new ArrayList<>();
     private final Optional<Class<Annotation>> contextAnnotation;

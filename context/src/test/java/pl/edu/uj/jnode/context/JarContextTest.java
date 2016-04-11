@@ -34,13 +34,8 @@ public class JarContextTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        doReturn(ClassLoader.getSystemClassLoader())
-                .when(jar)
-                .getChildFirstClassLoader();
-
+        doReturn(ClassLoader.getSystemClassLoader()).when(jar).getChildFirstClassLoader();
         doReturn(ClassLoader.getSystemClassLoader()).when(jar).getJarOnlyClassLoader();
-
-        Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
         jarContext = applicationContext.getBean(JarContext.class, jar);
     }
 

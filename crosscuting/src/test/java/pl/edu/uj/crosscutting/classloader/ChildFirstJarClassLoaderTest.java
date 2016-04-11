@@ -9,8 +9,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import pl.edu.uj.crosscuting.classloader.*;
-import pl.edu.uj.crosscutting.Resources;
-import pl.edu.uj.jnode.crosscutting.classloader.SomeClass;
+import pl.edu.uj.crosscuting.Resources;
+import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
 
 import java.util.*;
 import java.util.regex.Pattern;
