@@ -12,8 +12,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import pl.edu.uj.jarpath.*;
 import pl.edu.uj.jnode.context.testdata.SomeClassWithMainAndContextScan;
+import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.jarpath.NewJarCreatedEvent;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;

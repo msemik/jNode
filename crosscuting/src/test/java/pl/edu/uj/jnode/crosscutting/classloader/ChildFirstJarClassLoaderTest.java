@@ -1,4 +1,4 @@
-package pl.edu.uj.crosscutting.classloader;
+package pl.edu.uj.jnode.crosscutting.classloader;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -11,10 +11,10 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
-import pl.edu.uj.crosscuting.classloader.*;
 import pl.edu.uj.jnode.crosscuting.Resources;
+import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.jnode.crosscuting.classloader.ChildOnlyJarClassLoader;
-import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
+import pl.edu.uj.jnode.crosscuting.classloader.ExtendedPathMatchingResourcePatternResolver;
 
 import java.util.List;
 import java.util.Set;
@@ -100,11 +100,18 @@ public class ChildFirstJarClassLoaderTest {
 
     @Test
     public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception {
-        classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
-        ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
-        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
-        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+        try {
+            classLoader = new ChildFirstJarClassLoader(pathToJar);
+            Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
+            ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
+            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
+            System.out.println("loading1 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            System.out.println("loading2 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions) {

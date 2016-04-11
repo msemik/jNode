@@ -14,7 +14,6 @@ import pl.edu.uj.jnode.crosscuting.Resources;
 import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.jnode.crosscuting.classloader.ChildOnlyJarClassLoader;
 import pl.edu.uj.jnode.crosscuting.classloader.ExtendedPathMatchingResourcePatternResolver;
-import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
 
 import java.util.Arrays;
 import java.util.List;

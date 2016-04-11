@@ -1,4 +1,4 @@
-package pl.edu.uj.jarpath;
+package pl.edu.uj.jnode.jarpath;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -6,8 +6,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import pl.edu.uj.crosscuting.classloader.ChildFirstJarClassLoader;
-import pl.edu.uj.engine.*;
+import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
+import pl.edu.uj.jnode.engine.InvalidJarFileException;
+import pl.edu.uj.jnode.engine.NodeIdFactory;
+import pl.edu.uj.jnode.engine.UserApplicationException;
 
 import java.io.IOException;
 import java.io.InputStream;

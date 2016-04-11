@@ -25,6 +25,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;

@@ -12,8 +12,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jnode.crosscuting.Resources;
+import pl.edu.uj.jnode.jarpath.Jar;
 
 import java.nio.file.Paths;
 import java.util.List;

@@ -13,8 +13,8 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
-import pl.edu.uj.jarpath.Jar;
-import pl.uj.edu.userlib.Callback;
+import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.userlib.Callback;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -142,7 +142,6 @@ public class JarContext {
                 return bean;
             }
         }
-        logger.error("No bean found for type:" + type.getCanonicalName());
         return null;
     }
 }
