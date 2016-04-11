@@ -2,7 +2,7 @@ package pl.edu.uj.jnode.cluster.message;
 
 import pl.edu.uj.jnode.cluster.Distributable;
 import pl.edu.uj.jnode.cluster.Distributor;
-import pl.edu.uj.jnode.cluster.callback.SerializableCallback;
+import pl.edu.uj.jnode.cluster.callback.SerializableCallbackWrapper;
 import pl.edu.uj.jnode.cluster.task.ExternalTask;
 
 import java.io.Serializable;
@@ -13,9 +13,9 @@ import java.util.Optional;
  */
 public class RegisterDelegatedSubTask implements Serializable, Distributable {
     private ExternalTask externalTask;
-    private SerializableCallback callback;
+    private SerializableCallbackWrapper callback;
 
-    public RegisterDelegatedSubTask(ExternalTask externalTask, SerializableCallback callback) {
+    public RegisterDelegatedSubTask(ExternalTask externalTask, SerializableCallbackWrapper callback) {
         this.externalTask = externalTask;
         this.callback = callback;
     }
@@ -24,7 +24,7 @@ public class RegisterDelegatedSubTask implements Serializable, Distributable {
         return externalTask;
     }
 
-    public SerializableCallback getCallback() {
+    public SerializableCallbackWrapper getCallback() {
         return callback;
     }
 

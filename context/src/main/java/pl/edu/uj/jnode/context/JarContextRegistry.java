@@ -20,7 +20,9 @@ public class JarContextRegistry {
     @EventListener
     public void on(NewJarCreatedEvent event) {
         Jar jar = event.getJar();
-        createContext(jar);
+        if (jar.isValidExistingJar()) {
+            createContext(jar);
+        }
     }
 
     private JarContext createContext(Jar jar) {

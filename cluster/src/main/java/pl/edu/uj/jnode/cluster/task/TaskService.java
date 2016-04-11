@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import pl.edu.uj.jnode.cluster.MessageGateway;
-import pl.edu.uj.jnode.cluster.callback.SerializableCallback;
+import pl.edu.uj.jnode.cluster.callback.SerializableCallbackWrapper;
 import pl.edu.uj.jnode.cluster.message.CancelJarJobs;
 import pl.edu.uj.jnode.cluster.message.JarDelivery;
 import pl.edu.uj.jnode.cluster.message.JarRequest;
@@ -74,7 +74,7 @@ public class TaskService {
         messageGateway.send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId());
     }
 
-    public void registerDelegatedSubTask(ExternalTask externalTask, SerializableCallback callback, String nodeId) {
+    public void registerDelegatedSubTask(ExternalTask externalTask, SerializableCallbackWrapper callback, String nodeId) {
         messageGateway.send(new RegisterDelegatedSubTask(externalTask, callback), nodeId);
     }
 }

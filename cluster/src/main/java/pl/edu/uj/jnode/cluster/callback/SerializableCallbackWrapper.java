@@ -9,34 +9,25 @@ import pl.edu.uj.jnode.userlib.Callback;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * Created by alanhawrot on 08.04.2016.
  */
-public class SerializableCallback implements Callback {
+public class SerializableCallbackWrapper implements Serializable {
     private transient Callback callback;
     private transient byte[] serializedCallback;
 
-    public SerializableCallback(Callback callback) {
+    public SerializableCallbackWrapper(Callback callback) {
         this.callback = callback;
     }
 
-    @Override
-    public void onSuccess(Object taskResult) {
-        if (callback != null) {
-            callback.onSuccess(taskResult);
-        } else {
-            throw new IllegalStateException("Callback must be deserialized before executing it's method");
-        }
+    public Callback getCallback() {
+        return callback;
     }
 
-    @Override
-    public void onFailure(Throwable ex) {
-        if (callback != null) {
-            callback.onFailure(ex);
-        } else {
-            throw new IllegalStateException("Callback must be deserialized before executing it's method");
-        }
+    private void setCallback(Callback callback) {
+        this.callback = callback;
     }
 
     public void deserialize(Jar jar) {
@@ -61,14 +52,6 @@ public class SerializableCallback implements Callback {
             this.serializedCallback = SerializationUtils.serialize(callback);
         }
         out.write(serializedCallback);
-    }
-
-    private Callback getCallback() {
-        return callback;
-    }
-
-    private void setCallback(Callback callback) {
-        this.callback = callback;
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
