@@ -1,5 +1,6 @@
 package pl.edu.uj.crosscutting.classloader;
 
+import org.apache.log4j.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -9,6 +10,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import pl.edu.uj.crosscuting.classloader.*;
 import pl.edu.uj.crosscutting.Resources;
+import pl.edu.uj.jnode.crosscutting.classloader.SomeClass;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -21,14 +23,16 @@ import static org.junit.Assert.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class ChildFirstJarClassLoaderTest
 {
-    public static final String EXEMPLARY_CLASS = "pl.test.example.ExemplaryMain";
-    public static final String ANOTHER_EXEMPLARY_CLASS = "pl.test.example.SimpleContextClass";
+    public static final String EXEMPLARY_CLASS_IN_BOTH_LOADERS = SomeClass.class.getCanonicalName();
+    public static final String EXEMPLARY_CLASS_IN_CHILD_LOADER = "pl.test.example.SimpleContextClass";
+    public static final String EXEMPLARY_CLASS_IN_PARENT_LOADER = ChildFirstJarClassLoaderTest.class.getCanonicalName();
     private Resources resources = Resources.getInstance();
     private ChildFirstJarClassLoader classLoader;
     private String pathToJar;
+    private ClassLoader parent;
+    private ChildOnlyJarClassLoader child;
 
     @Before
-
     public void setUp() throws Exception
     {
         pathToJar = resources.getPathAsString("somejar.jar");
@@ -38,7 +42,7 @@ public class ChildFirstJarClassLoaderTest
     public void canLoadChildClass() throws Exception
     {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
         assertThat(aClass, notNullValue());
 
     }
@@ -47,21 +51,21 @@ public class ChildFirstJarClassLoaderTest
     public void canLoadParentClass() throws Exception
     {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> aClass = classLoader.loadClass(ChildFirstJarClassLoaderTest.class.getCanonicalName());
+        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
         assertThat(aClass, notNullValue());
     }
 
     @Test
     public void whenBothLoadersHasClassThenLoadsFromChild() throws Exception
     {
-        ChildOnlyJarClassLoader parent = new ChildOnlyJarClassLoader(pathToJar);
-        ChildOnlyJarClassLoader child = new ChildOnlyJarClassLoader(pathToJar);
-        classLoader = new ChildFirstJarClassLoader(child, parent);
+        parent = this.getClass().getClassLoader();
+        classLoader = new ChildFirstJarClassLoader(pathToJar, parent);
+        child = classLoader.getChildOnlyJarClassLoader();
 
-        Class<?> clsInParent = parent.loadClass(EXEMPLARY_CLASS);
-        Class<?> clsInChild = child.loadClass(EXEMPLARY_CLASS);
+        Class<?> clsInParent = parent.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
 
-        Class<?> clsInChildFirst = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> clsInChildFirst = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
+        Class<?> clsInChild = child.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
 
         assertThat(clsInChildFirst, equalTo(clsInChild));
         assertThat(clsInChildFirst, not(equalTo(clsInParent)));
@@ -71,6 +75,8 @@ public class ChildFirstJarClassLoaderTest
     @Test
     public void canFindResources()
     {
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         PathMatchingResourcePatternResolver resolver = new ExtendedPathMatchingResourcePatternResolver(classLoader);
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
@@ -85,9 +91,9 @@ public class ChildFirstJarClassLoaderTest
         List<String> classes = getCanonicalClassNames(candidateComponents);
         System.out.println("Size:" + candidateComponents.size());
         assertThat(candidateComponents.size(), greaterThan(0));
-        assertThat(classes, hasItem(EXEMPLARY_CLASS));
-        assertThat(classes, hasItem(ANOTHER_EXEMPLARY_CLASS));
-        assertThat(classes, hasItem(this.getClass().getCanonicalName()));
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_BOTH_LOADERS));
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_CHILD_LOADER));
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_PARENT_LOADER));
 
     }
 
@@ -95,10 +101,10 @@ public class ChildFirstJarClassLoaderTest
     public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception
     {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
         ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
-        classLoaderOfMainClass.loadClass(ANOTHER_EXEMPLARY_CLASS);
-        classLoaderOfMainClass.loadClass(ChildFirstJarClassLoaderTest.class.getCanonicalName());
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
     }
 
     private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions)

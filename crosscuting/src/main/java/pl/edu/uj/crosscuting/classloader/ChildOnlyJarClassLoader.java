@@ -1,71 +1,92 @@
 package pl.edu.uj.crosscuting.classloader;
 
+import pl.edu.uj.crosscuting.classloader.ChildFirstJarClassLoader.Mode;
+
 import java.io.*;
-import java.net.*;
-import java.nio.file.*;
+import java.net.URL;
 import java.util.Enumeration;
+
+import static pl.edu.uj.crosscuting.classloader.ChildFirstJarClassLoader.Mode.CHILD_ONLY;
 
 public class ChildOnlyJarClassLoader extends ClassLoader
 {
-    private URLClassLoader urlClassLoader;
+    private ChildFirstJarClassLoader jarClassLoader;
+    private Mode previousMode;
 
-    public ChildOnlyJarClassLoader(String pathToJar)
+    protected ChildOnlyJarClassLoader(ChildFirstJarClassLoader jarClassLoader)
     {
-        this(Paths.get(pathToJar));
-    }
-
-    public ChildOnlyJarClassLoader(Path pathToJar)
-    {
-        URL[] urls;
-        try
-        {
-            urls = new URL[] { new URL("jar:file:" + pathToJar.toString() + "!/") };
-            System.out.println(urls[0]);
-        }
-        catch(MalformedURLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        urlClassLoader = new URLClassLoader(urls, null);
+        this.jarClassLoader = jarClassLoader;
     }
 
     @Override public Class<?> loadClass(String name) throws ClassNotFoundException
     {
-        return urlClassLoader.loadClass(name);
+        setToChildOnlyMode();
+        Class<?> cls = jarClassLoader.loadClass(name);
+        resetModeToPrevious();
+        return cls;
+    }
+
+    private void resetModeToPrevious()
+    {
+        jarClassLoader.setMode(previousMode);
+    }
+
+    private void setToChildOnlyMode()
+    {
+        previousMode = jarClassLoader.getMode();
+        jarClassLoader.setMode(CHILD_ONLY);
     }
 
     @Override public URL getResource(String name)
     {
-        return urlClassLoader.getResource(name);
+        setToChildOnlyMode();
+        URL resource = jarClassLoader.getResource(name);
+        resetModeToPrevious();
+        return resource;
     }
 
     @Override public Enumeration<URL> getResources(String name) throws IOException
     {
-        return urlClassLoader.getResources(name);
+        setToChildOnlyMode();
+        Enumeration<URL> resources = jarClassLoader.getResources(name);
+        resetModeToPrevious();
+        return resources;
     }
 
     @Override public InputStream getResourceAsStream(String name)
     {
-        return urlClassLoader.getResourceAsStream(name);
+        setToChildOnlyMode();
+        InputStream resourceAsStream = jarClassLoader.getResourceAsStream(name);
+        resetModeToPrevious();
+        return resourceAsStream;
     }
 
     @Override public void setDefaultAssertionStatus(boolean enabled)
     {
-        urlClassLoader.setDefaultAssertionStatus(enabled);
+        setToChildOnlyMode();
+        jarClassLoader.setDefaultAssertionStatus(enabled);
+        resetModeToPrevious();
     }
 
     @Override public void setPackageAssertionStatus(String packageName, boolean enabled)
     {
-        urlClassLoader.setPackageAssertionStatus(packageName, enabled);
+
+        setToChildOnlyMode();
+        jarClassLoader.setPackageAssertionStatus(packageName, enabled);
+        resetModeToPrevious();
     }
 
     @Override public void setClassAssertionStatus(String className, boolean enabled)
     {
-        urlClassLoader.setClassAssertionStatus(className, enabled);
+        setToChildOnlyMode();
+        jarClassLoader.setClassAssertionStatus(className, enabled);
+        resetModeToPrevious();
     }
 
     @Override public void clearAssertionStatus()
     {
-        urlClassLoader.clearAssertionStatus();
+        setToChildOnlyMode();
+        jarClassLoader.clearAssertionStatus();
+        resetModeToPrevious();
     }
 }

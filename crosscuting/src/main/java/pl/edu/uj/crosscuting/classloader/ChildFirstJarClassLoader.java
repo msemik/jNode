@@ -3,114 +3,150 @@ package pl.edu.uj.crosscuting.classloader;
 import sun.misc.CompoundEnumeration;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.file.Path;
+import java.net.*;
 import java.util.Enumeration;
 
-public class ChildFirstJarClassLoader extends ClassLoader
+public class ChildFirstJarClassLoader extends URLClassLoader
 {
     private final ClassLoader parent;
-    private ChildOnlyJarClassLoader childOnlyJarClassLoader;
-
-    public ChildFirstJarClassLoader(String pathToJar, ClassLoader parent)
-    {
-        super(null);
-        this.parent = parent;
-        this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(pathToJar);
-    }
-
-    public ChildFirstJarClassLoader(Path pathToJar, ClassLoader parent)
-    {
-        super(null);
-        this.parent = parent;
-        this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(pathToJar);
-    }
-
-    public ChildFirstJarClassLoader(ChildOnlyJarClassLoader childOnlyClassLoader, ClassLoader parent)
-    {
-        super(null);
-        this.parent = parent;
-        this.childOnlyJarClassLoader = childOnlyClassLoader;
-    }
-
-    public ChildFirstJarClassLoader(ChildOnlyJarClassLoader childOnlyClassLoader)
-    {
-        this(childOnlyClassLoader, ChildFirstJarClassLoader.class.getClassLoader());
-    }
+    private final ChildOnlyJarClassLoader childOnlyJarClassLoader;
+    private Mode mode = Mode.CHILD_FIRST;
 
     public ChildFirstJarClassLoader(String pathToJar)
     {
-        this(new ChildOnlyJarClassLoader(pathToJar), ChildFirstJarClassLoader.class.getClassLoader());
+        super(pathToUrls(pathToJar), null);
+        this.parent = this.getClass().getClassLoader();
+        this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    public ChildFirstJarClassLoader(Path pathToJar)
+    public ChildFirstJarClassLoader(String pathToJar, ClassLoader parent)
     {
-        this(pathToJar.toString());
+        super(pathToUrls(pathToJar), null);
+        this.parent = parent;
+        this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
+    }
+
+    private static URL[] pathToUrls(String pathToJar)
+    {
+        try
+        {
+            return new URL[] { new URL("jar:file:" + pathToJar.toString() + "!/") };
+        }
+        catch(MalformedURLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Mode getMode()
+    {
+        return mode;
+    }
+
+    protected void setMode(Mode mode)
+    {
+        this.mode = mode;
     }
 
     @Override public Class<?> loadClass(String name) throws ClassNotFoundException
     {
         try
         {
-            return childOnlyJarClassLoader.loadClass(name);
+            return super.loadClass(name);
         }
         catch(ClassNotFoundException e)
         {
+            if(!canCallParent())
+            {
+                throw e;
+            }
             return parent.loadClass(name);
         }
     }
 
     @Override public URL getResource(String name)
     {
-        URL resource = childOnlyJarClassLoader.getResource(name);
-        if(resource != null)
+        URL resource = super.getResource(name);
+        if(resource != null || !canCallParent())
+        {
             return resource;
+        }
         return parent.getResource(name);
     }
 
     @Override public Enumeration<URL> getResources(String name) throws IOException
     {
+        if(!canCallParent())
+        {
+            return super.getResources(name);
+        }
+
         Enumeration<URL>[] tmp = (Enumeration<URL>[]) new Enumeration<?>[2];
-        tmp[0] = childOnlyJarClassLoader.getResources(name);
+        tmp[0] = super.getResources(name);
         tmp[1] = parent.getResources(name);
 
         return new CompoundEnumeration<>(tmp);
+
     }
 
     @Override public InputStream getResourceAsStream(String name)
     {
-        InputStream resourceAsStream = childOnlyJarClassLoader.getResourceAsStream(name);
-        if(resourceAsStream != null)
+        InputStream resourceAsStream = super.getResourceAsStream(name);
+        if(resourceAsStream != null || !canCallParent())
+        {
             return resourceAsStream;
+        }
         return parent.getResourceAsStream(name);
     }
 
     @Override public void setDefaultAssertionStatus(boolean enabled)
     {
-        childOnlyJarClassLoader.setDefaultAssertionStatus(enabled);
-        parent.setDefaultAssertionStatus(enabled);
+        super.setDefaultAssertionStatus(enabled);
+        if(canCallParent())
+        {
+            parent.setDefaultAssertionStatus(enabled);
+        }
     }
 
     @Override public void setPackageAssertionStatus(String packageName, boolean enabled)
     {
-        childOnlyJarClassLoader.setPackageAssertionStatus(packageName, enabled);
-        parent.setPackageAssertionStatus(packageName, enabled);
+        super.setPackageAssertionStatus(packageName, enabled);
+        if(canCallParent())
+        {
+            parent.setPackageAssertionStatus(packageName, enabled);
+        }
     }
 
     @Override public void setClassAssertionStatus(String className, boolean enabled)
     {
-        childOnlyJarClassLoader.setClassAssertionStatus(className, enabled);
-        parent.setClassAssertionStatus(className, enabled);
+        super.setClassAssertionStatus(className, enabled);
+        if(canCallParent())
+        {
+            parent.setClassAssertionStatus(className, enabled);
+        }
     }
 
     @Override public void clearAssertionStatus()
     {
-        childOnlyJarClassLoader.clearAssertionStatus();
-        parent.clearAssertionStatus();
+        super.clearAssertionStatus();
+        if(canCallParent())
+        {
+            parent.clearAssertionStatus();
+        }
+    }
+
+    private boolean canCallParent()
+    {
+        return parent != null && mode != Mode.CHILD_ONLY;
     }
 
     public ChildOnlyJarClassLoader getChildOnlyJarClassLoader()
     {
         return childOnlyJarClassLoader;
+    }
+
+    protected enum Mode
+    {
+        CHILD_FIRST, CHILD_ONLY
     }
 }

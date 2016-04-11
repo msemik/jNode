@@ -76,7 +76,8 @@ public class JarLauncher
         return getChildFirstClassLoader();
     }
 
-    public ClassLoader getJarOnlyClassLoader() {
+    public ClassLoader getJarOnlyClassLoader()
+    {
         return getChildFirstClassLoader().getChildOnlyJarClassLoader();
     }
 
@@ -84,8 +85,7 @@ public class JarLauncher
     {
         if(childFirstJarClassLoader != null)
             return childFirstJarClassLoader;
-        ClassLoader parentClassLoader = this.getClass().getClassLoader();
-        childFirstJarClassLoader = new ChildFirstJarClassLoader(jar.getAbsolutePathAsString(), parentClassLoader);
+        childFirstJarClassLoader = new ChildFirstJarClassLoader(jar.getAbsolutePathAsString());
         return childFirstJarClassLoader;
     }
 
