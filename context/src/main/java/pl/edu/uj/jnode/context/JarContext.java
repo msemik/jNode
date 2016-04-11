@@ -163,7 +163,6 @@ public class JarContext
                 return bean;
             }
         }
-        logger.error("No bean found for type:" + type.getCanonicalName());
         return null;
     }
 }
