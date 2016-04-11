@@ -11,7 +11,8 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import pl.edu.uj.crosscuting.Resources;
 import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
 
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -120,20 +121,26 @@ public class ChildFirstJarClassLoaderTest
     @Test
     public void encodeVariousFilePaths() throws Exception
     {
-        assertCreateCorrectUrl("file.jar", "jar:file:file.jar!/");
-        assertCreateCorrectUrl(" f ile .jar", "jar:file: f ile .jar!/");
-        assertCreateCorrectUrl("_f-i/le.jar", "jar:file:_f-i/le.jar!/");
-        assertCreateCorrectUrl("%20Asd%3A.jar", "jar:file: Asd:.jar!/");
-        assertCreateCorrectUrl("%3A%2F%2Fmywebsite%2Fdocs%2Fenglish%2Fsite%2Fmybook.do%3Frequest_type",
-                "jar:file:://mywebsite/docs/english/site/mybook.do?request_type!/");
+        assertFileNameIsCorrectAfterDecoding("file.jar", "jar:file:file.jar!/");
+        assertFileNameIsCorrectAfterDecoding(" f ile .jar", "jar:file: f ile .jar!/");
+        assertFileNameIsCorrectAfterDecoding("_f-i/le.jar", "jar:file:_f-i/le.jar!/");
+        assertFileNameIsCorrectAfterDecoding("%20Asd%3A.jar", "jar:file:%20Asd%3A.jar!/");
     }
 
-    private void assertCreateCorrectUrl(String pathToJar, String expectedUrlToJar)
+    private void assertFileNameIsCorrectAfterDecoding(String pathToJar, String expectedUrlToJar)
     {
-        URL[] encodedUrls = ChildFirstJarClassLoader.pathToUrls(pathToJar);
-        assertThat(encodedUrls.length, equalTo(1));
-        String firstUrl = encodedUrls[0].toString();
-        assertThat(firstUrl, equalTo(expectedUrlToJar));
+        try
+        {
+            URL[] encodedUrls = ChildFirstJarClassLoader.pathToUrls(pathToJar);
+            assertThat(encodedUrls.length, equalTo(1));
+            String firstUrl = encodedUrls[0].toString();
+            firstUrl = URLDecoder.decode(firstUrl, "UTF-8");
+            assertThat(firstUrl, equalTo(expectedUrlToJar));
+        }
+        catch(UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions)

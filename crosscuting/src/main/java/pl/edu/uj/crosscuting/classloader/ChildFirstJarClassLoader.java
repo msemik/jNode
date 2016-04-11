@@ -30,18 +30,10 @@ public class ChildFirstJarClassLoader extends URLClassLoader
     {
         try
         {
-            String s = null;
-            try
-            {
-                s = URLDecoder.decode(pathToJar, "UTF-8").toString();
-            }
-            catch(UnsupportedEncodingException e)
-            {
-                throw new RuntimeException(e);
-            }
-            return new URL[] { new URL("jar:file:" + s + "!/") };
+            pathToJar = URLEncoder.encode(pathToJar, "UTF-8").replace("+", "%20");
+            return new URL[] { new URL("jar:file:" + pathToJar + "!/") };
         }
-        catch(MalformedURLException e)
+        catch(MalformedURLException | UnsupportedEncodingException e)
         {
             throw new RuntimeException(e);
         }
