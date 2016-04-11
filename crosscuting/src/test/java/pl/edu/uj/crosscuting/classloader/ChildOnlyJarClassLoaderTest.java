@@ -1,4 +1,4 @@
-package pl.edu.uj.crosscutting.classloader;
+package pl.edu.uj.crosscuting.classloader;
 
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-import pl.edu.uj.crosscuting.classloader.*;
 import pl.edu.uj.crosscuting.Resources;
 import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
 

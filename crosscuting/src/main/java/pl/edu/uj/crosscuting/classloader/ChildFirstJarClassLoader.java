@@ -26,11 +26,20 @@ public class ChildFirstJarClassLoader extends URLClassLoader
         this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    private static URL[] pathToUrls(String pathToJar)
+    protected static URL[] pathToUrls(String pathToJar)
     {
         try
         {
-            return new URL[] { new URL("jar:file:" + pathToJar.toString() + "!/") };
+            String s = null;
+            try
+            {
+                s = URLDecoder.decode(pathToJar, "UTF-8").toString();
+            }
+            catch(UnsupportedEncodingException e)
+            {
+                throw new RuntimeException(e);
+            }
+            return new URL[] { new URL("jar:file:" + s + "!/") };
         }
         catch(MalformedURLException e)
         {
