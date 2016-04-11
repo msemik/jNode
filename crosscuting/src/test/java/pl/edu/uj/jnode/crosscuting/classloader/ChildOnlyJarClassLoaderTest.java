@@ -1,4 +1,4 @@
-package pl.edu.uj.jnode.crosscutting.classloader;
+package pl.edu.uj.jnode.crosscuting.classloader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,9 +11,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
 import pl.edu.uj.jnode.crosscuting.Resources;
-import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
-import pl.edu.uj.jnode.crosscuting.classloader.ChildOnlyJarClassLoader;
-import pl.edu.uj.jnode.crosscuting.classloader.ExtendedPathMatchingResourcePatternResolver;
 
 import java.util.Arrays;
 import java.util.List;

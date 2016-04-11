@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 
 public class ChildFirstJarClassLoader extends URLClassLoader {
@@ -28,16 +28,11 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
         this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    public static URL[] pathToUrls(String pathToJar) {
+    protected static URL[] pathToUrls(String pathToJar) {
         try {
-            String s = null;
-            try {
-                s = URLDecoder.decode(pathToJar, "UTF-8").toString();
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-            return new URL[]{new URL("jar:file:" + s + "!/")};
-        } catch (MalformedURLException e) {
+            pathToJar = URLEncoder.encode(pathToJar, "UTF-8").replace("+", "%20");
+            return new URL[]{new URL("jar:file:" + pathToJar + "!/")};
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -53,6 +48,9 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
+            Class<?> aClass = findLoadedClass(name);
+            if (aClass != null)
+                return aClass;
             return super.loadClass(name);
         } catch (ClassNotFoundException e) {
             if (!canCallParent()) {

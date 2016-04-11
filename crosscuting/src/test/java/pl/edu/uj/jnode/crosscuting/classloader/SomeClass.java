@@ -1,4 +1,4 @@
-package pl.edu.uj.jnode.crosscutting.classloader;
+package pl.edu.uj.jnode.crosscuting.classloader;
 
 /**
  * this class is for test purposes, changing its package will screw tests
