@@ -58,4 +58,12 @@ public class ContextScanTest
         assertThat(namesOfBeans, hasItem("pl.test.example.SimpleContextClass"));
         assertThat(namesOfBeans.size(), is(equalTo(1999)));
     }
+
+    @Test
+    public void whenContextBeanAnnotationIsMissingShouldNotFindAnyBeans()
+    {
+        doReturn(resources.getPath("context-scan-missing.jar")).when(jar).getAbsolutePath();
+        jarContext = applicationContext.getBean(JarContext.class, jar);
+        assertThat(jarContext.getBeans().size(), equalTo(0));
+    }
 }
