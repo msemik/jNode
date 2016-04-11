@@ -4,7 +4,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +11,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import pl.edu.uj.jarpath.Jar;
 import pl.edu.uj.jnode.context.testdata.CallbackWithContextFields;
 import pl.edu.uj.jnode.context.testdata.ContextClass;
-import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.context.testdata.SomeClassWithMainAndContextScan;
 
 import java.nio.file.Paths;
 
@@ -39,10 +39,8 @@ public class JarContextTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         doReturn(ClassLoader.getSystemClassLoader()).when(jar).getChildFirstClassLoader();
-
         doReturn(ClassLoader.getSystemClassLoader()).when(jar).getJarOnlyClassLoader();
-
-        Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
+        doReturn(SomeClassWithMainAndContextScan.class).when(jar).getMainClass();
         jarContext = applicationContext.getBean(JarContext.class, jar);
     }
 

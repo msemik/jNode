@@ -1,5 +1,7 @@
-package pl.edu.uj.jnode.crosscutting.classloader;
+package pl.edu.uj.crosscutting.classloader;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,10 +11,10 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
-import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
+import pl.edu.uj.crosscuting.classloader.*;
+import pl.edu.uj.jnode.crosscuting.Resources;
 import pl.edu.uj.jnode.crosscuting.classloader.ChildOnlyJarClassLoader;
-import pl.edu.uj.jnode.crosscuting.classloader.ExtendedPathMatchingResourcePatternResolver;
-import pl.edu.uj.jnode.crosscutting.Resources;
+import pl.edu.uj.jnode.crosscuting.classloader.SomeClass;
 
 import java.util.List;
 import java.util.Set;
@@ -28,14 +30,16 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChildFirstJarClassLoaderTest {
-    public static final String EXEMPLARY_CLASS = "pl.test.example.ExemplaryMain";
-    public static final String ANOTHER_EXEMPLARY_CLASS = "pl.test.example.SimpleContextClass";
+    public static final String EXEMPLARY_CLASS_IN_BOTH_LOADERS = SomeClass.class.getCanonicalName();
+    public static final String EXEMPLARY_CLASS_IN_CHILD_LOADER = "pl.test.example.SimpleContextClass";
+    public static final String EXEMPLARY_CLASS_IN_PARENT_LOADER = ChildFirstJarClassLoaderTest.class.getCanonicalName();
     private Resources resources = Resources.getInstance();
     private ChildFirstJarClassLoader classLoader;
     private String pathToJar;
+    private ClassLoader parent;
+    private ChildOnlyJarClassLoader child;
 
     @Before
-
     public void setUp() throws Exception {
         pathToJar = resources.getPathAsString("somejar.jar");
     }
@@ -43,34 +47,38 @@ public class ChildFirstJarClassLoaderTest {
     @Test
     public void canLoadChildClass() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
         assertThat(aClass, notNullValue());
+
     }
 
     @Test
     public void canLoadParentClass() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> aClass = classLoader.loadClass(ChildFirstJarClassLoaderTest.class.getCanonicalName());
+        Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
         assertThat(aClass, notNullValue());
     }
 
     @Test
     public void whenBothLoadersHasClassThenLoadsFromChild() throws Exception {
-        ChildOnlyJarClassLoader parent = new ChildOnlyJarClassLoader(pathToJar);
-        ChildOnlyJarClassLoader child = new ChildOnlyJarClassLoader(pathToJar);
-        classLoader = new ChildFirstJarClassLoader(child, parent);
+        parent = this.getClass().getClassLoader();
+        classLoader = new ChildFirstJarClassLoader(pathToJar, parent);
+        child = classLoader.getChildOnlyJarClassLoader();
 
-        Class<?> clsInParent = parent.loadClass(EXEMPLARY_CLASS);
-        Class<?> clsInChild = child.loadClass(EXEMPLARY_CLASS);
+        Class<?> clsInParent = parent.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
 
-        Class<?> clsInChildFirst = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> clsInChildFirst = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
+        Class<?> clsInChild = child.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
 
         assertThat(clsInChildFirst, equalTo(clsInChild));
         assertThat(clsInChildFirst, not(equalTo(clsInParent)));
+
     }
 
     @Test
     public void canFindResources() {
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         PathMatchingResourcePatternResolver resolver = new ExtendedPathMatchingResourcePatternResolver(classLoader);
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
@@ -84,21 +92,22 @@ public class ChildFirstJarClassLoaderTest {
         List<String> classes = getCanonicalClassNames(candidateComponents);
         System.out.println("Size:" + candidateComponents.size());
         assertThat(candidateComponents.size(), greaterThan(0));
-        assertThat(classes, hasItem(EXEMPLARY_CLASS));
-        assertThat(classes, hasItem(ANOTHER_EXEMPLARY_CLASS));
-        assertThat(classes, hasItem(this.getClass().getCanonicalName()));
-    }
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_BOTH_LOADERS));
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_CHILD_LOADER));
+        assertThat(classes, hasItem(EXEMPLARY_CLASS_IN_PARENT_LOADER));
 
-    private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions) {
-        return beanDefinitions.stream().map(BeanDefinition::getBeanClassName).collect(Collectors.toList());
     }
 
     @Test
     public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS);
+        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
         ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
-        classLoaderOfMainClass.loadClass(ANOTHER_EXEMPLARY_CLASS);
-        classLoaderOfMainClass.loadClass(ChildFirstJarClassLoaderTest.class.getCanonicalName());
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+    }
+
+    private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions) {
+        return beanDefinitions.stream().map(BeanDefinition::getBeanClassName).collect(Collectors.toList());
     }
 }
