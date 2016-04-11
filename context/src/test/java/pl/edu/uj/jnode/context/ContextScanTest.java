@@ -9,7 +9,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.edu.uj.crosscuting.Resources;
 import pl.edu.uj.jarpath.Jar;
-import pl.edu.uj.jnode.context.testdata.*;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -56,7 +55,8 @@ public class ContextScanTest
         System.out.println(namesOfBeans);
 
         assertThat(namesOfBeans, hasItem("pl.test.example.SimpleContextClass"));
-        assertThat(namesOfBeans.size(), is(equalTo(1999)));
+        assertThat(namesOfBeans, not(hasItem("class com.somewhere.ContextClassInWrongPackage")));
+        assertThat(namesOfBeans.size(), is(equalTo(1)));
     }
 
     @Test

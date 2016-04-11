@@ -36,6 +36,7 @@ public class JarContextTest
         MockitoAnnotations.initMocks(this);
         doReturn(ClassLoader.getSystemClassLoader()).when(jar).getChildFirstClassLoader();
         doReturn(ClassLoader.getSystemClassLoader()).when(jar).getJarOnlyClassLoader();
+        doReturn(SomeClassWithMainAndContextScan.class).when(jar).getMainClass();
         jarContext = applicationContext.getBean(JarContext.class, jar);
     }
 

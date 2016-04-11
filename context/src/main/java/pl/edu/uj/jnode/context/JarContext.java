@@ -21,22 +21,23 @@ import java.util.*;
 public class JarContext
 {
     private final Logger logger = LoggerFactory.getLogger(JarContext.class);
-
-    public List<Object> getBeans()
-    {
-        return beans;
-    }
-
     private final List<Object> beans = new ArrayList<>();
     private final List<Class<Annotation>> contextInjectors = new ArrayList<>();
     private final Optional<Class<Annotation>> contextAnnotation;
-
     public JarContext(Jar jar)
     {
         contextAnnotation = jar.getAnnotation(Context.class.getCanonicalName());
         jar.getAnnotation(InjectContext.class.getCanonicalName()).ifPresent(contextInjectors::add);
         jar.getAnnotation(Autowired.class.getCanonicalName()).ifPresent(contextInjectors::add);
 
+        Class<?> mainClass = jar.getMainClass();
+        ContextScan contextScan = mainClass.getAnnotation(ContextScan.class);
+        if(contextScan == null)
+        {
+            logger.warn("Context scan annotation is missing. No context injection is possible");
+            return;
+        }
+        String[] basePackages = contextScan.value();
         if(contextInjectors.isEmpty())
         {
             logger.info("No context annotations found on class path");
@@ -49,7 +50,7 @@ public class JarContext
             return;
         }
 
-        List<Class<?>> classes = findClassesWithAnnotation(jar, contextAnnotation.get());
+        List<Class<?>> classes = findClassesWithAnnotation(jar, contextAnnotation.get(), basePackages);
         if(classes.isEmpty())
         {
             logger.warn("No context beans found on class path");
@@ -75,7 +76,12 @@ public class JarContext
         }
     }
 
-    private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation)
+    public List<Object> getBeans()
+    {
+        return beans;
+    }
+
+    private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation, String[] basePackages)
     {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         ClassLoader classLoader = jar.getJarOnlyClassLoader();
@@ -85,7 +91,15 @@ public class JarContext
         provider.addIncludeFilter(new AnnotationTypeFilter(contextAnnotation));
 
         // Find classes in the given package (or subpackages)
-        Set<BeanDefinition> beans = provider.findCandidateComponents("pl");
+        Set<BeanDefinition> beans = new HashSet<>();
+        for(String basePackage : basePackages)
+        {
+            if(basePackage == null || basePackage.trim().isEmpty()){
+                logger.warn("Ignoring empty base package");
+                continue;
+            }
+            beans.addAll(provider.findCandidateComponents(basePackage));
+        }
         List<Class<?>> classes = new ArrayList<>();
         for(BeanDefinition bd : beans)
         {

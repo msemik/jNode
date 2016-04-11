@@ -8,9 +8,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.edu.uj.jarpath.*;
+import pl.edu.uj.jnode.context.testdata.SomeClassWithMainAndContextScan;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestsConfig.class)
@@ -27,6 +29,7 @@ public class JarContextRegistryTest
         MockitoAnnotations.initMocks(this);
         Mockito.doReturn(this.getClass().getClassLoader()).when(jar).getChildFirstClassLoader();
         Mockito.when(jar.getAnnotation(Mockito.anyString())).thenCallRealMethod();
+        doReturn(SomeClassWithMainAndContextScan.class).when(jar).getMainClass();
     }
 
     @After

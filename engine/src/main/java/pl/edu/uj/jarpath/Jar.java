@@ -32,6 +32,7 @@ public class Jar
     private String nodeId;
     private Path pathRelativeToJarPath;
     private ChildFirstJarClassLoader childFirstJarClassLoader;
+    private Class<?> mainClass;
 
     protected Jar(String nodeId, Path pathRelativeToJarPath)
     {
@@ -125,7 +126,6 @@ public class Jar
         return jarProperties;
     }
 
-
     public String getFileNameAsString()
     {
         return getFileName().toString();
@@ -203,7 +203,7 @@ public class Jar
 
     public Object launchMain()
     {
-        Class<?> mainClass = loadMainClass();
+        Class<?> mainClass = getMainClass();
         try
         {
             Method main = mainClass.getMethod("main", String[].class);
@@ -226,13 +226,17 @@ public class Jar
         }
     }
 
-    private Class<?> loadMainClass()
+    public Class<?> getMainClass()
     {
+
+        if(this.mainClass != null)
+            return mainClass;
         try
         {
             ClassLoader classLoader = getChildFirstClassLoader();
-            String mainClassName = getMainClass();
-            return classLoader.loadClass(mainClassName);
+            String mainClassName = getMainClassName();
+            mainClass = classLoader.loadClass(mainClassName);
+            return mainClass;
         }
         catch(ClassNotFoundException e)
         {
@@ -259,7 +263,7 @@ public class Jar
         return childFirstJarClassLoader;
     }
 
-    private String getMainClass()
+    private String getMainClassName()
     {
         try
         {
