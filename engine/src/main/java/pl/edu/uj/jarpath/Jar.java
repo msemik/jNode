@@ -178,7 +178,7 @@ public class Jar
 
     public Class<?> getClass(String canonicalName)
     {
-        ClassLoader classLoader = getJarOnlyClassLoader();
+        ClassLoader classLoader = getChildFirstClassLoader();
         try
         {
             return Class.forName(canonicalName, true, classLoader);
