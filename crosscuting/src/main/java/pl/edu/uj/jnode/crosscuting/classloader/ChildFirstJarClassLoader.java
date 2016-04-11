@@ -4,9 +4,11 @@ import sun.misc.CompoundEnumeration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 
 public class ChildFirstJarClassLoader extends URLClassLoader {
@@ -26,9 +28,15 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
         this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    private static URL[] pathToUrls(String pathToJar) {
+    public static URL[] pathToUrls(String pathToJar) {
         try {
-            return new URL[]{new URL("jar:file:" + pathToJar.toString() + "!/")};
+            String s = null;
+            try {
+                s = URLDecoder.decode(pathToJar, "UTF-8").toString();
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+            return new URL[]{new URL("jar:file:" + s + "!/")};
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
