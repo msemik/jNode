@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.signum;
 
 /**
- * Prioritize distance. if two node has same distance, higher priority gets node with more availaible threads.
+ * Prioritize distance. if two node has same distance, higher priority gets node with more
+ * availaible threads.
  */
 public class NearestDistancePriority implements Priority {
     public NearestDistancePriority() {

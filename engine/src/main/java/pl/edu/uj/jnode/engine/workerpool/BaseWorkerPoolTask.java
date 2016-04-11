@@ -25,15 +25,19 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     @Override
     public String toString() {
         return "WorkerPoolTask{" +
-               "task=" +
-               " jar=" + getJar() +
-               ", taskId=" + getTaskId() +
-               '}';
+                "task=" +
+                " jar=" + getJar() +
+                ", taskId=" + getTaskId() +
+                '}';
     }
 
     @Override
     public Jar getJar() {
         return jar;
+    }
+
+    public void setJar(Jar jar) {
+        this.jar = jar;
     }
 
     @Override
@@ -59,9 +63,5 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     @Override
     public void incrementPriority() {
         priority++;
-    }
-
-    public void setJar(Jar jar) {
-        this.jar = jar;
     }
 }

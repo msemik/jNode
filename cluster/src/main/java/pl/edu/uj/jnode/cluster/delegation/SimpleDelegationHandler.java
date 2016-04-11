@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.cluster.node.Nodes;
 import pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry;
@@ -16,18 +17,18 @@ import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.edu.uj.jnode.cluster.delegation.SimpleDelegationHandler.State.*;
+import static pl.edu.uj.jnode.cluster.delegation.SimpleDelegationHandler.State.AWAITING_FREE_THREADS;
+import static pl.edu.uj.jnode.cluster.delegation.SimpleDelegationHandler.State.DURING_DELEGATION;
+import static pl.edu.uj.jnode.cluster.delegation.SimpleDelegationHandler.State.DURING_DELEGATION_WITH_SCHEDULED_RE_EXECUTION;
+import static pl.edu.uj.jnode.cluster.delegation.SimpleDelegationHandler.State.NO_DELEGATION;
 
 /**
- * GIVEN					WHEN				CHANGE STATE TO			AND EXECUTE
- * NO_DELEGATION			OVERFLOW			DURING_DELEGATION		delegateTasks()
- * NO_DELEGATION			PRIMARY				NO_DELEGATION			empty()
- * DURING_DELEGATION		OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
- * DURING_DELEGATION		PRIMARY				SCHEDULED_RE_EXECUTE	empty()
- * SCHEDULED_RE_EXECUTE	    OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
- * SCHEDULED_RE_EXECUTE	    PRIMARY				SCHEDULED_RE_EXECUTE	empty()
- * AWAITING_THREADS		    OVERFLOW			AWAITING_THREADS		empty()
- * AWAITING_THREADS		    PRIMARY				DURING_DELEGATION		delegateTasks()
+ * GIVEN					WHEN				CHANGE STATE TO			AND EXECUTE NO_DELEGATION			OVERFLOW			DURING_DELEGATION		delegateTasks()
+ * NO_DELEGATION			PRIMARY				NO_DELEGATION			empty() DURING_DELEGATION		OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
+ * DURING_DELEGATION		PRIMARY				SCHEDULED_RE_EXECUTE	empty() SCHEDULED_RE_EXECUTE
+ * OVERFLOW			SCHEDULED_RE_EXECUTE	empty() SCHEDULED_RE_EXECUTE	    PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * AWAITING_THREADS		    OVERFLOW			AWAITING_THREADS		empty() AWAITING_THREADS
+ * PRIMARY				DURING_DELEGATION		delegateTasks()
  */
 @Component
 public class SimpleDelegationHandler implements DelegationHandler {

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.jarpath.JarPathServices;

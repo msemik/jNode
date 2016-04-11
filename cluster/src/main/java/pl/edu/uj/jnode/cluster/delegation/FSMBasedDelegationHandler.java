@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.cluster.node.Nodes;
 import pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry;
@@ -19,33 +20,26 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Optional.of;
 import static pl.edu.uj.jnode.cluster.delegation.DefaultState.NO_DELEGATION;
-import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.*;
+import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.HEARTBEAT;
+import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.NO_THREADS;
+import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.OVERFLOW;
+import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.TASK_DELEGATION_FINISHED;
 
 /**
- * Simulates Finite State Machine,
- * for given pair event, state:
- * - change to appropriate state
- * - execute related action.
+ * Simulates Finite State Machine, for given pair event, state: - change to appropriate state -
+ * execute related action.
  * <p/>
  * <p/>
- * Transitions table:
- * GIVEN				WHEN				CHANGE STATE TO			AND EXECUTE
+ * Transitions table: GIVEN				WHEN				CHANGE STATE TO			AND EXECUTE
  * <p/>
- * NO_DELEGATION		OVERFLOW			DURING_DELEGATION		delegateTasks()
- * NO_DELEGATION		PRIMARY				NO_DELEGATION			empty()
- * NO_DELEGATION		DELEGATION_FINISHED	NO_DELEGATION			error()
- * NO_DELEGATION		NO_THREADS			NO_DELEGATION			error()
- * DURING_DELEGATION	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
- * DURING_DELEGATION	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
- * DURING_DELEGATION	DELEGATION_FINISHED	NO_DELEGATION			empty()
- * DURING_DELEGATION	NO_THREADS			AWAITING_THREADS		empty()
- * SCHEDULED_RE_EXECUTE	OVERFLOW			SCHEDULED_RE_EXECUTE	empty()
- * SCHEDULED_RE_EXECUTE	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * NO_DELEGATION		OVERFLOW			DURING_DELEGATION		delegateTasks() NO_DELEGATION		PRIMARY				NO_DELEGATION			empty()
+ * NO_DELEGATION		DELEGATION_FINISHED	NO_DELEGATION			error() NO_DELEGATION		NO_THREADS			NO_DELEGATION			error()
+ * DURING_DELEGATION	OVERFLOW			SCHEDULED_RE_EXECUTE	empty() DURING_DELEGATION	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
+ * DURING_DELEGATION	DELEGATION_FINISHED	NO_DELEGATION			empty() DURING_DELEGATION	NO_THREADS			AWAITING_THREADS		empty()
+ * SCHEDULED_RE_EXECUTE	OVERFLOW			SCHEDULED_RE_EXECUTE	empty() SCHEDULED_RE_EXECUTE	PRIMARY				SCHEDULED_RE_EXECUTE	empty()
  * SCHEDULED_RE_EXECUTE	DELEGATION_FINISHED	DURING_DELEGATION		delegateTasks()
- * SCHEDULED_RE_EXECUTE	NO_THREADS			AWAITING_THREADS		empty()
- * AWAITING_THREADS		OVERFLOW			AWAITING_THREADS		empty()
- * AWAITING_THREADS		PRIMARY				DURING_DELEGATION		delegateTasks()
- * AWAITING_THREADS		DELEGATION_FINISHED	AWAITING_THREADS		empty()
+ * SCHEDULED_RE_EXECUTE	NO_THREADS			AWAITING_THREADS		empty() AWAITING_THREADS		OVERFLOW			AWAITING_THREADS		empty()
+ * AWAITING_THREADS		PRIMARY				DURING_DELEGATION		delegateTasks() AWAITING_THREADS		DELEGATION_FINISHED	AWAITING_THREADS		empty()
  * AWAITING_THREADS		NO_THREADS			AWAITING_THREADS		error()
  */
 @Component

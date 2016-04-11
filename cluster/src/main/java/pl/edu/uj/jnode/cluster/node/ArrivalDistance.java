@@ -6,8 +6,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 /**
- * Computes distance between node in ring.
- * Nodes are ordered by their arrival order in cluster.
+ * Computes distance between node in ring. Nodes are ordered by their arrival order in cluster.
  */
 public class ArrivalDistance implements Distance {
     private List<Node> nodes;

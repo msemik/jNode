@@ -5,17 +5,31 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.crosscuting.OSValidator;
 import pl.edu.uj.jnode.main.ApplicationInitializedEvent;
 import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
-import java.util.*;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static java.nio.file.StandardWatchEventKinds.*;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 /**
  * Created by michal on 22.10.15.
@@ -129,15 +143,16 @@ public class JarPathWatcher extends Thread {
     }
 
     /**
-     * WatchService returns variable amount of events per paths.
-     * These may contain duplicate events, or mix of events like CREATE, MODIFY.
-     * When you create a file in Ubuntu there is single CREATE event(in that time file is empty).
-     * When you create file in mac, there is single CREATE event and file has already content in it.
-     * When file is filled there will be event MODIFY (or it might be CREATE+MODIFY).
-     * When you delete file there is only a delete event, function will return DELETE event
+     * WatchService returns variable amount of events per paths. These may contain duplicate events,
+     * or mix of events like CREATE, MODIFY. When you create a file in Ubuntu there is single CREATE
+     * event(in that time file is empty). When you create file in mac, there is single CREATE event
+     * and file has already content in it. When file is filled there will be event MODIFY (or it
+     * might be CREATE+MODIFY). When you delete file there is only a delete event, function will
+     * return DELETE event
      * <p/>
-     * This function should reduce pain to analise all these combinations in later stages.
-     * We ignore signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY event.
+     * This function should reduce pain to analise all these combinations in later stages. We ignore
+     * signals about empty file and wait until it will be filled, returning only single ENTRY_MODIFY
+     * event.
      */
     private List<WatchEvent<?>> reducePathsToOnlySingleEventForPath(WatchKey key) {
         List<WatchEvent<?>> watchEvents = key.pollEvents();

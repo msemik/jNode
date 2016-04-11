@@ -31,8 +31,8 @@ public class TaskExecutionCompleted implements Serializable, Distributable {
     @Override
     public String toString() {
         return "TaskExecutionCompleted{" +
-               "taskResultOrException=" + taskResultOrException +
-               ", taskId=" + taskId +
-               '}';
+                "taskResultOrException=" + taskResultOrException +
+                ", taskId=" + taskId +
+                '}';
     }
 }

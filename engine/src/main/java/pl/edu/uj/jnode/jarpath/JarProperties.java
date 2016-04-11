@@ -31,10 +31,6 @@ public class JarProperties {
         }
     }
 
-    public boolean isStored() {
-        return Files.exists(propertiesPath) && Files.isReadable(propertiesPath);
-    }
-
     public static JarProperties createFor(Jar jar) {
         return createFor(jar, false);
     }
@@ -54,12 +50,16 @@ public class JarProperties {
         return createFor(jar, true);
     }
 
+    public boolean isStored() {
+        return Files.exists(propertiesPath) && Files.isReadable(propertiesPath);
+    }
+
     @Override
     public String toString() {
         return "JarProperties{ propertiesPath=" + propertiesPath +
-               ", nodeId='" + nodeId + '\'' +
-               ", executionState=" + executionState +
-               '}';
+                ", nodeId='" + nodeId + '\'' +
+                ", executionState=" + executionState +
+                '}';
     }
 
     public JarExecutionState getExecutionState() {

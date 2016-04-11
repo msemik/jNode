@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.userlib.Callback;
 import pl.edu.uj.jnode.userlib.Task;

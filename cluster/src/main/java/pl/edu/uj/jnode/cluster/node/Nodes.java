@@ -3,6 +3,7 @@ package pl.edu.uj.jnode.cluster.node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.main.ApplicationInitializedEvent;
 
 import java.util.ArrayList;
@@ -119,9 +120,10 @@ public class Nodes {
     }
 
     /**
-     * Proper return of a free thread happens when we haven't received any update from HeartBeat after draining a Thread.
-     * Luckily we update node by migrating object, so we won't change currently valid node with valid number of threads.
-     * If this semantics change in updateAfterHeartBeat, changes should be introduced in this method either.
+     * Proper return of a free thread happens when we haven't received any update from HeartBeat
+     * after draining a Thread. Luckily we update node by migrating object, so we won't change
+     * currently valid node with valid number of threads. If this semantics change in
+     * updateAfterHeartBeat, changes should be introduced in this method either.
      */
     public synchronized void returnThread(Node node) {
         node.returnThread();

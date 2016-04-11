@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+
 import pl.edu.uj.jnode.main.JNodeApplication;
 import pl.edu.uj.jnode.main.OptionsDispatchedEvent;
 import pl.edu.uj.jnode.main.options.CustomJarPathEvent;

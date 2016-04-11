@@ -10,6 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import pl.edu.uj.jnode.crosscuting.ReflectionUtils;
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
@@ -76,7 +77,7 @@ public class WorkerPool {
         if (futureTask.isDone()) { //isDone <=> futureTask.state != NEW (executing started, not really expected here)
             String message =
                     join("\n", "Prepare for a nice day because you really did a bad thing.", "I mean taking out this task from internal executor queue.",
-                         "Unfortunately its started executing, not as you expected");
+                            "Unfortunately its started executing, not as you expected");
             throw new AssertionError(message);
         }
         return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));

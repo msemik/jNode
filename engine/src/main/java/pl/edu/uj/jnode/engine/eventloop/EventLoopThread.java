@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.engine.CallbackPreExecutionProcessor;
 import pl.edu.uj.jnode.engine.InvalidJarFileException;
 import pl.edu.uj.jnode.engine.UserApplicationException;
@@ -18,11 +19,12 @@ import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.userlib.Callback;
 import pl.edu.uj.jnode.userlib.Task;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 @Component
 @Scope("prototype")

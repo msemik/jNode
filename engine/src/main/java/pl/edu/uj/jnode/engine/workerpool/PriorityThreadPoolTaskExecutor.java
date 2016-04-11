@@ -24,6 +24,6 @@ public class PriorityThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
         };
 
         return queueCapacity > 1 && queueCapacity < Integer.MAX_VALUE ? new PriorityBlockingQueue<>(queueCapacity, priorityComparator)
-                                                                      : new PriorityBlockingQueue<>(QUEUE_CAPACITY, priorityComparator);
+                : new PriorityBlockingQueue<>(QUEUE_CAPACITY, priorityComparator);
     }
 }

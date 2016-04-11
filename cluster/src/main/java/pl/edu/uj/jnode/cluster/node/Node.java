@@ -78,11 +78,11 @@ public class Node implements Comparable<Node> {
     @Override
     public String toString() {
         return "{" +
-               "nodeId=" + nodeId +
-               ", availableThreads=" + availableThreads +
-               ", poolSize=" + poolSize +
-               ", priority=" + priority +
-               '}';
+                "nodeId=" + nodeId +
+                ", availableThreads=" + availableThreads +
+                ", poolSize=" + poolSize +
+                ", priority=" + priority +
+                '}';
     }
 
     public String getNodeId() {
@@ -102,7 +102,8 @@ public class Node implements Comparable<Node> {
     }
 
     /**
-     * This method is based on assumption that if priority of node is 0 then available threads is 0 either.
+     * This method is based on assumption that if priority of node is 0 then available threads is 0
+     * either.
      */
     public boolean canTakeTasks() {
         return getPriority() > 0;

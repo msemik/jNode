@@ -1,6 +1,7 @@
 package pl.edu.uj.jnode.engine.event;
 
 import org.springframework.context.ApplicationEvent;
+
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 
 /**
@@ -21,8 +22,8 @@ public class TaskFinishedEvent extends ApplicationEvent {
     }
 
     /**
-     * If task finishes with success, this method will return the actual result.
-     * If not, it returns the exception thrown during task execution.
+     * If task finishes with success, this method will return the actual result. If not, it returns
+     * the exception thrown during task execution.
      */
     public Object getTaskResultOrException() {
         return taskResultOrException;

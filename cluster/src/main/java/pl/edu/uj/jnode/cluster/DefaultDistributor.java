@@ -6,16 +6,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
 import pl.edu.uj.jnode.cluster.callback.SerializableCallback;
 import pl.edu.uj.jnode.cluster.delegation.DelegationHandler;
 import pl.edu.uj.jnode.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.cluster.node.NodeFactory;
 import pl.edu.uj.jnode.cluster.node.Nodes;
-import pl.edu.uj.jnode.cluster.task.*;
+import pl.edu.uj.jnode.cluster.task.DelegatedTask;
+import pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry;
+import pl.edu.uj.jnode.cluster.task.ExternalTask;
+import pl.edu.uj.jnode.cluster.task.ExternalTaskRegistry;
+import pl.edu.uj.jnode.cluster.task.TaskService;
 import pl.edu.uj.jnode.crosscuting.LogInvocations;
 import pl.edu.uj.jnode.engine.EmptyCallback;
-import pl.edu.uj.jnode.engine.event.*;
+import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.jnode.engine.event.ExternalSubTaskReceivedEvent;
+import pl.edu.uj.jnode.engine.event.TaskCancelledEvent;
+import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
+import pl.edu.uj.jnode.engine.event.TaskReceivedEvent;
 import pl.edu.uj.jnode.engine.eventloop.EventLoopThread;
 import pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPool;
@@ -198,7 +207,7 @@ public class DefaultDistributor implements Distributor {
         Set<ExternalTask> externalTasks = externalTaskRegistry.removeAll(nodeId);
         sendCancelJarJobsForEachJar(externalTasks);
         logger.debug(String.join(", ", "onNodeGone: " + nodeId, "removed from nodes: " + removedFromNodes, "removed delegated tasks:" + delegatedTasks.size(),
-                                 "removed external tasks:" + externalTasks.size()));
+                "removed external tasks:" + externalTasks.size()));
     }
 
     private void sendCancelJarJobsForEachJar(Set<ExternalTask> externalTasks) {
