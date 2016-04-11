@@ -100,11 +100,19 @@ public class ChildFirstJarClassLoaderTest
     @Test
     public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception
     {
-        classLoader = new ChildFirstJarClassLoader(pathToJar);
-        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
-        ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
-        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
-        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+        try
+        {
+            classLoader = new ChildFirstJarClassLoader(pathToJar);
+            Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
+            ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
+            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
+            System.out.println("loading1 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            System.out.println("loading2 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
+            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions)
