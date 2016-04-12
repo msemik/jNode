@@ -61,7 +61,7 @@ public class DefaultTaskReceiver {
         Callback callbackToDo = Callback.class.cast(callback);
 
         WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar));
-        if (workerPoolTask.getJar().getPathRelativeToJarPath().getNameCount() == 1) {
+        if (workerPoolTask.getJar().isExternal()) {
             eventPublisher.publishEvent(new TaskReceivedEvent(this, workerPoolTask, callbackToDo));
         } else {
             eventPublisher.publishEvent(new ExternalSubTaskReceivedEvent(this, workerPoolTask, callbackToDo));

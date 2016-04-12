@@ -244,4 +244,8 @@ public class Jar {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean isExternal() {
+        return nodeIdFactory.getCurrentNodeId().equals(nodeId);
+    }
 }
