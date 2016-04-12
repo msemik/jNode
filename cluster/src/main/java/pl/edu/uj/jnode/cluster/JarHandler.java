@@ -60,7 +60,7 @@ public class JarHandler {
     }
 
     private void publishTaskReceivedEvent(ExternalTask task) {
-        eventPublisher.publishEvent(new TaskReceivedEvent(this, task, new EmptyCallback()));
+        eventPublisher.publishEvent(new TaskReceivedEvent(this, task, EmptyCallback.INSTANCE));
     }
 
     public void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {

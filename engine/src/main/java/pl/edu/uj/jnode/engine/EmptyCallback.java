@@ -10,6 +10,10 @@ import pl.edu.uj.jnode.userlib.Callback;
  */
 public class EmptyCallback implements Callback {
     private Logger logger = LoggerFactory.getLogger(EmptyCallback.class);
+    public final static EmptyCallback INSTANCE = new EmptyCallback();
+
+    private EmptyCallback() {
+    }
 
     @Override
     public void onSuccess(Object taskResult) {

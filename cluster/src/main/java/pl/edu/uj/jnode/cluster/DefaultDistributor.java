@@ -181,7 +181,7 @@ public class DefaultDistributor implements Distributor {
         logger.info("Sending RegisterDelegatedSubTask message for task " + externalTask + " to source node");
         taskService.registerDelegatedSubTask(externalTask, new SerializableCallbackWrapper(event.getCallback()), externalTask.getSourceNodeId());
 
-        eventPublisher.publishEvent(new TaskReceivedEvent(this, externalTask, new EmptyCallback()));
+        eventPublisher.publishEvent(new TaskReceivedEvent(this, externalTask, EmptyCallback.INSTANCE));
     }
 
     @Override
