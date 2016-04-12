@@ -117,23 +117,13 @@ public class ChildFirstJarClassLoaderTest
     @Test
     public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception
     {
-        try
-        {
-            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            classLoader = new ChildFirstJarClassLoader(pathToJar, contextClassLoader);
-            Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
-            ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
-            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
-            System.out.println(classLoaderOfMainClass.getClass().getCanonicalName());
-            System.out.println("loading1 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
-            classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
-            System.out.println("loading2 " + EXEMPLARY_CLASS_IN_CHILD_LOADER);
-            classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        classLoader = new ChildFirstJarClassLoader(pathToJar, contextClassLoader);
+        Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
+        ClassLoader classLoaderOfMainClass = mainClass.getClassLoader();
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
+        classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
+        classLoaderOfMainClass.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
     }
 
     @Test
