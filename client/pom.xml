@@ -2,11 +2,9 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>jnode-platform</artifactId>
-        <groupId>pl.edu.uj.jnode</groupId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
+    <!-- please don't set platform as parent because it creates implicit dependency -->
+    <groupId>pl.edu.uj.jnode</groupId>
+    <version>0.0.1-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jnode-client</artifactId>
     <description>
@@ -14,5 +12,9 @@
         This module is supposed to be used by user to execute asynchronous tasks.
     </description>
     <name>jnode-client</name>
+    <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+    </properties>
 
 </project>

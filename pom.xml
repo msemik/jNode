@@ -16,6 +16,7 @@
         <module>monitor</module>
         <module>context</module>
         <module>assembly</module>
+        <module>examples/cdi</module>
     </modules>
     <packaging>pom</packaging>
 
