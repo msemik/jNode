@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 @Component
 public class DelegatedTaskRegistry {
     private Logger logger = LoggerFactory.getLogger(DelegatedTaskRegistry.class);
-    private Map<Long, DelegatedTask> map = new HashMap<>();
+    private Map<String, DelegatedTask> map = new HashMap<>();
 
-    public synchronized boolean add(long taskId, DelegatedTask delegatedTask) {
-        return map.putIfAbsent(taskId, delegatedTask) == null;
+    public synchronized boolean add(DelegatedTask delegatedTask) {
+        return map.putIfAbsent(delegatedTask.getTaskId(), delegatedTask) == null;
     }
 
-    public synchronized Optional<DelegatedTask> remove(long taskId) {
+    public synchronized Optional<DelegatedTask> remove(String taskId) {
         DelegatedTask delegatedTask = map.remove(taskId);
         return delegatedTask != null ? Optional.of(delegatedTask) : Optional.empty();
     }
@@ -53,7 +53,7 @@ public class DelegatedTaskRegistry {
         return removedDelegatedTasks;
     }
 
-    public synchronized List<Long> getTaskIds() {
+    public synchronized List<String> getTaskIds() {
         return map.values().stream().map(DelegatedTask::getTaskId).collect(Collectors.toList());
     }
 }

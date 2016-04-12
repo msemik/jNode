@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public class TaskExecutionCompleted implements Serializable, Distributable {
     private Object taskResultOrException;
-    private long taskId;
+    private String taskId;
 
-    public TaskExecutionCompleted(Object taskResultOrException, long taskId) {
+    public TaskExecutionCompleted(Object taskResultOrException, String taskId) {
         this.taskResultOrException = taskResultOrException;
         this.taskId = taskId;
     }
@@ -19,7 +19,7 @@ public class TaskExecutionCompleted implements Serializable, Distributable {
         return taskResultOrException;
     }
 
-    public long getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 

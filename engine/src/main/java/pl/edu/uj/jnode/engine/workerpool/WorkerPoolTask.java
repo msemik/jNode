@@ -9,7 +9,7 @@ import pl.edu.uj.jnode.userlib.Task;
 public interface WorkerPoolTask extends Task {
     Jar getJar();
 
-    long getTaskId();
+    String getTaskId();
 
     boolean isExternal();
 

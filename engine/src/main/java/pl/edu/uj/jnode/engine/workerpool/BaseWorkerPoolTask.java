@@ -2,15 +2,19 @@ package pl.edu.uj.jnode.engine.workerpool;
 
 import pl.edu.uj.jnode.jarpath.Jar;
 
+import java.util.UUID;
+
 /**
  * Created by michal on 22.11.15.
  */
 public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     private transient Jar jar;
     private transient int priority = 0;
+    private String taskId;
 
-    public BaseWorkerPoolTask(Jar jar) {
+    public BaseWorkerPoolTask(Jar jar, String nodeId) {
         this.jar = jar;
+        this.taskId = nodeId.concat(UUID.randomUUID().toString());
     }
 
     @Override
@@ -19,7 +23,7 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
             return false;
         }
         WorkerPoolTask task = (WorkerPoolTask) o;
-        return getTaskId() == task.getTaskId();
+        return getTaskId().equals(task.getTaskId());
     }
 
     @Override
@@ -27,6 +31,7 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
         return "BaseWorkerPoolTask{" +
                 "jar=" + jar +
                 ", priority=" + priority +
+                ", taskId='" + taskId + '\'' +
                 '}';
     }
 
@@ -40,8 +45,8 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     }
 
     @Override
-    public long getTaskId() {
-        return System.identityHashCode(this);
+    public String getTaskId() {
+        return taskId;
     }
 
     @Override

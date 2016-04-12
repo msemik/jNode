@@ -20,7 +20,7 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
     private String sourceNodeId;
     private String jarName;
     private int priority;
-    private long taskId;
+    private String taskId;
 
     public ExternalTask(WorkerPoolTask task, String sourceNodeId) {
         super(task);
@@ -40,7 +40,7 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
     }
 
     @Override
-    public long getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 

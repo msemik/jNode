@@ -36,7 +36,7 @@ public class TaskService {
 
     public void delegateTask(WorkerPoolTask task, String destinationNodeId) {
         DelegatedTask delegatedTask = new DelegatedTask(task, destinationNodeId);
-        delegatedTaskRegistry.add(task.getTaskId(), delegatedTask);
+        delegatedTaskRegistry.add(delegatedTask);
 
         ExternalTask externalTask = new ExternalTask(task, messageGateway.getCurrentNodeId());
         messageGateway.send(new TaskDelegation(externalTask), destinationNodeId);
@@ -46,7 +46,7 @@ public class TaskService {
         messageGateway.send(new Redirect(destinationNodeId, externalTask.getTaskId()), externalTask.getSourceNodeId());
     }
 
-    public void sry(String destinationNodeId, long taskId) {
+    public void sry(String destinationNodeId, String taskId) {
         messageGateway.send(new Sry(taskId), destinationNodeId);
     }
 

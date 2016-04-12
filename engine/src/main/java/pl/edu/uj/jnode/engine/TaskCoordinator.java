@@ -34,6 +34,8 @@ public class TaskCoordinator {
     private EventLoopThreadRegistry eventLoopThreadRegistry;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private NodeIdFactory nodeIdFactory;
 
     @EventListener
     public void on(JarStateChangedEvent event) {
@@ -48,7 +50,7 @@ public class TaskCoordinator {
     private void startJarJob(Jar jar) {
         logger.info("Launching main class for jar " + jar);
         EventLoopThread eventLoopThread = eventLoopThreadRegistry.getOrCreate(jar);
-        MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar);
+        MainClassWorkerPoolTask task = new MainClassWorkerPoolTask(jar, nodeIdFactory.getCurrentNodeId());
         eventLoopThread.registerTask(task, EmptyCallback.INSTANCE);
         workerPool.submitTask(task);
     }

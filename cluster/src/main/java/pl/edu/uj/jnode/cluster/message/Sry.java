@@ -7,13 +7,13 @@ import java.io.Serializable;
 import java.util.Optional;
 
 public class Sry implements Serializable, Distributable {
-    private long taskId;
+    private String taskId;
 
-    public Sry(long taskId) {
+    public Sry(String taskId) {
         this.taskId = taskId;
     }
 
-    public long getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 

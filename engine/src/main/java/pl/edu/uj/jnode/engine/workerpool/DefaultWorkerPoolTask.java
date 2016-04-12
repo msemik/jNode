@@ -9,8 +9,8 @@ import pl.edu.uj.jnode.userlib.Task;
 public class DefaultWorkerPoolTask extends BaseWorkerPoolTask {
     private final Task task;
 
-    public DefaultWorkerPoolTask(Task task, Jar jar) {
-        super(jar);
+    public DefaultWorkerPoolTask(Task task, Jar jar, String nodeId) {
+        super(jar, nodeId);
         this.task = task;
     }
 

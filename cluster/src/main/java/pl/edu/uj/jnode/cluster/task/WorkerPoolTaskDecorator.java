@@ -19,7 +19,7 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     }
 
     @Override
-    public long getTaskId() {
+    public String getTaskId() {
         return task.getTaskId();
     }
 

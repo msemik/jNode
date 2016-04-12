@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public class Redirect implements Serializable, Distributable {
     private String destinationNodeId;
-    private long taskId;
+    private String taskId;
 
-    public Redirect(String destinationNodeId, long taskId) {
+    public Redirect(String destinationNodeId, String taskId) {
         this.destinationNodeId = destinationNodeId;
         this.taskId = taskId;
     }
@@ -19,7 +19,7 @@ public class Redirect implements Serializable, Distributable {
         return destinationNodeId;
     }
 
-    public long getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 

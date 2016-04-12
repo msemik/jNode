@@ -92,7 +92,7 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onRedirect(String currentNodeId, String destinationNodeId, long taskId) {
+    public void onRedirect(String currentNodeId, String destinationNodeId, String taskId) {
         Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
         if (!delegatedTask.isPresent()) {
             logger.debug("Task absent in registry, currentNodeId: " + currentNodeId + ", taskId: " + taskId);
@@ -107,7 +107,7 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onSry(String nodeId, long taskId) {
+    public void onSry(String nodeId, String taskId) {
         Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
         if (!delegatedTask.isPresent()) {
             logger.debug("Task absent in registry, nodeId: " + nodeId + ", taskId: " + taskId);
@@ -118,7 +118,7 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onTaskExecutionCompleted(long taskId, Object taskResultOrException) {
+    public void onTaskExecutionCompleted(String taskId, Object taskResultOrException) {
         Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
         if (delegatedTask.isPresent()) {
             eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrException));
@@ -192,10 +192,9 @@ public class DefaultDistributor implements Distributor {
 
         WorkerPoolTask task = externalTask.getTask();
         Callback callback = callbackWrapper.getCallback();
-        long taskId = externalTask.getTaskId();
 
-        if (!delegatedTaskRegistry.add(taskId, new DelegatedTask(task, externalTask.getSourceNodeId()))) {
-            logger.debug("Task with taskId: " + taskId + " is already in registry");
+        if (!delegatedTaskRegistry.add(new DelegatedTask(task, externalTask.getSourceNodeId()))) {
+            logger.debug("Task with taskId: " + task.getTaskId() + " is already in registry");
             return;
         }
 

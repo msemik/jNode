@@ -143,7 +143,7 @@ public class WorkerPool {
         return getTaskExecutor().getCorePoolSize();
     }
 
-    public List<Long> getIdsOfTasksInPool() {
-        return executingTasks.getTasks().stream().map(t -> t.getTaskId()).collect(Collectors.toList());
+    public List<String> getIdsOfTasksInPool() {
+        return executingTasks.getTasks().stream().map(WorkerPoolTask::getTaskId).collect(Collectors.toList());
     }
 }

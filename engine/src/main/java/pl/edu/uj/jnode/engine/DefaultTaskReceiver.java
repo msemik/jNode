@@ -23,13 +23,15 @@ import java.nio.file.Paths;
 
 @Configurable
 public class DefaultTaskReceiver {
+    private Logger logger = LoggerFactory.getLogger(DefaultTaskReceiver.class);
     @Autowired
     private JarPathServices jarPathServices;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private JarFactory jarFactory;
-    private Logger logger = LoggerFactory.getLogger(DefaultTaskReceiver.class);
+    @Autowired
+    private NodeIdFactory nodeIdFactory;
 
     public void doAsync(Object task, Object callback) {
         Class callbackClass = callback.getClass();
@@ -60,7 +62,7 @@ public class DefaultTaskReceiver {
         Task taskToDo = Task.class.cast(task);
         Callback callbackToDo = Callback.class.cast(callback);
 
-        WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar));
+        WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(taskToDo, jarFactory.getFor(pathToJar), nodeIdFactory.getCurrentNodeId());
         if (workerPoolTask.getJar().isExternal()) {
             eventPublisher.publishEvent(new TaskReceivedEvent(this, workerPoolTask, callbackToDo));
         } else {

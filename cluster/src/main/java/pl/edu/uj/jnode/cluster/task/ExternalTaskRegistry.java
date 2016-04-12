@@ -49,7 +49,7 @@ public class ExternalTaskRegistry {
         return removedExternalTasks;
     }
 
-    public List<Long> getTaskIds() {
+    public List<String> getTaskIds() {
         return set.stream().map(ExternalTask::getTaskId).collect(Collectors.toList());
     }
 }

@@ -137,7 +137,7 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
      */
     private boolean delegateTask(Node destinationNode, WorkerPoolTask task) {
         String destinationNodeId = destinationNode.getNodeId();
-        long taskId = task.getTaskId();
+        String taskId = task.getTaskId();
         if (task.isExternal()) {
             ExternalTask externalTask = (ExternalTask) task;
             if (!externalTaskRegistry.remove(externalTask)) {

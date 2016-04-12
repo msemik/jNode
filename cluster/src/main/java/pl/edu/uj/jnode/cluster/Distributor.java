@@ -17,11 +17,11 @@ public interface Distributor {
 
     void onTaskDelegation(ExternalTask externalTask);
 
-    void onRedirect(String currentNodeId, String destinationNodeId, long taskId);
+    void onRedirect(String currentNodeId, String destinationNodeId, String taskId);
 
-    void onSry(String nodeId, long taskId);
+    void onSry(String nodeId, String taskId);
 
-    void onTaskExecutionCompleted(long taskId, Object taskResult);
+    void onTaskExecutionCompleted(String taskId, Object taskResult);
 
     void on(TaskFinishedEvent event);
 
