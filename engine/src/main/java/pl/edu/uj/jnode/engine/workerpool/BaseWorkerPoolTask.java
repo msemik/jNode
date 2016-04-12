@@ -24,10 +24,9 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
 
     @Override
     public String toString() {
-        return "WorkerPoolTask{" +
-                "task=" +
-                " jar=" + getJar() +
-                ", taskId=" + getTaskId() +
+        return "BaseWorkerPoolTask{" +
+                "jar=" + jar +
+                ", priority=" + priority +
                 '}';
     }
 
