@@ -21,7 +21,7 @@ import pl.edu.uj.jnode.jarpath.JarPropertiesDeletedEvent;
 import pl.edu.uj.jnode.jarpath.JarStateChangedEvent;
 import pl.edu.uj.jnode.userlib.Callback;
 
-import java.util.Optional;
+import java.util.*;
 
 import static pl.edu.uj.jnode.jarpath.JarExecutionState.NOT_STARTED;
 
@@ -36,6 +36,8 @@ public class TaskCoordinator {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private NodeIdFactory nodeIdFactory;
+    @Autowired
+    private List<TaskPreExecutionProcessor> processors = new LinkedList<>();
 
     @EventListener
     public void on(JarStateChangedEvent event) {
@@ -84,6 +86,7 @@ public class TaskCoordinator {
             eventLoopThread.get().registerTask(task, callback);
         }
         logger.info("Submitting newly received task " + task + " to pool");
+        processors.forEach(processor -> processor.process(task));
         workerPool.submitTask(task);
     }
 

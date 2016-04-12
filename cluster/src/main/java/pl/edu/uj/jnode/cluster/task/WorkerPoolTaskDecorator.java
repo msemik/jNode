@@ -2,6 +2,7 @@ package pl.edu.uj.jnode.cluster.task;
 
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
+import pl.edu.uj.jnode.userlib.Task;
 
 public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     private transient WorkerPoolTask task;
@@ -41,6 +42,11 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     @Override
     public void incrementPriority() {
         task.incrementPriority();
+    }
+
+    @Override public Task getRawTask()
+    {
+        return task.getRawTask();
     }
 
     @Override

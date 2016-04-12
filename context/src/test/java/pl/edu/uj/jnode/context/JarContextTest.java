@@ -11,9 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import pl.edu.uj.jnode.context.testdata.CallbackWithContextFields;
-import pl.edu.uj.jnode.context.testdata.ContextClass;
-import pl.edu.uj.jnode.context.testdata.SomeClassWithMainAndContextScan;
+import pl.edu.uj.jnode.context.testdata.*;
 import pl.edu.uj.jnode.jarpath.Jar;
 
 import java.nio.file.Paths;
@@ -73,5 +71,14 @@ public class JarContextTest {
 
         Object nonContextField = callback.getNonContextClass();
         assertThat(nonContextField, nullValue());
+    }
+
+    @Test
+    public void injectWorkForTasks() throws Exception {
+        RawTask task = new RawTask();
+        jarContext.injectContext(task);
+
+        ContextClass contextField = task.getContextClass();
+        assertThat(contextField, notNullValue());
     }
 }

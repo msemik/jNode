@@ -18,4 +18,6 @@ public interface WorkerPoolTask extends Task {
     int getPriority();
 
     void incrementPriority();
+
+    Task getRawTask();
 }

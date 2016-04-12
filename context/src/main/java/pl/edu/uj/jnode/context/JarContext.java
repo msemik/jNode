@@ -104,9 +104,9 @@ public class JarContext {
         return classes;
     }
 
-    public void injectContext(Callback callback) {
+    public void injectContext(Object obj) {
         for (Class<Annotation> contextInjector : contextInjectors) {
-            List<Field> fieldsToInjectContext = FieldUtils.getFieldsListWithAnnotation(callback.getClass(), contextInjector);
+            List<Field> fieldsToInjectContext = FieldUtils.getFieldsListWithAnnotation(obj.getClass(), contextInjector);
             for (Field field : fieldsToInjectContext) {
                 boolean accessible = field.isAccessible();
                 if (!accessible) {
@@ -114,14 +114,14 @@ public class JarContext {
                 }
 
                 try {
-                    Object fieldValue = field.get(callback);
+                    Object fieldValue = field.get(obj);
                     if (fieldValue == null) {
                         Object autowiredBean = findBean(field.getType());
-                        field.set(callback, autowiredBean);
+                        field.set(obj, autowiredBean);
                         if (autowiredBean != null) {
                             logger.debug("Successfully injected field '" + field.getName() + "' with " + autowiredBean);
                         } else {
-                            logger.warn("No suitable bean found for '" + field.getName() + "' in " + callback);
+                            logger.warn("No suitable bean found for '" + field.getName() + "' in " + obj);
                         }
                     }
                 } catch (IllegalAccessException e) {
