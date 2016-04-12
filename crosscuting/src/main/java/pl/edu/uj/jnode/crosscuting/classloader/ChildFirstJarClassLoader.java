@@ -51,7 +51,7 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
             Class<?> aClass = findLoadedClass(name);
             if (aClass != null)
                 return aClass;
-            return super.loadClass(name);
+            return  super.loadClass(name);
         } catch (ClassNotFoundException e) {
             if (!canCallParent()) {
                 throw e;

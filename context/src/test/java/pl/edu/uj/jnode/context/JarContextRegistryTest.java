@@ -59,6 +59,7 @@ public class JarContextRegistryTest {
     @Test
     public void onNewJarCreatedEventShouldRegisterNewJarContext() throws Exception {
         assertThat(jarContextRegistry.hasFor(jar), equalTo(false));
+        doReturn(true).when(jar).isValidExistingJar();
         eventPublisher.publishEvent(new NewJarCreatedEvent(this, jar));
         assertThat(jarContextRegistry.hasFor(jar), equalTo(true));
     }
