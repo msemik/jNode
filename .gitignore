@@ -13,6 +13,7 @@
 #Maven
 
 **/target
+**/examples/*.jar
 **/pom.xml.tag
 **/pom.xml.releaseBackup
 **/pom.xml.versionsBackup
@@ -21,6 +22,7 @@
 **/dependency-reduced-pom.xml
 **/buildNumber.properties
 **/.mvn
+
 #Mac
 **/.DS_Store
 
