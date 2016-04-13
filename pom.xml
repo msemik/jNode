@@ -17,6 +17,7 @@
         <module>context</module>
         <module>assembly</module>
         <module>examples/cdi</module>
+        <module>examples/factorial</module>
     </modules>
     <packaging>pom</packaging>
 
