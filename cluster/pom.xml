@@ -15,6 +15,25 @@
             <groupId>pl.edu.uj.jnode</groupId>
             <artifactId>jnode-engine</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>pl.edu.uj.jnode</groupId>
+            <artifactId>jnode-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>pl.edu.uj.jnode</groupId>
+            <artifactId>jnode-crosscuting</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>pl.edu.uj.jnode</groupId>
+            <artifactId>jnode-main</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
