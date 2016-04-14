@@ -4,6 +4,8 @@ import pl.edu.uj.jnode.context.InjectContext;
 import pl.edu.uj.jnode.userlib.Callback;
 import pl.edu.uj.jnode.userlib.TaskExecutor;
 
+import java.io.Serializable;
+
 class MyCallback implements Callback {
     private final TaskExecutor taskExecutor;
     @InjectContext
@@ -14,7 +16,7 @@ class MyCallback implements Callback {
     }
 
     @Override
-    public void onSuccess(Object o) {
+    public void onSuccess(Serializable o) {
         int i = counter.preInc();
         System.out.println("Inc " + i);
         if (i == 100) {

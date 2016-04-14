@@ -19,6 +19,7 @@ import pl.edu.uj.jnode.userlib.Callback;
 import pl.edu.uj.jnode.userlib.Task;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class EventLoopThread extends Thread {
 
             if (eventLoopResponse.getType() == EventLoopResponse.Type.SUCCESS) {
                 logger.info("Received task result, executing callback");
-                Object taskResult = eventLoopResponse.getTaskResult();
+                Serializable taskResult = eventLoopResponse.getTaskResult();
                 try {
                     callback.onSuccess(taskResult);
                     logger.info("Callback execution finished successfully");
@@ -157,7 +158,7 @@ public class EventLoopThread extends Thread {
         callbackStorage.putIfAbsent(task, callback);
     }
 
-    public void submitTaskResult(WorkerPoolTask task, Object taskResult) {
+    public void submitTaskResult(WorkerPoolTask task, Serializable taskResult) {
         eventLoopQueue.put(new EventLoopResponse(EventLoopResponse.Type.SUCCESS, task, taskResult));
     }
 

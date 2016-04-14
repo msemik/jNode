@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.edu.uj.jnode.userlib.Callback;
 
+import java.io.Serializable;
+
 /**
  * Created by michal on 22.11.15.
  */
@@ -15,7 +17,7 @@ public class EmptyCallback implements Callback {
     }
 
     @Override
-    public void onSuccess(Object taskResult) {
+    public void onSuccess(Serializable taskResult) {
         logger.debug("Successful task execution, result: " + taskResult);
     }
 

@@ -3,13 +3,15 @@ package pl.edu.uj.jnode.engine.eventloop;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.userlib.Task;
 
+import java.io.Serializable;
+
 /**
  * Created by alanhawrot on 14.11.2015.
  */
 public class EventLoopResponse {
     private Type type;
     private WorkerPoolTask task;
-    private Object taskResult;
+    private Serializable taskResult;
     private Throwable exception;
 
     public EventLoopResponse(Type type) {
@@ -22,7 +24,7 @@ public class EventLoopResponse {
         this.task = task;
     }
 
-    public EventLoopResponse(Type type, WorkerPoolTask task, Object taskResult) {
+    public EventLoopResponse(Type type, WorkerPoolTask task, Serializable taskResult) {
         this.type = type;
         this.taskResult = taskResult;
         this.task = task;
@@ -32,7 +34,7 @@ public class EventLoopResponse {
         return type;
     }
 
-    public Object getTaskResult() {
+    public Serializable getTaskResult() {
         return taskResult;
     }
 

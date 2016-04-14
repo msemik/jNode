@@ -3,6 +3,8 @@ package pl.edu.uj.jnode.context.testdata;
 import pl.edu.uj.jnode.context.InjectContext;
 import pl.edu.uj.jnode.userlib.Callback;
 
+import java.io.Serializable;
+
 public class CallbackWithContextFields implements Callback {
     @InjectContext
     private ContextClass autowiredContextClass;
@@ -26,7 +28,7 @@ public class CallbackWithContextFields implements Callback {
     }
 
     @Override
-    public void onSuccess(Object taskResult) {
+    public void onSuccess(Serializable taskResult) {
 
     }
 

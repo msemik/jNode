@@ -3,6 +3,7 @@ package factorial;
 import pl.edu.uj.jnode.context.InjectContext;
 import pl.edu.uj.jnode.userlib.Callback;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -13,7 +14,7 @@ public class FactorialCallback implements Callback {
     private FactorialResult factorialResult;
 
     @Override
-    public void onSuccess(Object taskResult) {
+    public void onSuccess(Serializable taskResult) {
         BigInteger partialResult = (BigInteger) taskResult;
         BigInteger result = factorialResult.multiplyByPartialResult(partialResult);
         System.out.println(result);
