@@ -3,13 +3,12 @@ package pl.edu.uj.jnode.cluster;
 import pl.edu.uj.jnode.cluster.callback.SerializableCallbackWrapper;
 import pl.edu.uj.jnode.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.jnode.cluster.task.ExternalTask;
+import pl.edu.uj.jnode.cluster.task.SerializableTaskResultWrapper;
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jnode.engine.event.ExternalSubTaskReceivedEvent;
 import pl.edu.uj.jnode.engine.event.TaskCancelledEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolOverflowEvent;
-
-import java.io.Serializable;
 
 /**
  * Created by alanhawrot on 29.02.2016.
@@ -23,7 +22,7 @@ public interface Distributor {
 
     void onSry(String nodeId, String taskId);
 
-    void onTaskExecutionCompleted(String taskId, Serializable taskResult);
+    void onTaskExecutionCompleted(String taskId, SerializableTaskResultWrapper taskResultWrapper);
 
     void on(TaskFinishedEvent event);
 

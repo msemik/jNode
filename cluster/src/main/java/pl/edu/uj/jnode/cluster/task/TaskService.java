@@ -52,7 +52,7 @@ public class TaskService {
     }
 
     public void taskExecutionCompleted(ExternalTask task, Serializable taskResult) {
-        messageGateway.send(new TaskExecutionCompleted(taskResult, task.getTaskId()), task.getSourceNodeId());
+        messageGateway.send(new TaskExecutionCompleted(new SerializableTaskResultWrapper(taskResult), task.getTaskId()), task.getSourceNodeId());
     }
 
     public List<WorkerPoolTask> unwrapTasks(Collection<DelegatedTask> delegatedTasks) {

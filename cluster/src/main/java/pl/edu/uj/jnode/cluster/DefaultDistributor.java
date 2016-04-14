@@ -26,7 +26,6 @@ import pl.edu.uj.jnode.jarpath.JarFactory;
 import pl.edu.uj.jnode.jarpath.JarPathManager;
 import pl.edu.uj.jnode.userlib.Callback;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -110,13 +109,14 @@ public class DefaultDistributor implements Distributor {
     }
 
     @Override
-    public void onTaskExecutionCompleted(String taskId, Serializable taskResultOrException) {
+    public void onTaskExecutionCompleted(String taskId, SerializableTaskResultWrapper taskResultOrExceptionWrapper) {
         Optional<DelegatedTask> delegatedTask = delegatedTaskRegistry.remove(taskId);
-        if (delegatedTask.isPresent()) {
-            eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrException));
-        } else {
+        if (!delegatedTask.isPresent()) {
             logger.debug("Task absent in registry, taskId: " + taskId);
+            return;
         }
+        taskResultOrExceptionWrapper.deserialize(delegatedTask.get().getJar());
+        eventPublisher.publishEvent(new TaskFinishedEvent(this, delegatedTask.get().getTask(), taskResultOrExceptionWrapper.getTaskResultOrException()));
     }
 
     @Override
