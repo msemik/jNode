@@ -3,7 +3,6 @@ package pl.edu.uj.jnode.main.options;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
 
 import static pl.edu.uj.jnode.main.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;

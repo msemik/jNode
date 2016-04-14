@@ -1,8 +1,10 @@
 package pl.edu.uj.jnode.crosscuting.classloader;
 
 import com.sun.java.accessibility.util.AWTEventMonitor;
-import org.apache.log4j.*;
-import org.junit.*;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -12,8 +14,10 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import pl.edu.uj.jnode.crosscuting.Resources;
 
 import java.io.UnsupportedEncodingException;
-import java.net.*;
-import java.util.*;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -22,8 +26,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ChildFirstJarClassLoaderTest
-{
+public class ChildFirstJarClassLoaderTest {
     public static final String EXEMPLARY_CLASS_IN_BOTH_LOADERS = SomeClass.class.getCanonicalName();
     public static final String EXEMPLARY_CLASS_IN_CHILD_LOADER = "pl.test.example.SimpleContextClass";
     public static final String EXEMPLARY_CLASS_IN_PARENT_LOADER = ChildFirstJarClassLoaderTest.class.getCanonicalName();
@@ -36,14 +39,12 @@ public class ChildFirstJarClassLoaderTest
     private ChildOnlyJarClassLoader child;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         pathToJar = resources.getPathAsString("somejar.jar");
     }
 
     @Test
-    public void canLoadChildClass() throws Exception
-    {
+    public void canLoadChildClass() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_CHILD_LOADER);
         assertThat(aClass, notNullValue());
@@ -51,30 +52,26 @@ public class ChildFirstJarClassLoaderTest
     }
 
     @Test
-    public void canLoadBootstrapClass() throws Exception
-    {
+    public void canLoadBootstrapClass() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         classLoader.loadClass(EXEMPLARY_CLASS_IN_BOOTSTRAP_LOADER);
     }
 
     @Test
-    public void canLoadExtensionClasses() throws Exception
-    {
+    public void canLoadExtensionClasses() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         classLoader.loadClass(EXEMPLARY_CLASS_IN_EXTENSIONS_LOADER);
     }
 
     @Test
-    public void canLoadParentClass() throws Exception
-    {
+    public void canLoadParentClass() throws Exception {
         classLoader = new ChildFirstJarClassLoader(pathToJar);
         Class<?> aClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_PARENT_LOADER);
         assertThat(aClass, notNullValue());
     }
 
     @Test
-    public void whenBothLoadersHasClassThenLoadsFromChild() throws Exception
-    {
+    public void whenBothLoadersHasClassThenLoadsFromChild() throws Exception {
         parent = Thread.currentThread().getContextClassLoader();
         classLoader = new ChildFirstJarClassLoader(pathToJar, parent);
         child = classLoader.getChildOnlyJarClassLoader();
@@ -90,8 +87,7 @@ public class ChildFirstJarClassLoaderTest
     }
 
     @Test
-    public void canFindResources()
-    {
+    public void canFindResources() {
         Logger rootLogger = Logger.getRootLogger();
         rootLogger.setLevel(Level.INFO);
         classLoader = new ChildFirstJarClassLoader(pathToJar);
@@ -101,8 +97,7 @@ public class ChildFirstJarClassLoaderTest
         provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
         Set<BeanDefinition> candidateComponents = provider.findCandidateComponents("pl");
 
-        for(BeanDefinition bd : candidateComponents)
-        {
+        for (BeanDefinition bd : candidateComponents) {
             System.out.println(bd.toString());
         }
         List<String> classes = getCanonicalClassNames(candidateComponents);
@@ -115,8 +110,7 @@ public class ChildFirstJarClassLoaderTest
     }
 
     @Test
-    public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception
-    {
+    public void whenGetClassLoaderFromChildThenItHasAccessToClasses() throws Exception {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         classLoader = new ChildFirstJarClassLoader(pathToJar, contextClassLoader);
         Class<?> mainClass = classLoader.loadClass(EXEMPLARY_CLASS_IN_BOTH_LOADERS);
@@ -127,32 +121,26 @@ public class ChildFirstJarClassLoaderTest
     }
 
     @Test
-    public void encodeVariousFilePaths() throws Exception
-    {
+    public void encodeVariousFilePaths() throws Exception {
         assertFileNameIsCorrectAfterDecoding("file.jar", "jar:file:file.jar!/");
         assertFileNameIsCorrectAfterDecoding(" f ile .jar", "jar:file: f ile .jar!/");
         assertFileNameIsCorrectAfterDecoding("_f-i/le.jar", "jar:file:_f-i/le.jar!/");
         assertFileNameIsCorrectAfterDecoding("%20Asd%3A.jar", "jar:file:%20Asd%3A.jar!/");
     }
 
-    private void assertFileNameIsCorrectAfterDecoding(String pathToJar, String expectedUrlToJar)
-    {
-        try
-        {
+    private void assertFileNameIsCorrectAfterDecoding(String pathToJar, String expectedUrlToJar) {
+        try {
             URL[] encodedUrls = ChildFirstJarClassLoader.pathToUrls(pathToJar);
             assertThat(encodedUrls.length, equalTo(1));
             String firstUrl = encodedUrls[0].toString();
             firstUrl = URLDecoder.decode(firstUrl, "UTF-8");
             assertThat(firstUrl, equalTo(expectedUrlToJar));
-        }
-        catch(UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions)
-    {
+    private List<String> getCanonicalClassNames(Set<BeanDefinition> beanDefinitions) {
         return beanDefinitions.stream().map(BeanDefinition::getBeanClassName).collect(Collectors.toList());
     }
 }

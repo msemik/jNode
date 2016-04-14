@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.cluster.node.Nodes;
 import pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry;
@@ -20,10 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Optional.of;
 import static pl.edu.uj.jnode.cluster.delegation.DefaultState.NO_DELEGATION;
-import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.HEARTBEAT;
-import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.NO_THREADS;
-import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.OVERFLOW;
-import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.TASK_DELEGATION_FINISHED;
+import static pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent.*;
 
 /**
  * Simulates Finite State Machine, for given pair event, state: - change to appropriate state -

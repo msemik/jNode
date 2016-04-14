@@ -2,7 +2,6 @@ package pl.edu.uj.jnode.cluster.node;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.cluster.MessageGateway;
 import pl.edu.uj.jnode.cluster.message.PrimaryHeartBeat;
 

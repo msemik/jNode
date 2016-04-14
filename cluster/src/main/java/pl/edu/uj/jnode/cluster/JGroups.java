@@ -1,17 +1,12 @@
 package pl.edu.uj.jnode.cluster;
 
-import org.jgroups.Address;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
+import org.jgroups.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.engine.NodeIdFactory;
 import pl.edu.uj.jnode.main.ApplicationInitializedEvent;
 import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
@@ -123,7 +118,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     private void handleViewAccepted(View view) {
         logger.debug(String.join(", ", "View creator:" + view.getCreator(), "View id:" + view.getViewId(), "Current nodeId:" + getCurrentNodeId(),
-                "jNodes number:" + view.size(), "changed view" + view.getMembers()));
+                                 "jNodes number:" + view.size(), "changed view" + view.getMembers()));
 
         synchronized (JGroups.this) {
             List<Address> membersInLastView = membersInCurrentView;
@@ -149,7 +144,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
 
     private void distributeNodeGoneForEachGoneNode(List<Address> membersInLastView) {
         membersInLastView.stream().filter(nodeIdInLastView -> !membersInCurrentView.contains(nodeIdInLastView))
-                .forEach(goneNode -> distributor.onNodeGone(goneNode.toString()));
+                         .forEach(goneNode -> distributor.onNodeGone(goneNode.toString()));
     }
 
     //@Scheduled(fixedDelay = 2000, initialDelay = 2000)

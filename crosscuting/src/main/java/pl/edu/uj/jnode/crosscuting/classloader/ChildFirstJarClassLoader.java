@@ -31,7 +31,7 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
     protected static URL[] pathToUrls(String pathToJar) {
         try {
             pathToJar = URLEncoder.encode(pathToJar, "UTF-8").replace("+", "%20");
-            return new URL[]{new URL("jar:file:" + pathToJar + "!/")};
+            return new URL[] {new URL("jar:file:" + pathToJar + "!/")};
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -49,9 +49,10 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
             Class<?> aClass = findLoadedClass(name);
-            if (aClass != null)
+            if (aClass != null) {
                 return aClass;
-            return  super.loadClass(name);
+            }
+            return super.loadClass(name);
         } catch (ClassNotFoundException e) {
             if (!canCallParent()) {
                 throw e;

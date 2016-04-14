@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.event.TaskReceivedEvent;
@@ -21,7 +20,9 @@ import pl.edu.uj.jnode.jarpath.JarPropertiesDeletedEvent;
 import pl.edu.uj.jnode.jarpath.JarStateChangedEvent;
 import pl.edu.uj.jnode.userlib.Callback;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 import static pl.edu.uj.jnode.jarpath.JarExecutionState.NOT_STARTED;
 

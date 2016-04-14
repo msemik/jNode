@@ -12,17 +12,11 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
-
 import pl.edu.uj.jnode.jarpath.Jar;
-import pl.edu.uj.jnode.userlib.Callback;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Scope("prototype")

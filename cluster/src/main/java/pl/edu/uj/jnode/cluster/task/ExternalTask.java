@@ -1,7 +1,6 @@
 package pl.edu.uj.jnode.cluster.task;
 
 import org.apache.commons.lang3.SerializationUtils;
-
 import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.crosscuting.ClassLoaderAwareObjectInputStream;
 import pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask;
@@ -72,9 +71,9 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
     @Override
     public String toString() {
         return "ExternalTask{" +
-                "task=" + taskId +
-                ", sourceNodeId='" + sourceNodeId + '\'' +
-                '}';
+               "task=" + taskId +
+               ", sourceNodeId='" + sourceNodeId + '\'' +
+               '}';
     }
 
     public boolean isOriginatedAt(Node selectedNode) {

@@ -1,6 +1,8 @@
 package pl.edu.uj.jnode.context;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,21 +10,24 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.edu.uj.jnode.cluster.task.ExternalTask;
-import pl.edu.uj.jnode.context.testdata.*;
-import pl.edu.uj.jnode.engine.workerpool.*;
+import pl.edu.uj.jnode.context.testdata.CallbackWithContextFields;
+import pl.edu.uj.jnode.context.testdata.ContextClass;
+import pl.edu.uj.jnode.context.testdata.RawTask;
+import pl.edu.uj.jnode.engine.workerpool.DefaultWorkerPoolTask;
+import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.userlib.Callback;
 
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestsConfig.class)
-public class ContextInjectingPreExecutionProcessorTest
-{
+public class ContextInjectingPreExecutionProcessorTest {
     public static final String SOME_ID = "1";
     public static final String SOME_NODE_ID = "someNodeId";
     @Autowired
@@ -43,8 +48,7 @@ public class ContextInjectingPreExecutionProcessorTest
     private ArgumentCaptor<RawTask> taskArgumentCaptor;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         doReturn(jarContext).when(jarContextRegistry).get(jar);
         doReturn(this.getClass().getClassLoader()).when(jar).getChildFirstClassLoader();
@@ -53,8 +57,7 @@ public class ContextInjectingPreExecutionProcessorTest
 
 
         Mockito.doAnswer(invocation -> {
-            if(invocation.getArgumentAt(0, Object.class) instanceof CallbackWithContextFields)
-            {
+            if (invocation.getArgumentAt(0, Object.class) instanceof CallbackWithContextFields) {
                 CallbackWithContextFields callback = invocation.getArgumentAt(0, CallbackWithContextFields.class);
                 callback.setAutowiredContextClass(autowiredContextClass);
             }
@@ -63,30 +66,26 @@ public class ContextInjectingPreExecutionProcessorTest
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
 
     }
 
     @Test
-    public void whenProcessCallbackReturnSameObject() throws Exception
-    {
+    public void whenProcessCallbackReturnSameObject() throws Exception {
         Callback processedCallback = processor.process(jar, callback);
         assertThat(processedCallback, sameInstance(callback));
         verify(jarContext).injectContext(callback);
     }
 
     @Test
-    public void whenProcessCallbackWithInjectContextAnnotationShouldInjectIt() throws Exception
-    {
+    public void whenProcessCallbackWithInjectContextAnnotationShouldInjectIt() throws Exception {
         CallbackWithContextFields callback = new CallbackWithContextFields();
         processor.process(jar, callback);
         assertThat(callback.getAutowiredContextClass(), equalTo(autowiredContextClass));
     }
 
     @Test
-    public void whenProcessDefaultWorkerPoolTaskShouldInjectContextToItsRawTask() throws Exception
-    {
+    public void whenProcessDefaultWorkerPoolTaskShouldInjectContextToItsRawTask() throws Exception {
         doNothing().when(jarContext).injectContext(taskArgumentCaptor.capture());
         RawTask rawTask = new RawTask();
         WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(rawTask, jar, SOME_ID);
@@ -96,8 +95,7 @@ public class ContextInjectingPreExecutionProcessorTest
     }
 
     @Test
-    public void whenProcessExternalTaskShouldInjectContextToItsRawTask() throws Exception
-    {
+    public void whenProcessExternalTaskShouldInjectContextToItsRawTask() throws Exception {
         doNothing().when(jarContext).injectContext(taskArgumentCaptor.capture());
         RawTask rawTask = new RawTask();
         WorkerPoolTask workerPoolTask = new DefaultWorkerPoolTask(rawTask, jar, SOME_ID);

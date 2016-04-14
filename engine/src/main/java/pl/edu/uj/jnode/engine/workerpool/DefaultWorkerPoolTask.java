@@ -19,8 +19,8 @@ public class DefaultWorkerPoolTask extends BaseWorkerPoolTask {
         return task.call();
     }
 
-    @Override public Task getRawTask()
-    {
+    @Override
+    public Task getRawTask() {
         return task;
     }
 }

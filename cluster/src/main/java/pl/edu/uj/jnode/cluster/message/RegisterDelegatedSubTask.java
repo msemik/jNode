@@ -36,8 +36,8 @@ public class RegisterDelegatedSubTask implements Serializable, Distributable {
     @Override
     public String toString() {
         return "RegisterDelegatedSubTask{" +
-                "externalTask=" + externalTask +
-                ", callback=" + callback +
-                '}';
+               "externalTask=" + externalTask +
+               ", callback=" + callback +
+               '}';
     }
 }

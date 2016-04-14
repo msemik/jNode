@@ -78,11 +78,11 @@ public class Node implements Comparable<Node> {
     @Override
     public String toString() {
         return "{" +
-                "nodeId=" + nodeId +
-                ", availableThreads=" + availableThreads +
-                ", poolSize=" + poolSize +
-                ", priority=" + priority +
-                '}';
+               "nodeId=" + nodeId +
+               ", availableThreads=" + availableThreads +
+               ", poolSize=" + poolSize +
+               ", priority=" + priority +
+               '}';
     }
 
     public String getNodeId() {

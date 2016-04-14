@@ -5,7 +5,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.crosscuting.classloader.ChildFirstJarClassLoader;
 import pl.edu.uj.jnode.engine.InvalidJarFileException;
 import pl.edu.uj.jnode.engine.NodeIdFactory;
@@ -50,8 +49,9 @@ public class Jar {
     }
 
     public void validate() {
-        if (!pathRelativeToJarPath.toString().endsWith(".jar"))
+        if (!pathRelativeToJarPath.toString().endsWith(".jar")) {
             throw new IllegalArgumentException("Invalid jar path '" + pathRelativeToJarPath + "'");
+        }
     }
 
     public String getNodeId() {
@@ -86,8 +86,9 @@ public class Jar {
         try {
             Path absolutePath = getAbsolutePath();
             Path dir = absolutePath.getParent();
-            if (!Files.exists(dir))
+            if (!Files.exists(dir)) {
                 Files.createDirectory(dir);
+            }
             Files.copy(jarContent, absolutePath, REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -140,15 +141,18 @@ public class Jar {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         Jar jar = (Jar) o;
 
-        if (!nodeId.equals(jar.nodeId))
+        if (!nodeId.equals(jar.nodeId)) {
             return false;
+        }
         return pathRelativeToJarPath.equals(jar.pathRelativeToJarPath);
 
     }
@@ -171,8 +175,9 @@ public class Jar {
 
     public Optional<Class<Annotation>> getAnnotation(String canonicalName) {
         Class<?> cls = getClass(canonicalName);
-        if (cls == null)
+        if (cls == null) {
             return empty();
+        }
         if (!cls.isAnnotation()) {
             throw new IllegalStateException("Given type is not annotation: " + canonicalName);
         }
@@ -184,7 +189,7 @@ public class Jar {
         try {
             Method main = mainClass.getMethod("main", String[].class);
             String[] args = new String[0];
-            return main.invoke(null, new Object[]{args});
+            return main.invoke(null, new Object[] {args});
         } catch (InvocationTargetException e) {
             throw new UserApplicationException(e.getCause());
         } catch (NoSuchMethodException e) {
@@ -198,8 +203,9 @@ public class Jar {
 
     public Class<?> getMainClass() {
 
-        if (this.mainClass != null)
+        if (this.mainClass != null) {
             return mainClass;
+        }
         try {
             ClassLoader classLoader = getChildFirstClassLoader();
             String mainClassName = getMainClassName();
@@ -220,8 +226,9 @@ public class Jar {
     }
 
     private ChildFirstJarClassLoader getChildFirstClassLoaderAndCreateIfNeed() {
-        if (childFirstJarClassLoader != null)
+        if (childFirstJarClassLoader != null) {
             return childFirstJarClassLoader;
+        }
         childFirstJarClassLoader = new ChildFirstJarClassLoader(getAbsolutePathAsString());
         return childFirstJarClassLoader;
     }
@@ -234,8 +241,9 @@ public class Jar {
 
             for (Iterator it = mainAttributes.keySet().iterator(); it.hasNext(); ) {
                 Attributes.Name attribute = (Attributes.Name) it.next();
-                if (attribute.toString().equals("Main-Class"))
+                if (attribute.toString().equals("Main-Class")) {
                     return (String) mainAttributes.get(attribute);
+                }
             }
 
             throw new InvalidJarFileException("Jar doesn't contain Main-Class attribute");

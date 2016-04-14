@@ -73,9 +73,9 @@ public class PrimaryHeartBeat implements Serializable, Distributable {
     @Override
     public String toString() {
         return "PrimaryHeartBeat{" +
-                "poolSize=" + poolSize +
-                ", jobsInPool=" + jobsInPool +
-                ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
-                '}';
+               "poolSize=" + poolSize +
+               ", jobsInPool=" + jobsInPool +
+               ", expectedHeartBeatType='" + expectedHeartBeatType + '\'' +
+               '}';
     }
 }

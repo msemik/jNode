@@ -7,7 +7,6 @@ import org.apache.commons.cli.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-
 import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
 
 import java.util.Optional;
@@ -15,6 +14,7 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import static pl.edu.uj.jnode.main.ApplicationShutdownEvent.ShutdownReason.UNPARSABLE_OPTIONS;
 //import org.springframework.context.event.EventListener;
+
 
 /**
  * Created by michal on 21.10.15.

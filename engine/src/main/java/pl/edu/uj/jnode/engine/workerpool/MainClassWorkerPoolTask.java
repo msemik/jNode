@@ -16,8 +16,8 @@ public class MainClassWorkerPoolTask extends BaseWorkerPoolTask {
         return getJar().launchMain();
     }
 
-    @Override public Task getRawTask()
-    {
+    @Override
+    public Task getRawTask() {
         return this;
     }
 }

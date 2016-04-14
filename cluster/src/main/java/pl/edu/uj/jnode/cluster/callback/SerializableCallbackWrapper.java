@@ -1,7 +1,6 @@
 package pl.edu.uj.jnode.cluster.callback;
 
 import org.apache.commons.lang3.SerializationUtils;
-
 import pl.edu.uj.jnode.crosscuting.ClassLoaderAwareObjectInputStream;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.userlib.Callback;

@@ -44,8 +44,8 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
         task.incrementPriority();
     }
 
-    @Override public Task getRawTask()
-    {
+    @Override
+    public Task getRawTask() {
         return task.getRawTask();
     }
 

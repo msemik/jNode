@@ -4,17 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import pl.edu.uj.jnode.cluster.MessageGateway;
 import pl.edu.uj.jnode.cluster.callback.SerializableCallbackWrapper;
-import pl.edu.uj.jnode.cluster.message.CancelJarJobs;
-import pl.edu.uj.jnode.cluster.message.JarDelivery;
-import pl.edu.uj.jnode.cluster.message.JarRequest;
-import pl.edu.uj.jnode.cluster.message.Redirect;
-import pl.edu.uj.jnode.cluster.message.RegisterDelegatedSubTask;
-import pl.edu.uj.jnode.cluster.message.Sry;
-import pl.edu.uj.jnode.cluster.message.TaskDelegation;
-import pl.edu.uj.jnode.cluster.message.TaskExecutionCompleted;
+import pl.edu.uj.jnode.cluster.message.*;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
 

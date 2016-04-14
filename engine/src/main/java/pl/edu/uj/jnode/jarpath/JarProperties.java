@@ -57,9 +57,9 @@ public class JarProperties {
     @Override
     public String toString() {
         return "JarProperties{ propertiesPath=" + propertiesPath +
-                ", nodeId='" + nodeId + '\'' +
-                ", executionState=" + executionState +
-                '}';
+               ", nodeId='" + nodeId + '\'' +
+               ", executionState=" + executionState +
+               '}';
     }
 
     public JarExecutionState getExecutionState() {

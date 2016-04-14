@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-
 import pl.edu.uj.jnode.cluster.task.ExternalTask;
 import pl.edu.uj.jnode.cluster.task.TaskService;
 import pl.edu.uj.jnode.engine.EmptyCallback;

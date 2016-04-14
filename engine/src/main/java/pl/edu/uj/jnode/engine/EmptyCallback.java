@@ -2,15 +2,14 @@ package pl.edu.uj.jnode.engine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pl.edu.uj.jnode.userlib.Callback;
 
 /**
  * Created by michal on 22.11.15.
  */
 public class EmptyCallback implements Callback {
-    private Logger logger = LoggerFactory.getLogger(EmptyCallback.class);
     public final static EmptyCallback INSTANCE = new EmptyCallback();
+    private Logger logger = LoggerFactory.getLogger(EmptyCallback.class);
 
     private EmptyCallback() {
     }
