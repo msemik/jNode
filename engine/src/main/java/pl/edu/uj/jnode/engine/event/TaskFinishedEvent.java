@@ -3,14 +3,16 @@ package pl.edu.uj.jnode.engine.event;
 import org.springframework.context.ApplicationEvent;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 
+import java.io.Serializable;
+
 /**
  * Created by alanhawrot on 28.02.2016.
  */
 public class TaskFinishedEvent extends ApplicationEvent {
     private WorkerPoolTask task;
-    private Object taskResultOrException;
+    private Serializable taskResultOrException;
 
-    public TaskFinishedEvent(Object source, WorkerPoolTask task, Object taskResultOrException) {
+    public TaskFinishedEvent(Object source, WorkerPoolTask task, Serializable taskResultOrException) {
         super(source);
         this.task = task;
         this.taskResultOrException = taskResultOrException;
@@ -24,7 +26,7 @@ public class TaskFinishedEvent extends ApplicationEvent {
      * If task finishes with success, this method will return the actual result. If not, it returns
      * the exception thrown during task execution.
      */
-    public Object getTaskResultOrException() {
+    public Serializable getTaskResultOrException() {
         return taskResultOrException;
     }
 

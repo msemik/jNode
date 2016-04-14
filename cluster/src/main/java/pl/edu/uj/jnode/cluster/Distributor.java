@@ -9,6 +9,8 @@ import pl.edu.uj.jnode.engine.event.TaskCancelledEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolOverflowEvent;
 
+import java.io.Serializable;
+
 /**
  * Created by alanhawrot on 29.02.2016.
  */
@@ -21,7 +23,7 @@ public interface Distributor {
 
     void onSry(String nodeId, String taskId);
 
-    void onTaskExecutionCompleted(String taskId, Object taskResult);
+    void onTaskExecutionCompleted(String taskId, Serializable taskResult);
 
     void on(TaskFinishedEvent event);
 

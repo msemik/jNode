@@ -4,6 +4,8 @@ import pl.edu.uj.jnode.userlib.Task;
 import pl.edu.uj.jnode.userlib.TaskExecutor;
 import pl.edu.uj.jnode.userlib.TaskExecutorFactory;
 
+import java.io.Serializable;
+
 /**
  * Created by alanhawrot on 14.04.2016.
  */
@@ -19,7 +21,7 @@ public class QuickSortTask implements Task {
     }
 
     @Override
-    public Object call() throws Exception {
+    public Serializable call() throws Exception {
         TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
         quickSort(array, begin, end, taskExecutor);
         return new QuickSortTaskResult(array, begin, end);

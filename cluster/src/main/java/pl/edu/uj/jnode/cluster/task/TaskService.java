@@ -10,6 +10,7 @@ import pl.edu.uj.jnode.cluster.message.*;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class TaskService {
         return delegatedTasks.stream().map(DelegatedTask::getDestinationNodeId).distinct();
     }
 
-    public void taskExecutionCompleted(ExternalTask task, Object taskResult) {
+    public void taskExecutionCompleted(ExternalTask task, Serializable taskResult) {
         messageGateway.send(new TaskExecutionCompleted(taskResult, task.getTaskId()), task.getSourceNodeId());
     }
 

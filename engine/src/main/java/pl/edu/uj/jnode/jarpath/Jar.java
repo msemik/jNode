@@ -12,6 +12,7 @@ import pl.edu.uj.jnode.engine.UserApplicationException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -184,12 +185,12 @@ public class Jar {
         return of((Class<Annotation>) cls);
     }
 
-    public Object launchMain() {
+    public Serializable launchMain() {
         Class<?> mainClass = getMainClass();
         try {
             Method main = mainClass.getMethod("main", String[].class);
             String[] args = new String[0];
-            return main.invoke(null, new Object[] {args});
+            return (Serializable) main.invoke(null, new Object[] {args});
         } catch (InvocationTargetException e) {
             throw new UserApplicationException(e.getCause());
         } catch (NoSuchMethodException e) {

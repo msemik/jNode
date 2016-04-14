@@ -16,6 +16,7 @@ import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -104,9 +105,9 @@ public class WorkerPool {
         logger.info("Task " + task.toString() + " is being executed");
 
         ThreadPoolTaskExecutor executor = getTaskExecutor();
-        final ListenableFuture<Object> taskResultFuture = executor.submitListenable(task);
+        final ListenableFuture<Serializable> taskResultFuture = executor.submitListenable(task);
         executingTasks.put(task.getJar(), taskResultFuture);
-        taskResultFuture.addCallback(new ListenableFutureCallback<Object>() {
+        taskResultFuture.addCallback(new ListenableFutureCallback<Serializable>() {
             @Override
             public void onFailure(Throwable ex) {
                 executingTasks.remove(task.getJar(), taskResultFuture);
@@ -119,7 +120,7 @@ public class WorkerPool {
             }
 
             @Override
-            public void onSuccess(Object result) {
+            public void onSuccess(Serializable result) {
                 executingTasks.remove(task.getJar(), taskResultFuture);
                 logger.info("Execution of task " + task.toString() + " has been accomplished");
                 eventPublisher.publishEvent(new TaskFinishedEvent(this, task, result));

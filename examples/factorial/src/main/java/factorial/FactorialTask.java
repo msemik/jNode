@@ -4,6 +4,7 @@ import pl.edu.uj.jnode.userlib.Task;
 import pl.edu.uj.jnode.userlib.TaskExecutor;
 import pl.edu.uj.jnode.userlib.TaskExecutorFactory;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -19,7 +20,7 @@ public class FactorialTask implements Task {
     }
 
     @Override
-    public Object call() throws Exception {
+    public Serializable call() throws Exception {
         TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
         while (end - begin > 50) {
             int mid = (begin + end) / 2;

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import pl.edu.uj.jnode.crosscuting.ReflectionUtils;
 import pl.edu.uj.jnode.jarpath.Jar;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -18,18 +19,18 @@ import static java.util.Collections.emptyList;
  */
 @Component
 public class ExecutingTasks {
-    private Map<Jar, List<Future<Object>>> futureMap = new HashMap<>();
+    private Map<Jar, List<Future<Serializable>>> futureMap = new HashMap<>();
     private Logger logger = LoggerFactory.getLogger(ExecutingTasks.class);
     private String ids;
 
-    public synchronized void put(Jar jar, Future<Object> future) {
-        List<Future<Object>> futures = futureMap.getOrDefault(jar, new ArrayList<>());
+    public synchronized void put(Jar jar, Future<Serializable> future) {
+        List<Future<Serializable>> futures = futureMap.getOrDefault(jar, new ArrayList<>());
         futures.add(future);
         futureMap.putIfAbsent(jar, futures);
     }
 
-    public synchronized boolean remove(Jar jar, Future<Object> future) {
-        List<Future<Object>> futures = futureMap.getOrDefault(jar, emptyList());
+    public synchronized boolean remove(Jar jar, Future<Serializable> future) {
+        List<Future<Serializable>> futures = futureMap.getOrDefault(jar, emptyList());
         boolean result = futures.removeIf(f -> f == future);
         if (futures.isEmpty()) {
             futureMap.remove(jar);
@@ -48,9 +49,9 @@ public class ExecutingTasks {
 
     public synchronized int cancelAllRunningJobs(Jar jar) {
         int cancelledJobs = 0;
-        List<Future<Object>> futures = removeAll(jar);
+        List<Future<Serializable>> futures = removeAll(jar);
         logger.debug("Cancelling " + futures.size() + " tasks for " + jar + " all tasks: " + futures.size());
-        for (Future<Object> future : futures) {
+        for (Future<Serializable> future : futures) {
             if (!future.isCancelled() && !future.isDone()) {
                 if (!future.cancel(true)) {
                     logger.warn("Task couldn't be cancelled:" + future);
@@ -62,8 +63,8 @@ public class ExecutingTasks {
         return cancelledJobs;
     }
 
-    private List<Future<Object>> removeAll(Jar jar) {
-        List<Future<Object>> removedItems = futureMap.remove(jar);
+    private List<Future<Serializable>> removeAll(Jar jar) {
+        List<Future<Serializable>> removedItems = futureMap.remove(jar);
         if (removedItems == null) {
             return emptyList();
         }
@@ -71,9 +72,9 @@ public class ExecutingTasks {
     }
 
     public synchronized void remove(Future<Callable> future) {
-        Iterator<Map.Entry<Jar, List<Future<Object>>>> it = futureMap.entrySet().iterator();
+        Iterator<Map.Entry<Jar, List<Future<Serializable>>>> it = futureMap.entrySet().iterator();
         while (it.hasNext()) {
-            List<Future<Object>> futures = it.next().getValue();
+            List<Future<Serializable>> futures = it.next().getValue();
             if (futures.remove(future)) {
                 return;
             }
@@ -87,7 +88,7 @@ public class ExecutingTasks {
         return tasks;
     }
 
-    private WorkerPoolTask getTaskFromFuture(Future<Object> f) {
+    private WorkerPoolTask getTaskFromFuture(Future<Serializable> f) {
         return (WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, f, "callable");
     }
 }

@@ -1,9 +1,11 @@
 package quicksort;
 
+import java.io.Serializable;
+
 /**
  * Created by alanhawrot on 14.04.2016.
  */
-public class QuickSortTaskResult {
+public class QuickSortTaskResult implements Serializable {
     private int[] array;
     private int begin;
     private int end;

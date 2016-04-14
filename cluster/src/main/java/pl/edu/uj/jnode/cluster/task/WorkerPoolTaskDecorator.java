@@ -4,6 +4,8 @@ import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.userlib.Task;
 
+import java.io.Serializable;
+
 public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     private transient WorkerPoolTask task;
 
@@ -50,7 +52,7 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     }
 
     @Override
-    public Object call() throws Exception {
+    public Serializable call() throws Exception {
         return task.call();
     }
 

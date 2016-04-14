@@ -7,10 +7,10 @@ import java.io.Serializable;
 import java.util.Optional;
 
 public class TaskExecutionCompleted implements Serializable, Distributable {
-    private Object taskResultOrException;
+    private Serializable taskResultOrException;
     private String taskId;
 
-    public TaskExecutionCompleted(Object taskResultOrException, String taskId) {
+    public TaskExecutionCompleted(Serializable taskResultOrException, String taskId) {
         this.taskResultOrException = taskResultOrException;
         this.taskId = taskId;
     }
