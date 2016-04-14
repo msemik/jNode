@@ -18,6 +18,7 @@
         <module>assembly</module>
         <module>examples/cdi</module>
         <module>examples/factorial</module>
+        <module>examples/quicksort</module>
     </modules>
     <packaging>pom</packaging>
 
