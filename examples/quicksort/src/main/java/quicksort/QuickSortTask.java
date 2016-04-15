@@ -15,9 +15,7 @@ public class QuickSortTask implements Task {
     private int end;
 
     public QuickSortTask(int[] array, int begin, int end) {
-        int length = array.length;
-        this.array = new int[length];
-        System.arraycopy(array, 0, this.array, 0, length);
+        this.array = array;
         this.begin = begin;
         this.end = end;
     }
