@@ -15,7 +15,9 @@ public class QuickSortTask implements Task {
     private int end;
 
     public QuickSortTask(int[] array, int begin, int end) {
-        this.array = array;
+        int length = array.length;
+        this.array = new int[length];
+        System.arraycopy(array, 0, this.array, 0, length);
         this.begin = begin;
         this.end = end;
     }
@@ -23,25 +25,16 @@ public class QuickSortTask implements Task {
     @Override
     public Serializable call() throws Exception {
         TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
-        quickSort(array, begin, end, taskExecutor);
-        return new QuickSortTaskResult(array, begin, end);
-    }
 
-    private void quickSort(int[] array, int lo, int hi, TaskExecutor taskExecutor) {
-        if (hi - lo <= 100) {
-            insertionSort(array, lo, hi);
-            return;
+        if (end - begin <= 100) {
+            insertionSort(array, begin, end);
+            return new QuickSortTaskResult(array, begin, end);
         }
 
-        int mid = (lo + hi) / 2;
-        int j = partition(array, lo, hi);
-        if (j < mid) {
-            taskExecutor.doAsync(new QuickSortTask(array, j + 1, hi), new QuickSortCallback());
-            quickSort(array, lo, j - 1, taskExecutor);
-        } else {
-            taskExecutor.doAsync(new QuickSortTask(array, lo, j - 1), new QuickSortCallback());
-            quickSort(array, j + 1, hi, taskExecutor);
-        }
+        int j = partition(array, begin, end);
+        taskExecutor.doAsync(new QuickSortTask(array, begin, j - 1), new QuickSortCallback());
+        taskExecutor.doAsync(new QuickSortTask(array, j + 1, end), new QuickSortCallback());
+        return new QuickSortTaskResult(array, j, j);
     }
 
     private int partition(int[] array, int lo, int hi) {
