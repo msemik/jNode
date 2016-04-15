@@ -50,13 +50,16 @@ public class SerializableCallbackWrapper implements Serializable {
         if (serializedCallback == null && callback != null) {
             this.serializedCallback = SerializationUtils.serialize(callback);
         }
-        out.write(serializedCallback);
+        if (serializedCallback != null) {
+            out.writeInt(serializedCallback.length);
+            out.write(serializedCallback);
+        }
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        int available = in.available();
-        serializedCallback = new byte[available];
+        int length = in.readInt();
+        serializedCallback = new byte[length];
         in.readFully(serializedCallback);
     }
 

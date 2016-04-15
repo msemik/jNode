@@ -113,17 +113,16 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
         if (serializedTask == null && task != null) {
             this.serializedTask = SerializationUtils.serialize(task);
         }
-
-        out.write(serializedTask);
-        //System.out.println("writeObject task size: " + serializedTask.length);
-
+        if (serializedTask != null) {
+            out.writeInt(serializedTask.length);
+            out.write(serializedTask);
+        }
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        int available = in.available();
-        //System.out.println("readObject task size: " + available);
-        serializedTask = new byte[available];
+        int length = in.readInt();
+        serializedTask = new byte[length];
         in.readFully(serializedTask);
     }
 

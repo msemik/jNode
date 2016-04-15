@@ -52,13 +52,16 @@ public class SerializableTaskResultWrapper implements Serializable {
         if (serializedTaskResultOrException == null && taskResultOrException != null) {
             this.serializedTaskResultOrException = SerializationUtils.serialize(taskResultOrException);
         }
-        out.write(serializedTaskResultOrException);
+        if (serializedTaskResultOrException != null) {
+            out.writeInt(serializedTaskResultOrException.length);
+            out.write(serializedTaskResultOrException);
+        }
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        int available = in.available();
-        serializedTaskResultOrException = new byte[available];
+        int length = in.readInt();
+        serializedTaskResultOrException = new byte[length];
         in.readFully(serializedTaskResultOrException);
     }
 

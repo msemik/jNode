@@ -10,9 +10,9 @@ import pl.edu.uj.jnode.userlib.TaskExecutorFactory;
 @ContextScan("factorial")
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Factorial sample: 1000!");
+        System.out.println("Factorial sample: 10000!");
 
         TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
-        taskExecutor.doAsync(new FactorialTask(0, 1000), new FactorialCallback());
+        taskExecutor.doAsync(new FactorialTask(0, 10000), new FactorialCallback());
     }
 }

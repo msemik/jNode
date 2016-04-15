@@ -13,7 +13,7 @@ import java.util.Random;
 @ContextScan("quicksort")
 public class Main {
     public static void main(String[] args) {
-        int[] array = new Random().ints(10000, 0, 50000).toArray();
+        int[] array = new Random().ints(100000, 0, 500000).toArray();
 
         System.out.println("Array to sort: " + Arrays.toString(array));
 
