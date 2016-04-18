@@ -22,13 +22,12 @@ public class QuickSortTask implements Task {
 
     @Override
     public Serializable call() throws Exception {
-        TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
-
         if (end - begin <= 100) {
             insertionSort(array, begin, end);
             return new QuickSortTaskResult(array, begin, end);
         }
 
+        TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
         int j = partition(array, begin, end);
         taskExecutor.doAsync(new QuickSortTask(array, begin, j - 1), new QuickSortCallback());
         taskExecutor.doAsync(new QuickSortTask(array, j + 1, end), new QuickSortCallback());
@@ -61,9 +60,13 @@ public class QuickSortTask implements Task {
 
     private void insertionSort(int[] array, int lo, int hi) {
         for (int i = lo + 1; i <= hi; i++) {
-            for (int j = i; j > 0 && array[j] < array[j - 1]; j--) {
-                swap(array, j, j - 1);
+            int x = array[i];
+            int j = i - 1;
+            while (j > 0 && array[j] > x) {
+                array[j + 1] = array[j];
+                j--;
             }
+            array[j + 1] = x;
         }
     }
 
