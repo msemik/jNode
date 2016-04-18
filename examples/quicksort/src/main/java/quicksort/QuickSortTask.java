@@ -62,7 +62,7 @@ public class QuickSortTask implements Task {
         for (int i = lo + 1; i <= hi; i++) {
             int x = array[i];
             int j = i - 1;
-            while (j > 0 && array[j] > x) {
+            while (j >= 0 && array[j] > x) {
                 array[j + 1] = array[j];
                 j--;
             }
