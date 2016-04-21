@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>pl.edu.uj.jnode.engine.event.CancelJarJobsEvent</OriginalElement>
+  <nodes>
+    <node x="409.5" y="196.0">pl.edu.uj.jnode.cluster.JarHandler</node>
+    <node x="915.3769841269842" y="304.0">pl.edu.uj.jnode.engine.TaskCoordinator</node>
+    <node x="411.5" y="0.0">pl.edu.uj.jnode.engine.event.CancelJarJobsEvent</node>
+    <node x="279.0" y="108.0">pl.edu.uj.jnode.jarpath.JarPathManager</node>
+    <node x="512.172619047619" y="108.0">pl.edu.uj.jnode.engine.workerpool.WorkerPool</node>
+    <node x="891.375" y="108.0">pl.edu.uj.jnode.engine.eventloop.EventLoopThread</node>
+    <node x="0.0" y="196.0">pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry</node>
+    <node x="293.8412698412699" y="304.0">pl.edu.uj.jnode.cluster.DefaultDistributor</node>
+    <node x="826.0" y="196.0">pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry</node>
+    <node x="577.0" y="196.0">pl.edu.uj.jnode.cluster.task.ExternalTaskRegistry</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="-90.33333333333326" y="-19.0" />
+      <point x="871.1666666666667" y="171.0" />
+      <point x="865.4603174603175" y="171.0" />
+      <point x="865.4603174603175" y="78.0" />
+      <point x="565.5" y="78.0" />
+      <point x="42.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.eventloop.EventLoopThread" target="pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry">
+      <point x="50.25" y="19.0" />
+      <point x="1042.125" y="171.0" />
+      <point x="1051.8333333333333" y="171.0" />
+      <point x="90.33333333333326" y="-19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.eventloop.EventLoopThread" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="0.0" y="-19.0" />
+      <point x="991.875" y="68.0" />
+      <point x="593.5" y="68.0" />
+      <point x="70.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.TaskCoordinator" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="62.66666666666663" y="-19.0" />
+      <point x="1072.0436507936508" y="284.0" />
+      <point x="1110.0416666666667" y="284.0" />
+      <point x="1110.0416666666667" y="58.0" />
+      <point x="621.5" y="58.0" />
+      <point x="98.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.jarpath.JarPathManager">
+      <point x="-12.875" y="-19.0" />
+      <point x="383.9662698412699" y="254.0" />
+      <point x="326.75" y="254.0" />
+      <point x="-47.75" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.JarHandler" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="0.0" y="-19.0" />
+      <point x="480.5" y="88.0" />
+      <point x="509.5" y="88.0" />
+      <point x="-14.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.cluster.task.ExternalTaskRegistry">
+      <point x="64.375" y="-19.0" />
+      <point x="461.2162698412699" y="274.0" />
+      <point x="691.0" y="274.0" />
+      <point x="0.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.TaskCoordinator" target="pl.edu.uj.jnode.engine.workerpool.WorkerPool">
+      <point x="-62.66666666666674" y="-19.0" />
+      <point x="946.7103174603175" y="274.0" />
+      <point x="815.5" y="274.0" />
+      <point x="815.5" y="171.0" />
+      <point x="638.0059523809524" y="171.0" />
+      <point x="50.33333333333337" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.jarpath.JarPathManager" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="0.0" y="-19.0" />
+      <point x="374.5" y="78.0" />
+      <point x="481.5" y="78.0" />
+      <point x="-42.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry">
+      <point x="90.125" y="-19.0" />
+      <point x="486.9662698412699" y="284.0" />
+      <point x="893.75" y="284.0" />
+      <point x="-67.75" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.JarHandler" target="pl.edu.uj.jnode.jarpath.JarPathManager">
+      <point x="-47.33333333333337" y="-19.0" />
+      <point x="433.16666666666663" y="171.0" />
+      <point x="422.25" y="171.0" />
+      <point x="47.75" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.workerpool.WorkerPool" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="0.0" y="-19.0" />
+      <point x="587.672619047619" y="88.0" />
+      <point x="537.5" y="88.0" />
+      <point x="14.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.engine.event.CancelJarJobsEvent">
+      <point x="-38.625" y="-19.0" />
+      <point x="358.2162698412699" y="264.0" />
+      <point x="268.5" y="264.0" />
+      <point x="268.5" y="68.0" />
+      <point x="453.5" y="68.0" />
+      <point x="-70.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.engine.workerpool.WorkerPool">
+      <point x="38.625" y="-19.0" />
+      <point x="435.4662698412699" y="264.0" />
+      <point x="566.5" y="264.0" />
+      <point x="566.5" y="171.0" />
+      <point x="587.672619047619" y="171.0" />
+      <point x="0.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.cluster.task.DelegatedTaskRegistry">
+      <point x="-90.125" y="-19.0" />
+      <point x="306.7162698412699" y="284.0" />
+      <point x="123.5" y="284.0" />
+      <point x="0.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.TaskCoordinator" target="pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry">
+      <point x="-1.1368683772161603E-13" y="-19.0" />
+      <point x="1009.3769841269841" y="284.0" />
+      <point x="1029.25" y="284.0" />
+      <point x="67.75" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry" target="pl.edu.uj.jnode.engine.eventloop.EventLoopThread">
+      <point x="0.0" y="-19.0" />
+      <point x="961.5" y="171.0" />
+      <point x="941.625" y="171.0" />
+      <point x="-50.25" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.cluster.JarHandler">
+      <point x="12.875" y="-19.0" />
+      <point x="409.7162698412699" y="254.0" />
+      <point x="480.5" y="254.0" />
+      <point x="0.0" y="19.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.JarHandler" target="pl.edu.uj.jnode.engine.workerpool.WorkerPool">
+      <point x="47.33333333333337" y="-19.0" />
+      <point x="527.8333333333334" y="171.0" />
+      <point x="537.3392857142857" y="171.0" />
+      <point x="-50.33333333333337" y="19.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="555.5" y="171.0" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
