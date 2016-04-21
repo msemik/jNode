@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.springframework.core.task.TaskExecutor</OriginalElement>
+  <nodes>
+    <node x="0.0" y="220.0">pl.edu.uj.jnode.userlib.Callback</node>
+    <node x="0.0" y="0.0">java.util.concurrent.Callable</node>
+    <node x="20.5" y="130.0">pl.edu.uj.jnode.userlib.Task</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.userlib.Task" target="java.util.concurrent.Callable">
+      <point x="0.0" y="-22.5" />
+      <point x="0.0" y="40.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="246.5" y="310.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

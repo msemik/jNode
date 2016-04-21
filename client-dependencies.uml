@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>MODULES</ID>
+  <OriginalElement>mdl-jnode-platform</OriginalElement>
+  <nodes>
+    <node x="187.0" y="133.0">mdl-jnode-client</node>
+    <node x="301.0" y="0.0">mdl-jnode-sample-quicksort</node>
+    <node x="0.0" y="47.0">mdl-jnode-platform</node>
+    <node x="163.0" y="335.0">mdl-jnode-sample-factorial</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="mdl-jnode-sample-factorial" target="mdl-jnode-client">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="mdl-jnode-sample-quicksort" target="mdl-jnode-client">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="mdl-jnode-platform" target="mdl-jnode-client">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="318.0" y="225.0" />
+  <SelectedNodes />
+  <Categories />
+</Diagram>
+

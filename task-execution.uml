@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.springframework.core.task.TaskExecutor</OriginalElement>
+  <nodes>
+    <node x="72.0" y="271.0">pl.edu.uj.jnode.engine.DefaultTaskReceiver</node>
+    <node x="274.0" y="130.0">pl.edu.uj.jnode.userlib.TaskExecutorFactory.UserTaskReceiver</node>
+    <node x="338.0" y="0.0">pl.edu.uj.jnode.userlib.TaskExecutorFactory</node>
+    <node x="0.0" y="0.0">pl.edu.uj.jnode.userlib.TaskExecutor</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.userlib.TaskExecutorFactory" target="pl.edu.uj.jnode.userlib.TaskExecutorFactory.UserTaskReceiver">
+      <point x="95.0" y="40.0" />
+      <point x="623.0" y="105.0" />
+      <point x="539.0" y="105.0" />
+      <point x="106.0" y="-40.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.userlib.TaskExecutorFactory.UserTaskReceiver" target="pl.edu.uj.jnode.userlib.TaskExecutor">
+      <point x="-106.0" y="-40.0" />
+      <point x="327.0" y="105.0" />
+      <point x="159.0" y="105.0" />
+      <point x="0.0" y="40.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.userlib.TaskExecutorFactory.UserTaskReceiver" target="pl.edu.uj.jnode.userlib.TaskExecutorFactory">
+      <point x="0.0" y="-40.0" />
+      <point x="-95.0" y="40.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="434.5" y="262.0" />
+  <SelectedNodes>
+    <node>pl.edu.uj.jnode.userlib.TaskExecutorFactory.UserTaskReceiver</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
