@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>pl.edu.uj.jnode.userlib.Task</OriginalElement>
+  <nodes>
+    <node x="156.5" y="190.0">pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask</node>
+    <node x="279.0" y="285.0">pl.edu.uj.jnode.engine.workerpool.MainClassWorkerPoolTask</node>
+    <node x="177.0" y="95.0">pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask</node>
+    <node x="0.0" y="285.0">pl.edu.uj.jnode.engine.workerpool.DefaultWorkerPoolTask</node>
+    <node x="229.0" y="0.0">pl.edu.uj.jnode.userlib.Task</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.engine.workerpool.MainClassWorkerPoolTask" target="pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask">
+      <point x="0.0" y="-22.5" />
+      <point x="417.5" y="260.0" />
+      <point x="332.0" y="260.0" />
+      <point x="58.5" y="22.5" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.workerpool.DefaultWorkerPoolTask" target="pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask">
+      <point x="0.0" y="-22.5" />
+      <point x="129.5" y="260.0" />
+      <point x="215.0" y="260.0" />
+      <point x="-58.5" y="22.5" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask" target="pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask">
+      <point x="0.0" y="-22.5" />
+      <point x="0.0" y="22.5" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask" target="pl.edu.uj.jnode.userlib.Task">
+      <point x="0.0" y="-22.5" />
+      <point x="0.0" y="22.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="422.5" y="117.5" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
