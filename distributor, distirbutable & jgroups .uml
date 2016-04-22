@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>pl.edu.uj.jnode.cluster.Distributor</OriginalElement>
+  <nodes>
+    <node x="145.0" y="0.0">pl.edu.uj.jnode.cluster.Distributor</node>
+    <node x="0.0" y="0.0">pl.edu.uj.jnode.cluster.MessageGateway</node>
+    <node x="43.5" y="80.0">pl.edu.uj.jnode.cluster.JGroups</node>
+    <node x="0.0" y="235.0">pl.edu.uj.jnode.cluster.message.TaskExecutionCompleted</node>
+    <node x="148.5" y="-87.0">pl.edu.uj.jnode.cluster.DefaultDistributor</node>
+    <node x="33.5" y="155.0">pl.edu.uj.jnode.cluster.Distributable</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.cluster.DefaultDistributor" target="pl.edu.uj.jnode.cluster.Distributor">
+      <point x="0.0" y="-15.0" />
+      <point x="22.5" y="15.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.JGroups" target="pl.edu.uj.jnode.cluster.Distributor">
+      <point x="19.0" y="-15.0" />
+      <point x="100.5" y="55.0" />
+      <point x="167.5" y="55.0" />
+      <point x="-22.5" y="15.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.JGroups" target="pl.edu.uj.jnode.cluster.MessageGateway">
+      <point x="-19.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.message.TaskExecutionCompleted" target="pl.edu.uj.jnode.cluster.Distributable">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="138.5" y="93.0" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
