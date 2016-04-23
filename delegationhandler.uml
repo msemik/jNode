@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler</OriginalElement>
+  <nodes>
+    <node x="321.9818181818183" y="66.0">pl.edu.uj.jnode.cluster.delegation.DelegationHandler</node>
+    <node x="67.9818181818182" y="299.0">pl.edu.uj.jnode.cluster.delegation.DelegationEvent</node>
+    <node x="153.64886363636356" y="476.0">pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent</node>
+    <node x="703.7443181818182" y="476.0">pl.edu.uj.jnode.cluster.delegation.DefaultState</node>
+    <node x="629.9818181818182" y="0.0">pl.edu.uj.jnode.cluster.delegation.State</node>
+    <node x="378.9818181818183" y="266.0">pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler" target="pl.edu.uj.jnode.cluster.delegation.State">
+      <point x="87.0" y="-70.0" />
+      <point x="639.9818181818183" y="246.0" />
+      <point x="844.8568181818182" y="246.0" />
+      <point x="-71.625" y="103.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultState" target="pl.edu.uj.jnode.cluster.delegation.DelegationHandler">
+      <point x="0.0" y="-59.0" />
+      <point x="800.2443181818182" y="436.0" />
+      <point x="857.2943181818182" y="436.0" />
+      <point x="857.2943181818182" y="226.0" />
+      <point x="561.9818181818183" y="226.0" />
+      <point x="96.0" y="37.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultState" target="pl.edu.uj.jnode.cluster.delegation.DelegationEvent">
+      <point x="-77.19999999999993" y="-59.0" />
+      <point x="723.0443181818182" y="446.0" />
+      <point x="310.4818181818182" y="446.0" />
+      <point x="97.0" y="37.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent" target="pl.edu.uj.jnode.cluster.delegation.State">
+      <point x="-36.400000000000034" y="-59.0" />
+      <point x="208.24886363636352" y="446.0" />
+      <point x="57.4818181818182" y="446.0" />
+      <point x="57.4818181818182" y="236.0" />
+      <point x="701.6068181818182" y="236.0" />
+      <point x="-214.875" y="103.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent" target="pl.edu.uj.jnode.cluster.delegation.DelegationHandler">
+      <point x="-72.80000000000001" y="-59.0" />
+      <point x="171.84886363636355" y="456.0" />
+      <point x="0.0" y="456.0" />
+      <point x="0.0" y="226.0" />
+      <point x="369.9818181818183" y="226.0" />
+      <point x="-96.0" y="37.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent" target="pl.edu.uj.jnode.cluster.delegation.DelegationEvent">
+      <point x="0.0" y="-59.0" />
+      <point x="244.64886363636356" y="436.0" />
+      <point x="116.4818181818182" y="436.0" />
+      <point x="-97.0" y="37.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultState" target="pl.edu.uj.jnode.cluster.delegation.State">
+      <point x="38.60000000000002" y="-59.0" />
+      <point x="838.8443181818182" y="446.0" />
+      <point x="995.0613636363636" y="446.0" />
+      <point x="995.0613636363636" y="246.0" />
+      <point x="988.1068181818182" y="246.0" />
+      <point x="71.625" y="103.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultState" target="pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler">
+      <point x="-38.59999999999991" y="-59.0" />
+      <point x="761.6443181818183" y="436.0" />
+      <point x="639.9818181818183" y="436.0" />
+      <point x="87.0" y="70.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.DefaultTaskDelegationEvent" target="pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler">
+      <point x="72.80000000000001" y="-59.0" />
+      <point x="317.44886363636357" y="456.0" />
+      <point x="465.9818181818183" y="456.0" />
+      <point x="-87.0" y="70.0" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.delegation.FSMBasedDelegationHandler" target="pl.edu.uj.jnode.cluster.delegation.DelegationHandler">
+      <point x="-87.0" y="-70.0" />
+      <point x="0.0" y="37.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="602.0" y="313.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Fields</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>public</VISIBILITY>
+</Diagram>
+
