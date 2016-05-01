@@ -1,16 +1,20 @@
 package pl.edu.uj.jnode.main;
 
+import com.sun.xml.internal.ws.util.CompletedFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import pl.edu.uj.jnode.main.options.OptionsEventsDispatcher;
+
+import java.util.concurrent.*;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -32,7 +36,9 @@ public class JNodeApplication {
 
     public void initialize() {
         OptionsEventsDispatcher optionsEventsDispatcher = applicationContext.getBean(OptionsEventsDispatcher.class);
-        optionsEventsDispatcher.dispatchOptionsEvents(args);
+        if (!optionsEventsDispatcher.dispatchOptionsEvents(args)) {
+            return;
+        }
 
         applicationContext.publishEvent(new OptionsDispatchedEvent(applicationContext));
         applicationContext.publishEvent(new ApplicationInitializedEvent(applicationContext));
@@ -42,5 +48,28 @@ public class JNodeApplication {
 
     public boolean isInitialized() {
         return isInitialized;
+    }
+
+    @EventListener
+    public void on(ApplicationShutdownEvent event) {
+        delayedApplicationContextShutdown();
+    }
+
+    private void delayedApplicationContextShutdown() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (applicationContext instanceof ConfigurableApplicationContext) {
+                ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext) this.applicationContext;
+                if (applicationContext.isActive()) {
+                    applicationContext.close();
+                }
+            } else {
+                logger.error("invalid application context class: " + applicationContext.getClass().getCanonicalName());
+            }
+        });
     }
 }

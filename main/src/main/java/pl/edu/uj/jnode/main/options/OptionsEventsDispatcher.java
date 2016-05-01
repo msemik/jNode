@@ -34,7 +34,8 @@ public class OptionsEventsDispatcher {
         return poolSize;
     }
 
-    public void dispatchOptionsEvents(String[] args) {
+    public boolean dispatchOptionsEvents(String[] args) {
+        boolean validInitialization = true;
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
         try {
@@ -61,12 +62,15 @@ public class OptionsEventsDispatcher {
                 if (p < 1) {
                     String message = "Invalid pool size: " + p;
                     eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, message));
+                    validInitialization = false;
                 }
                 this.poolSize = ofNullable(p);
                 eventPublisher.publishEvent(new PoolSizeOptionEvent(p, this));
             }
         } catch (ParseException e) {
             eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e.getMessage()));
+            validInitialization = false;
         }
+        return validInitialization;
     }
 }

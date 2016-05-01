@@ -87,6 +87,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
         if (channel != null) {
             channel.close();
         }
+        executorService.shutdownNow();
     }
 
     @Override
