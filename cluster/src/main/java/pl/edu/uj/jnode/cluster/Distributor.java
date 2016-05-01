@@ -6,7 +6,6 @@ import pl.edu.uj.jnode.cluster.task.ExternalTask;
 import pl.edu.uj.jnode.cluster.task.SerializableTaskResultWrapper;
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
 import pl.edu.uj.jnode.engine.event.ExternalSubTaskReceivedEvent;
-import pl.edu.uj.jnode.engine.event.TaskCancelledEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolOverflowEvent;
 
@@ -27,8 +26,6 @@ public interface Distributor {
     void on(TaskFinishedEvent event);
 
     void on(CancelJarJobsEvent event);
-
-    void on(TaskCancelledEvent event);
 
     void on(ExternalSubTaskReceivedEvent event);
 

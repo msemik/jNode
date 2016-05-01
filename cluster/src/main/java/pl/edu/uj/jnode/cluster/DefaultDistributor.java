@@ -147,21 +147,6 @@ public class DefaultDistributor implements Distributor {
 
     @Override
     @EventListener
-    public void on(TaskCancelledEvent event) {
-        if (!event.getTask().isExternal()) {
-            return;
-        }
-        ExternalTask task = (ExternalTask) event.getTask();
-        if (event.getOrigin() == INTERNAL) {
-            taskService.sry(task.getSourceNodeId(), task.getTaskId());
-        }
-        if (!externalTaskRegistry.remove(task)) {
-            logger.debug("Task absent in registry: " + task);
-        }
-    }
-
-    @Override
-    @EventListener
     public void on(ExternalSubTaskReceivedEvent event) {
         ExternalTask externalTask = new ExternalTask(event.getTask(), event.getSourceNodeId());
 

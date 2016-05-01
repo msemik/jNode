@@ -1,6 +1,5 @@
 package pl.edu.uj.jnode.main;
 
-import com.sun.xml.internal.ws.util.CompletedFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
