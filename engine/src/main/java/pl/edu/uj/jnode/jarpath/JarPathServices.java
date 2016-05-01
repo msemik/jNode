@@ -1,6 +1,6 @@
 package pl.edu.uj.jnode.jarpath;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -40,6 +40,8 @@ public class JarPathServices {
             pathToJarPath = path;
         } else {
             String applicationDir = JNodeApplication.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            if(SystemUtils.IS_OS_WINDOWS && applicationDir.startsWith("/"))
+                applicationDir = applicationDir.substring(1);
             pathToJarPath = Paths.get(applicationDir);
             if (StringUtils.endsWithAny(pathToJarPath.toString(), ".jar", "classes")) {
                 pathToJarPath = pathToJarPath.getParent().resolve(path);
