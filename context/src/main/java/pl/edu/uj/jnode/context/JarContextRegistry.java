@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import pl.edu.uj.jnode.engine.event.JarJobsCompletedEvent;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.jarpath.NewJarCreatedEvent;
 
@@ -37,6 +38,18 @@ public class JarContextRegistry {
             return jarContext;
         }
         return createContext(jar);
+    }
+
+    @EventListener
+    public void on(JarJobsCompletedEvent event) {
+        Jar jar = event.getJar();
+        if (jar.isValidExistingJar()) {
+            removeContext(jar);
+        }
+    }
+
+    private JarContext removeContext(Jar jar) {
+        return jarJarContextMap.remove(jar);
     }
 
     public boolean hasFor(Jar jar) {

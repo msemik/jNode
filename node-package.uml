@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>pl.edu.uj.jnode.cluster.node</OriginalElement>
+  <nodes>
+    <node x="0.0" y="79.0">pl.edu.uj.jnode.cluster.node.NearestDistancePriority</node>
+    <node x="51.5" y="0.0">pl.edu.uj.jnode.cluster.node.Priority</node>
+    <node x="0.0" y="232.0">pl.edu.uj.jnode.cluster.node.ArrivalDistance</node>
+    <node x="20.5" y="153.0">pl.edu.uj.jnode.cluster.node.Distance</node>
+    <node x="117.0" y="306.0">pl.edu.uj.jnode.cluster.node.Node</node>
+    <node x="173.0" y="153.0">pl.edu.uj.jnode.cluster.node.NodeFactory</node>
+    <node x="0.0" y="306.0">pl.edu.uj.jnode.cluster.node.Nodes</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="pl.edu.uj.jnode.cluster.node.NearestDistancePriority" target="pl.edu.uj.jnode.cluster.node.Priority">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="pl.edu.uj.jnode.cluster.node.ArrivalDistance" target="pl.edu.uj.jnode.cluster.node.Distance">
+      <point x="0.0" y="-14.5" />
+      <point x="0.0" y="14.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="142.0" y="167.5" />
+  <SelectedNodes>
+    <node>pl.edu.uj.jnode.cluster.node.Priority</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
