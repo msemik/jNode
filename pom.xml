@@ -19,6 +19,7 @@
         <module>examples/cdi</module>
         <module>examples/factorial</module>
         <module>examples/quicksort</module>
+        <module>examples/jnode-sample-password-cracker</module>
     </modules>
     <packaging>pom</packaging>
 
