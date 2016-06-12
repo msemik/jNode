@@ -32,5 +32,16 @@ public class TaskExecutorFactory {
                 e.printStackTrace();
             }
         }
+
+        @Override
+        public int getAvailableWorkers() {
+            throw new UnsupportedOperationException("funny guy");
+        }
+
+        @Override
+        public Object getBean(Class<?> passwordCrackerContextClass) {
+            throw new UnsupportedOperationException("funny guy");
+        }
+
     }
 }
