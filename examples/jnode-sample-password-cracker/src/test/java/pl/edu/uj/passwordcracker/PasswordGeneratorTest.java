@@ -9,10 +9,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 
-public class PasswordCrackerTest {
+public class PasswordGeneratorTest {
     public static final String ABC = "abc";
-    private PasswordCracker passwordCracker;
-    private PasswordCracker secondPasswordCracker;
+    private PasswordGenerator passwordCracker;
+    private PasswordGenerator secondPasswordCracker;
 
     @Test
     public void hasNext() throws Exception {
@@ -37,8 +37,8 @@ public class PasswordCrackerTest {
 
     }
 
-    private PasswordCracker createPasswordCrackerWithLimit(int limit) {
-        return new PasswordCracker(new byte[1], ABC, BigInteger.valueOf(limit), 1);
+    private PasswordGenerator createPasswordCrackerWithLimit(int limit) {
+        return new PasswordGenerator(new byte[1], ABC, BigInteger.valueOf(limit), 1);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class PasswordCrackerTest {
 
     }
 
-    private void assertNextStringsEqual(PasswordCracker passwordCracker, String... expectedStrings) {
+    private void assertNextStringsEqual(PasswordGenerator passwordCracker, String... expectedStrings) {
         for (String expectedString : expectedStrings) {
             assertThat(passwordCracker.next(), equalTo(expectedString));
         }
@@ -135,7 +135,7 @@ public class PasswordCrackerTest {
         assertLastIs(secondPasswordCracker, "aaccb");
     }
 
-    private void assertLastIs(PasswordCracker passwordCracker, String lastString) {
+    private void assertLastIs(PasswordGenerator passwordCracker, String lastString) {
         String l = null;
         int i = 0;
         while (passwordCracker.hasNext()) {
@@ -201,7 +201,7 @@ public class PasswordCrackerTest {
         assertLastIs(secondPasswordCracker, "acacbbabacbab");
     }
 
-    private void stopAt(PasswordCracker passwordCracker, String expectedString) {
+    private void stopAt(PasswordGenerator passwordCracker, String expectedString) {
         int i = 0;
         Set<String> s = new HashSet<>();
         while (true) {
@@ -219,16 +219,16 @@ public class PasswordCrackerTest {
     }
 
 
-    private void assertHasNextIs(PasswordCracker passwordCracker, boolean hasNex) {
+    private void assertHasNextIs(PasswordGenerator passwordCracker, boolean hasNex) {
         assertThat(passwordCracker.hasNext(), equalTo(hasNex));
     }
 
-    private PasswordCracker createPasswordCrackerWithInitialSequenceFactorAndLimit(String initialSequence, int factor, int limit) {
+    private PasswordGenerator createPasswordCrackerWithInitialSequenceFactorAndLimit(String initialSequence, int factor, int limit) {
         byte[] iterationPositions = new byte[initialSequence.length()];
         for (int i = 0; i < initialSequence.length(); i++) {
             iterationPositions[i] = (byte) ABC.indexOf(initialSequence.charAt(i));
         }
-        return new PasswordCracker(iterationPositions, ABC, BigInteger.valueOf(limit), factor);
+        return new PasswordGenerator(iterationPositions, ABC, BigInteger.valueOf(limit), factor);
     }
 
 }

@@ -12,18 +12,18 @@ import static java.math.BigInteger.*;
 /**
  * Created by michal on 2016-06-12.
  */
-public class PasswordCracker {
+public class PasswordGenerator {
     private static BigInteger NO_LIMIT = BigInteger.valueOf(-1);
     private byte[] iterationPointers;
     private String charSet;
     private BigInteger iterationsLimit = NO_LIMIT;
     private int jobsSeparationFactor;
 
-    public PasswordCracker(String charSet, int jobsSeparationFactor) {
+    public PasswordGenerator(String charSet, int jobsSeparationFactor) {
         this(new byte[1], charSet, NO_LIMIT, jobsSeparationFactor);
     }
 
-    protected PasswordCracker(byte[] iterationPointers, String charSet, BigInteger iterationsLimit, int jobsSeparationFactor) {
+    protected PasswordGenerator(byte[] iterationPointers, String charSet, BigInteger iterationsLimit, int jobsSeparationFactor) {
         this.iterationPointers = iterationPointers;
         this.charSet = charSet;
         this.iterationsLimit = iterationsLimit;
@@ -50,12 +50,12 @@ public class PasswordCracker {
     }
 
     /**
-     * @return separated part of permutations which need to be checked. Permutations are represented as limited PasswordCracker. number of permutations
+     * @return separated part of permutations which need to be checked. Permutations are represented as limited PasswordGenerator. number of permutations
      * is dependant on jobsSeparationFactor parameter. When length of word is already bigger than jobsSeparationFactor, then number of extracted permutations
      * will be equal to charSet.length() ^ jobsSeparationFactor. Otherwise it may be about twice larger.
      *
      */
-    public PasswordCracker separateJobSet() {
+    public PasswordGenerator separateJobSet() {
         int baseJobsSeparationLimit = ArithmeticUtils.pow(charSet.length(), jobsSeparationFactor);
         byte[] copyOfIterationPointers = Arrays.copyOf(iterationPointers, iterationPointers.length);
 
@@ -81,7 +81,7 @@ public class PasswordCracker {
                 iterationsLimit = ZERO;
             }
         }
-        return new PasswordCracker(copyOfIterationPointers, charSet, copyIterationsLimit, jobsSeparationFactor);
+        return new PasswordGenerator(copyOfIterationPointers, charSet, copyIterationsLimit, jobsSeparationFactor);
 
     }
 
