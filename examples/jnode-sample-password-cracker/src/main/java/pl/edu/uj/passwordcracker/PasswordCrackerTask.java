@@ -12,16 +12,17 @@ import java.security.*;
 public class PasswordCrackerTask implements Task {
     private MessageDigest md5;
     private PasswordGenerator passwordGenerator;
+    private byte[] encryptedPassword;
     @InjectContext
     private PasswordCrackerContext passwordCrackerContext;
 
-    public PasswordCrackerTask(PasswordGenerator passwordGenerator) {
+    public PasswordCrackerTask(PasswordGenerator passwordGenerator, byte[] encryptedPassword) {
         this.passwordGenerator = passwordGenerator;
+        this.encryptedPassword = encryptedPassword;
     }
 
     @Override
     public Serializable call() throws Exception {
-        byte[] encryptedPassword = passwordCrackerContext.getEncryptedPassword();
         while (passwordGenerator.hasNext()) {
             String candidateForPassword = passwordGenerator.next();
             byte[] digest = encrypt(candidateForPassword.getBytes());

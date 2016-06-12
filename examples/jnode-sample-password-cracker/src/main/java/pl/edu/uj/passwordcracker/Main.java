@@ -20,11 +20,11 @@ public class Main {
         System.out.println("Provide password you wish to hack");
         Scanner scanner = new Scanner(System.in);
         String line = scanner.nextLine();
-        byte[] encryptedPassword = encryptUserPassword(line);
         TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
         PasswordCrackerContext passwordCrackerContext = (PasswordCrackerContext) taskExecutor.getBean(PasswordCrackerContext.class);
-        PasswordGenerator passwordGenerator = new PasswordGenerator(CHARSET1, JOBS_SEPARATION_FACTOR);
+        byte[] encryptedPassword = encryptUserPassword(line);
         passwordCrackerContext.setEncryptedPassword(encryptedPassword);
+        PasswordGenerator passwordGenerator = new PasswordGenerator(CHARSET1, JOBS_SEPARATION_FACTOR);
         passwordCrackerContext.setPasswordGenerator(passwordGenerator);
 
         PasswordCrackerCallback callback = new PasswordCrackerCallback(taskExecutor);

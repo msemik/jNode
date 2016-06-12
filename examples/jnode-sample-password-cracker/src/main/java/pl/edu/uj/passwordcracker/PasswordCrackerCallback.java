@@ -24,10 +24,11 @@ public class PasswordCrackerCallback implements Callback {
         } else {
             int availableWorkers = taskExecutor.getAvailableWorkers();
             PasswordGenerator passwordGenerator = passwordCrackerContext.getPasswordGenerator();
+            byte[] encryptedPassword = passwordCrackerContext.getEncryptedPassword();
 
             for (int i = 0; i < availableWorkers + 1; i++) {
                 PasswordGenerator separatedJobsGenerator = passwordGenerator.separateJobSet();
-                PasswordCrackerTask task = new PasswordCrackerTask(separatedJobsGenerator);
+                PasswordCrackerTask task = new PasswordCrackerTask(separatedJobsGenerator, encryptedPassword);
                 taskExecutor.doAsync(task, this);
             }
         }
