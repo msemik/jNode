@@ -22,7 +22,7 @@ public class PasswordCrackerTask implements Task {
         while (passwordGenerator.hasNext()) {
             String candidateForPassword = passwordGenerator.next();
             if (++i == 1) {
-                //System.out.println(taskId + " starting cracking since " + candidateForPassword);
+                System.out.println(taskId + " starting cracking since " + candidateForPassword);
             }
             //System.out.println(taskId + " trying " + candidateForPassword);
 
@@ -33,7 +33,7 @@ public class PasswordCrackerTask implements Task {
                 return candidateForPassword;
             }
         }
-        //System.out.println(taskId + " finishing after " + i + " tries.");
+        System.out.println(taskId + " finishing after " + i + " tries.");
         return "";
     }
 

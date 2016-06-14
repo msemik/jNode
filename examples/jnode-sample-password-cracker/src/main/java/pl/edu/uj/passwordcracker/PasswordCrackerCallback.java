@@ -28,7 +28,7 @@ public class PasswordCrackerCallback implements Callback {
         } else {
             long availableWorkers = taskExecutor.getAvailableWorkers();
             PasswordGenerator passwordGenerator = passwordCrackerContext.getPasswordGenerator();
-            //System.out.println("PasswordCrackerCallback: Scheduling " + (availableWorkers + 1) + " tasks");
+            System.out.println("PasswordCrackerCallback: Scheduling " + (availableWorkers + 1) + " tasks");
 
             byte[] encryptedPassword = passwordCrackerContext.getEncryptedPassword();
 

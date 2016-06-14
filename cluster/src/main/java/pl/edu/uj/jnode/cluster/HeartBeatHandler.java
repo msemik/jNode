@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class HeartBeatHandler {
-    static Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(HeartBeatHandler.class);
     @Autowired
     private WorkerPool workerPool;
     @Autowired
@@ -36,10 +36,6 @@ public class HeartBeatHandler {
             return;
         }
         PrimaryHeartBeat heartBeat = PrimaryHeartBeat.create(workerPool.poolSize(), workerPool.jobsInPool());
-        if (!forceHeartBeat.getAndSet(false) && last.equals(heartBeat)) {
-            return;
-        }
-
         messageGateway.send(heartBeat);
         last = heartBeat;
     }

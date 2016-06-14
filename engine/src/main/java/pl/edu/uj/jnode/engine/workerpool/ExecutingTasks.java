@@ -21,7 +21,6 @@ import static java.util.Collections.emptyList;
 public class ExecutingTasks {
     private Map<Jar, List<Future<Serializable>>> futureMap = new HashMap<>();
     private Logger logger = LoggerFactory.getLogger(ExecutingTasks.class);
-    private String ids;
 
     public synchronized void put(Jar jar, Future<Serializable> future) {
         List<Future<Serializable>> futures = futureMap.getOrDefault(jar, new ArrayList<>());
@@ -34,8 +33,7 @@ public class ExecutingTasks {
         boolean result = futures.removeIf(f -> f == future);
         if (futures.isEmpty()) {
             futureMap.remove(jar);
-        }
-        return result;
+        }        return result;
     }
 
     @Override
