@@ -33,9 +33,10 @@ public class SerializableCallbackWrapper implements Serializable {
         if (serializedCallback == null) {
             return;
         }
-        try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedCallback);
-            ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader());
+        try (
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedCallback);
+                ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader())
+        ) {
             Object o = stream.readObject();
             setCallback((Callback) o);
         } catch (IOException | ClassNotFoundException e) {

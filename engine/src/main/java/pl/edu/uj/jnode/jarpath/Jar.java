@@ -235,8 +235,7 @@ public class Jar {
     }
 
     private String getMainClassName() {
-        try {
-            JarFile jarFile = new JarFile(getAbsolutePathAsString());
+        try(JarFile jarFile = new JarFile(getAbsolutePathAsString())) {
             Manifest manifest = jarFile.getManifest();
             Attributes mainAttributes = manifest.getMainAttributes();
 

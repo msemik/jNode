@@ -35,11 +35,12 @@ public class SerializableTaskResultWrapper implements Serializable {
         if (serializedTaskResultOrException == null) {
             return;
         }
-        try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTaskResultOrException);
-            ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader());
-            Object o = stream.readObject();
-            setTaskResultOrException((Serializable) o);
+        try (
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTaskResultOrException);
+                ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader())
+            ) {
+                Object o = stream.readObject();
+                setTaskResultOrException((Serializable) o);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

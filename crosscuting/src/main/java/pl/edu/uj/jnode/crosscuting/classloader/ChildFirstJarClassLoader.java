@@ -2,59 +2,69 @@ package pl.edu.uj.jnode.crosscuting.classloader;
 
 import sun.misc.CompoundEnumeration;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.*;
 import java.util.Enumeration;
 
-public class ChildFirstJarClassLoader extends URLClassLoader {
+public class ChildFirstJarClassLoader extends URLClassLoader
+{
     private final ClassLoader parent;
     private final ChildOnlyJarClassLoader childOnlyJarClassLoader;
     private Mode mode = Mode.CHILD_FIRST;
 
-    public ChildFirstJarClassLoader(String pathToJar) {
+    public ChildFirstJarClassLoader(String pathToJar)
+    {
         super(pathToUrls(pathToJar), null);
         this.parent = this.getClass().getClassLoader();
         this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    public ChildFirstJarClassLoader(String pathToJar, ClassLoader parent) {
+    public ChildFirstJarClassLoader(String pathToJar, ClassLoader parent)
+    {
         super(pathToUrls(pathToJar), null);
         this.parent = parent;
         this.childOnlyJarClassLoader = new ChildOnlyJarClassLoader(this);
     }
 
-    protected static URL[] pathToUrls(String pathToJar) {
-        try {
+    protected static URL[] pathToUrls(String pathToJar)
+    {
+        try
+        {
             pathToJar = URLEncoder.encode(pathToJar, "UTF-8").replace("+", "%20");
-            return new URL[] {new URL("jar:file:" + pathToJar + "!/")};
-        } catch (MalformedURLException | UnsupportedEncodingException e) {
+            return new URL[] { new URL("jar:file:" + pathToJar + "!/") };
+        }
+        catch(MalformedURLException | UnsupportedEncodingException e)
+        {
             throw new RuntimeException(e);
         }
     }
 
-    protected Mode getMode() {
+    protected Mode getMode()
+    {
         return mode;
     }
 
-    protected void setMode(Mode mode) {
+    protected void setMode(Mode mode)
+    {
         this.mode = mode;
     }
 
     @Override
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
-        try {
+    public Class<?> loadClass(String name) throws ClassNotFoundException
+    {
+        try
+        {
             Class<?> aClass = findLoadedClass(name);
-            if (aClass != null) {
+            if(aClass != null)
+            {
                 return aClass;
             }
             return super.loadClass(name);
-        } catch (ClassNotFoundException e) {
-            if (!canCallParent()) {
+        }
+        catch(ClassNotFoundException e)
+        {
+            if(!canCallParent())
+            {
                 throw e;
             }
             return parent.loadClass(name);
@@ -62,17 +72,21 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
     }
 
     @Override
-    public URL getResource(String name) {
+    public URL getResource(String name)
+    {
         URL resource = super.getResource(name);
-        if (resource != null || !canCallParent()) {
+        if(resource != null || !canCallParent())
+        {
             return resource;
         }
         return parent.getResource(name);
     }
 
     @Override
-    public Enumeration<URL> getResources(String name) throws IOException {
-        if (!canCallParent()) {
+    public Enumeration<URL> getResources(String name) throws IOException
+    {
+        if(!canCallParent())
+        {
             return super.getResources(name);
         }
 
@@ -94,46 +108,57 @@ public class ChildFirstJarClassLoader extends URLClassLoader {
     }
 
     @Override
-    public void setDefaultAssertionStatus(boolean enabled) {
+    public void setDefaultAssertionStatus(boolean enabled)
+    {
         super.setDefaultAssertionStatus(enabled);
-        if (canCallParent()) {
+        if(canCallParent())
+        {
             parent.setDefaultAssertionStatus(enabled);
         }
     }
 
     @Override
-    public void setPackageAssertionStatus(String packageName, boolean enabled) {
+    public void setPackageAssertionStatus(String packageName, boolean enabled)
+    {
         super.setPackageAssertionStatus(packageName, enabled);
-        if (canCallParent()) {
+        if(canCallParent())
+        {
             parent.setPackageAssertionStatus(packageName, enabled);
         }
     }
 
     @Override
-    public void setClassAssertionStatus(String className, boolean enabled) {
+    public void setClassAssertionStatus(String className, boolean enabled)
+    {
         super.setClassAssertionStatus(className, enabled);
-        if (canCallParent()) {
+        if(canCallParent())
+        {
             parent.setClassAssertionStatus(className, enabled);
         }
     }
 
     @Override
-    public void clearAssertionStatus() {
+    public void clearAssertionStatus()
+    {
         super.clearAssertionStatus();
-        if (canCallParent()) {
+        if(canCallParent())
+        {
             parent.clearAssertionStatus();
         }
     }
 
-    private boolean canCallParent() {
+    private boolean canCallParent()
+    {
         return parent != null && mode != Mode.CHILD_ONLY;
     }
 
-    public ChildOnlyJarClassLoader getChildOnlyJarClassLoader() {
+    public ChildOnlyJarClassLoader getChildOnlyJarClassLoader()
+    {
         return childOnlyJarClassLoader;
     }
 
-    protected enum Mode {
+    protected enum Mode
+    {
         CHILD_FIRST, CHILD_ONLY
     }
 }

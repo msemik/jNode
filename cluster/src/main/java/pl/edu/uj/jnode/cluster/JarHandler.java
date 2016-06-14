@@ -17,7 +17,7 @@ import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.jarpath.JarFactory;
 import pl.edu.uj.jnode.jarpath.JarPathManager;
 
-import java.io.ByteArrayInputStream;
+import java.io.*;
 import java.util.List;
 
 @Component
@@ -64,9 +64,15 @@ public class JarHandler {
 
     public void onJarDelivery(String nodeId, String fileName, byte[] jarContent) {
         logger.debug(fileName + " delivery from " + nodeId);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(jarContent);
         Jar jar = jarFactory.getFor(nodeId, fileName);
-        jar.storeJarContent(inputStream);
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(jarContent))
+        {
+            jar.storeJarContent(inputStream);
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException(e);
+        }
         jar.storeDefaultProperties();
 
         List<ExternalTask> awaitingTasks;
