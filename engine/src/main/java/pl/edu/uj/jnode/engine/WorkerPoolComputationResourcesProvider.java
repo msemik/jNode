@@ -12,7 +12,7 @@ public class WorkerPoolComputationResourcesProvider implements ComputationResour
 
     @Override public long getAvailableWorkers()
     {
-        return workerPool.poolSize() - workerPool.jobsInPool();
+        return workerPool.poolSize() - Math.min(workerPool.jobsInPool(), workerPool.poolSize());
     }
 
     @Override public long getTotalWorkers()
