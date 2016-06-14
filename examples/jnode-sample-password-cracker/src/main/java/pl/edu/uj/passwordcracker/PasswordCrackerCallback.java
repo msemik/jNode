@@ -1,6 +1,6 @@
 package pl.edu.uj.passwordcracker;
 
-import pl.edu.uj.jnode.context.*;
+import pl.edu.uj.jnode.context.InjectContext;
 import pl.edu.uj.jnode.userlib.*;
 
 import java.io.Serializable;
@@ -24,10 +24,10 @@ public class PasswordCrackerCallback implements Callback {
             foundPassword = true;
             System.out.println("PasswordCrackerCallback: Found password: " + taskResult);
         } else {
-            if(foundPassword)
+            if (foundPassword) {
                 return;
+            }
             long availableWorkers = taskExecutor.getAvailableWorkers();
-            long totalWorkers = taskExecutor.getTotalWorkers();
             PasswordGenerator passwordGenerator = passwordCrackerContext.getPasswordGenerator();
             System.out.println("PasswordCrackerCallback: Scheduling " + (availableWorkers + 1) + " tasks");
 

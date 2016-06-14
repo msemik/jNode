@@ -1,9 +1,7 @@
 package pl.edu.uj.jnode.jarpath;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Properties;
 
 /**
@@ -21,7 +19,7 @@ public class JarProperties {
 
         if (loadIfExists && isStored()) {
             Properties p = new Properties();
-            try (InputStream propertiesStream = Files.newInputStream(propertiesPath)){
+            try (InputStream propertiesStream = Files.newInputStream(propertiesPath)) {
                 p.load(propertiesStream);
                 executionState = JarExecutionState.valueOf(p.getProperty("executionState"));
             } catch (IOException e) {
@@ -73,8 +71,7 @@ public class JarProperties {
         Properties p = new Properties();
         p.setProperty("nodeId", nodeId);
         p.setProperty("executionState", executionState.toString());
-        try {
-            OutputStream propertiesStream = Files.newOutputStream(propertiesPath);
+        try (OutputStream propertiesStream = Files.newOutputStream(propertiesPath)) {
             p.store(propertiesStream, "jar path properties");
         } catch (IOException e) {
             throw new RuntimeException(e);

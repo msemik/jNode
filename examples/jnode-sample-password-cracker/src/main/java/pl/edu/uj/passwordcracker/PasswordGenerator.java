@@ -13,7 +13,7 @@ import static java.math.BigInteger.*;
 /**
  * Created by michal on 2016-06-12.
  */
-public class PasswordGenerator implements Serializable{
+public class PasswordGenerator implements Serializable {
     private static BigInteger NO_LIMIT = BigInteger.valueOf(-1);
     private byte[] iterationPointers;
     private String charSet;
@@ -54,7 +54,6 @@ public class PasswordGenerator implements Serializable{
      * @return separated part of permutations which need to be checked. Permutations are represented as limited PasswordGenerator. number of permutations
      * is dependant on jobsSeparationFactor parameter. When length of word is already bigger than jobsSeparationFactor, then number of extracted permutations
      * will be equal to charSet.length() ^ jobsSeparationFactor. Otherwise it may be about twice larger.
-     *
      */
     public PasswordGenerator separateJobSet() {
         int baseJobsSeparationLimit = ArithmeticUtils.pow(charSet.length(), jobsSeparationFactor);
