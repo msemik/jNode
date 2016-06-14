@@ -22,9 +22,16 @@ public class JNodeOptions {
 
         options.addOption(Option.builder("n").hasArgs().desc("node identifier").longOpt("nodeId").build());
 
-        options.addOption(Option.builder("p").hasArgs().type(Integer.class).desc("size of worker pool used by this node").longOpt("pool-size").build());
+        options.addOption(Option.builder("s").hasArgs().type(Integer.class).desc("size of worker pool used by this node").longOpt("pool-size").build());
 
         options.addOption(Option.builder("z").hasArgs().desc("path to jar path (by default $JNODE_HOME/jarpath").longOpt("jar-path").build());
+
+        options.addOption(Option.builder("b").hasArgs().desc("tcp address to bind").longOpt("bind_addr").build());
+
+        options.addOption(Option.builder("p").hasArgs().desc("tcp port to bind").longOpt("bind_port").build());
+
+        options.addOption(Option.builder("i").hasArgs().desc("comma separated ips and ports. each pair in format:192.168.5.2[7800]").longOpt("initial_hosts").build());
+
     }
 
     public void printHelp() {

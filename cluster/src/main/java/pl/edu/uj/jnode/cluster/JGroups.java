@@ -1,25 +1,18 @@
 package pl.edu.uj.jnode.cluster;
 
 import org.jgroups.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.jnode.engine.NodeIdFactory;
-import pl.edu.uj.jnode.main.ApplicationInitializedEvent;
-import pl.edu.uj.jnode.main.ApplicationShutdownEvent;
-import pl.edu.uj.jnode.main.OptionsDispatchedEvent;
-import pl.edu.uj.jnode.main.options.NodeIdOptionEvent;
+import pl.edu.uj.jnode.main.*;
+import pl.edu.uj.jnode.main.options.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.util.Optional.ofNullable;
 
@@ -34,9 +27,27 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
     private Distributor distributor;
     private List<Address> membersInCurrentView = new ArrayList<>();
     private String nodeId;
+    private String bindAddress;
+    private String port;
+    private String initialHosts;
 
     public JGroups() {
         executorService = Executors.newSingleThreadExecutor();
+    }
+
+    @EventListener
+    public void on(BindAddressOptionEvent event) {
+        bindAddress = event.getBindAddress();
+    }
+
+    @EventListener
+    public void on(BindPortOptionEvent event) {
+        port = event.getPort();
+    }
+
+    @EventListener
+    public void on(InitialHostsOptionEvent event) {
+        initialHosts = event.getInitialHosts();
     }
 
     @EventListener
@@ -61,7 +72,20 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 return;
             }
             try {
-                channel = new JChannel();
+                if (bindAddress == null && initialHosts == null) {
+                    channel = new JChannel();
+                } else if (bindAddress == null || initialHosts == null) {
+                    logger.error("both bind address and initial hosts must be given or none. starting as udp.");
+                    channel = new JChannel();
+                } else {
+                    System.setProperty("jgroups.bind_addr", bindAddress);
+                    System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
+                    if(port != null){
+                        System.setProperty("jgroups.bind_port", port);
+                    }
+                    channel = new JChannel("tcp.xml");
+                }
+
                 if (nodeId != null) {
                     channel.setName(nodeId);
                 }

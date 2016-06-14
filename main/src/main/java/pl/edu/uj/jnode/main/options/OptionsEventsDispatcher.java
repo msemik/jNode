@@ -57,15 +57,27 @@ public class OptionsEventsDispatcher {
                 eventPublisher.publishEvent(new JarOptionEvent(this, cmd.getOptionValues("j")));
             }
 
+            if (cmd.hasOption("b")) {
+                eventPublisher.publishEvent(new BindAddressOptionEvent(this, cmd.getOptionValue("b")));
+            }
+
             if (cmd.hasOption("p")) {
-                int p = Integer.parseInt(cmd.getOptionValue("p"));
-                if (p < 1) {
-                    String message = "Invalid pool size: " + p;
+                eventPublisher.publishEvent(new BindPortOptionEvent(this, cmd.getOptionValue("p")));
+            }
+
+            if (cmd.hasOption("i")) {
+                eventPublisher.publishEvent(new InitialHostsOptionEvent(this, cmd.getOptionValue("i")));
+            }
+
+            if (cmd.hasOption("s")) {
+                int s = Integer.parseInt(cmd.getOptionValue("s"));
+                String message = "Invalid pool size: " + s;
+                if (s < 1) {
                     eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, message));
                     validInitialization = false;
                 }
-                this.poolSize = ofNullable(p);
-                eventPublisher.publishEvent(new PoolSizeOptionEvent(p, this));
+                this.poolSize = ofNullable(s);
+                eventPublisher.publishEvent(new PoolSizeOptionEvent(s, this));
             }
         } catch (ParseException e) {
             eventPublisher.publishEvent(new ApplicationShutdownEvent(this, UNPARSABLE_OPTIONS, e.getMessage()));
