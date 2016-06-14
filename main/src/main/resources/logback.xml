@@ -16,7 +16,7 @@
             <level>WARN</level>
         </filter>
     </appender>
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>
