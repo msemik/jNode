@@ -30,9 +30,9 @@ if [ "$OS" == "Linux" ]; then
 	fi
 fi
 
-if [ "$OS" == "Darwin" ] || [[ "$OS" == "Windows"* ]] || [[ "$OS" == "MINGW"* ]]; then
+#if [ "$OS" == "Darwin" ] || [[ "$OS" == "Windows"* ]] || [[ "$OS" == "MINGW"* ]]; then
     java -jar -Djava.net.preferIPv4Stack=true $JNODE_JAR $@
-else
-    echo "$OS"
-    java -jar $JNODE_JAR $@
-fi
+#else
+#    echo "$OS"
+#    java -jar $JNODE_JAR $@
+#fi
