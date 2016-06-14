@@ -20,7 +20,7 @@ public class PasswordCrackerCallback implements Callback {
 
     @Override
     public void onSuccess(Serializable taskResult) {
-        if (taskResult != null) {
+        if (taskResult != null && !taskResult.equals("")) {
             foundPassword = true;
             System.out.println("PasswordCrackerCallback: Found password: " + taskResult);
         } else {

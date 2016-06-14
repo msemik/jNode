@@ -36,7 +36,7 @@ public class PasswordCrackerTask implements Task {
             }
         }
         System.out.println(taskId + " finishing after " + i + " tries.");
-        return null;
+        return "";
     }
 
 }
