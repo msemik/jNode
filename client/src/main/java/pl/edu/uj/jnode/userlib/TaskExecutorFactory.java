@@ -1,7 +1,9 @@
 package pl.edu.uj.jnode.userlib;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+
+import static org.apache.commons.lang3.reflect.MethodUtils.invokeExactMethod;
+import static org.apache.commons.lang3.reflect.MethodUtils.invokeMethod;
 
 /**
  * Created by alanhawrot on 15.11.2015.
@@ -19,7 +21,9 @@ public class TaskExecutorFactory {
             try {
                 userTaskReceiverClass = ClassLoader.getSystemClassLoader().loadClass("pl.edu.uj.jnode.engine.DefaultTaskReceiver");
                 userTaskReceiverInstance = userTaskReceiverClass.newInstance();
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            }
+            catch(ClassNotFoundException | InstantiationException | IllegalAccessException e)
+            {
                 e.printStackTrace();
             }
         }
@@ -34,14 +38,34 @@ public class TaskExecutorFactory {
         }
 
         @Override
-        public int getAvailableWorkers() {
-            throw new UnsupportedOperationException("funny guy");
+        public long getAvailableWorkers()
+        {
+            return (long) invokeMethodOnUserTaskReceiver("getAvailableWorkers");
         }
 
         @Override
-        public Object getBean(Class<?> passwordCrackerContextClass) {
-            throw new UnsupportedOperationException("funny guy");
+        public long getTotalWorkers()
+        {
+            return (long) invokeMethodOnUserTaskReceiver("getTotalWorkers");
         }
 
+        @Override
+        public Object getBean(Class<?> beanClass)
+        {
+            return invokeMethodOnUserTaskReceiver("getBean", beanClass );
+        }
+
+        private Object invokeMethodOnUserTaskReceiver(String methodName, Object... params)
+        {
+            try
+            {
+                return invokeMethod(userTaskReceiverInstance, methodName, params);
+            }
+            catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+            {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }

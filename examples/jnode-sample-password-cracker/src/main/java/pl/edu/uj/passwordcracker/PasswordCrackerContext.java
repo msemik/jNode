@@ -15,7 +15,7 @@ public class PasswordCrackerContext {
     }
 
     public byte[] getEncryptedPassword() {
-        return new byte[0];
+        return encryptedPassword;
     }
 
     public void setEncryptedPassword(byte[] encryptedPassword) {

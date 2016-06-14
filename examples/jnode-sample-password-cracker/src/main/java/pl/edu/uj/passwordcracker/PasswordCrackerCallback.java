@@ -12,6 +12,7 @@ public class PasswordCrackerCallback implements Callback {
     private final TaskExecutor taskExecutor;
     @InjectContext
     private PasswordCrackerContext passwordCrackerContext;
+    private volatile boolean foundPassword = false;
 
     public PasswordCrackerCallback(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
@@ -20,10 +21,16 @@ public class PasswordCrackerCallback implements Callback {
     @Override
     public void onSuccess(Serializable taskResult) {
         if (taskResult != null) {
-            System.out.println("Found password: " + taskResult);
+            foundPassword = true;
+            System.out.println("PasswordCrackerCallback: Found password: " + taskResult);
         } else {
-            int availableWorkers = taskExecutor.getAvailableWorkers();
+            if(foundPassword)
+                return;
+            long availableWorkers = taskExecutor.getAvailableWorkers();
+            long totalWorkers = taskExecutor.getTotalWorkers();
             PasswordGenerator passwordGenerator = passwordCrackerContext.getPasswordGenerator();
+            System.out.println("PasswordCrackerCallback: Scheduling " + (availableWorkers + 1) + " tasks");
+
             byte[] encryptedPassword = passwordCrackerContext.getEncryptedPassword();
 
             for (int i = 0; i < availableWorkers + 1; i++) {

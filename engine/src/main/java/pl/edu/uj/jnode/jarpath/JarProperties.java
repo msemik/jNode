@@ -74,11 +74,23 @@ public class JarProperties {
         Properties p = new Properties();
         p.setProperty("nodeId", nodeId);
         p.setProperty("executionState", executionState.toString());
+        OutputStream propertiesStream = null;
         try {
-            OutputStream propertiesStream = Files.newOutputStream(propertiesPath);
+             propertiesStream = Files.newOutputStream(propertiesPath);
             p.store(propertiesStream, "jar path properties");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally
+        {
+            if(propertiesStream != null)
+                try
+                {
+                    propertiesStream.close();
+                }
+                catch(IOException e)
+                {
+                    e.printStackTrace();
+                }
         }
     }
 

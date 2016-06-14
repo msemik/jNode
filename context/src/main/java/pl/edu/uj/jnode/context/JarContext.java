@@ -1,14 +1,11 @@
 package pl.edu.uj.jnode.context;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.context.annotation.*;
+import org.springframework.core.io.support.*;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
@@ -20,59 +17,77 @@ import java.util.*;
 
 @Component
 @Scope("prototype")
-public class JarContext {
+public class JarContext
+{
     private final Logger logger = LoggerFactory.getLogger(JarContext.class);
     private final List<Object> beans = new ArrayList<>();
     private final List<Class<Annotation>> contextInjectors = new ArrayList<>();
     private final Optional<Class<Annotation>> contextAnnotation;
 
-    public JarContext(Jar jar) {
+    public JarContext(Jar jar)
+    {
         contextAnnotation = jar.getAnnotation(Context.class.getCanonicalName());
         jar.getAnnotation(InjectContext.class.getCanonicalName()).ifPresent(contextInjectors::add);
         jar.getAnnotation(Autowired.class.getCanonicalName()).ifPresent(contextInjectors::add);
 
         Class<?> mainClass = jar.getMainClass();
         ContextScan contextScan = mainClass.getAnnotation(ContextScan.class);
-        if (contextScan == null) {
+        if(contextScan == null)
+        {
             logger.warn("Context scan annotation is missing. No context injection is possible");
             return;
         }
         String[] basePackages = contextScan.value();
-        if (contextInjectors.isEmpty()) {
+        if(contextInjectors.isEmpty())
+        {
             logger.info("No context annotations found on class path");
             return;
         }
 
-        if (!contextAnnotation.isPresent()) {
+        if(!contextAnnotation.isPresent())
+        {
             logger.warn("No context annotation found on classpath");
             return;
         }
 
         List<Class<?>> classes = findClassesWithAnnotation(jar, contextAnnotation.get(), basePackages);
-        if (classes.isEmpty()) {
+        if(classes.isEmpty())
+        {
             logger.warn("No context beans found on class path");
         }
-        for (Class<?> cls : classes) {
+        for(Class<?> cls : classes)
+        {
             logger.debug("Found context bean definition:" + cls.getCanonicalName());
-            if (!ClassUtils.hasConstructor(cls)) {
+            if(!ClassUtils.hasConstructor(cls))
+            {
                 logger.warn(cls.getCanonicalName() + " is declared as context bean, but doesn't provide default constructor");
                 continue;
             }
-            try {
+            try
+            {
                 Object bean = cls.newInstance();
                 beans.add(bean);
-            } catch (InstantiationException | IllegalAccessException e) {
+            }
+            catch(InstantiationException | IllegalAccessException e)
+            {
                 logger.warn("Couldn't create bean for " + cls.getSimpleName());
                 e.printStackTrace();
             }
         }
     }
 
-    public List<Object> getBeans() {
+    public List<Object> getBeans()
+    {
         return beans;
     }
 
-    private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation, String[] basePackages) {
+    public Optional<Object> getBean(Class<?> cls)
+    {
+        return beans.stream().filter(cls::isInstance).findAny();
+    }
+
+    private List<Class<?>> findClassesWithAnnotation(Jar jar, Class<Annotation> contextAnnotation, String[] basePackages)
+    {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         ClassLoader classLoader = jar.getJarOnlyClassLoader();
         ResourcePatternResolver resourceLoader = new PathMatchingResourcePatternResolver(classLoader);
@@ -82,15 +97,18 @@ public class JarContext {
 
         // Find classes in the given package (or subpackages)
         Set<BeanDefinition> beans = new HashSet<>();
-        for (String basePackage : basePackages) {
-            if (basePackage == null || basePackage.trim().isEmpty()) {
+        for(String basePackage : basePackages)
+        {
+            if(basePackage == null || basePackage.trim().isEmpty())
+            {
                 logger.warn("Ignoring empty base package");
                 continue;
             }
             beans.addAll(provider.findCandidateComponents(basePackage));
         }
         List<Class<?>> classes = new ArrayList<>();
-        for (BeanDefinition bd : beans) {
+        for(BeanDefinition bd : beans)
+        {
             // The BeanDefinition class gives access to the Class<?> and other attributes.
             Class<?> cls = jar.getClass(bd.getBeanClassName());
             classes.add(cls);
@@ -98,41 +116,56 @@ public class JarContext {
         return classes;
     }
 
-    public void injectContext(Object obj) {
-        for (Class<Annotation> contextInjector : contextInjectors) {
+    public void injectContext(Object obj)
+    {
+        for(Class<Annotation> contextInjector : contextInjectors)
+        {
             List<Field> fieldsToInjectContext = FieldUtils.getFieldsListWithAnnotation(obj.getClass(), contextInjector);
-            for (Field field : fieldsToInjectContext) {
+            for(Field field : fieldsToInjectContext)
+            {
                 boolean accessible = field.isAccessible();
-                if (!accessible) {
+                if(!accessible)
+                {
                     field.setAccessible(true);
                 }
 
-                try {
+                try
+                {
                     Object fieldValue = field.get(obj);
-                    if (fieldValue == null) {
+                    if(fieldValue == null)
+                    {
                         Object autowiredBean = findBean(field.getType());
                         field.set(obj, autowiredBean);
-                        if (autowiredBean != null) {
+                        if(autowiredBean != null)
+                        {
                             logger.debug("Successfully injected field '" + field.getName() + "' with " + autowiredBean);
-                        } else {
+                        }
+                        else
+                        {
                             logger.warn("No suitable bean found for '" + field.getName() + "' in " + obj);
                         }
                     }
-                } catch (IllegalAccessException e) {
+                }
+                catch(IllegalAccessException e)
+                {
                     //shouldn't happen as field was set accessible
                     e.printStackTrace();
                 }
 
-                if (!accessible) {
+                if(!accessible)
+                {
                     field.setAccessible(false);
                 }
             }
         }
     }
 
-    private Object findBean(Class<?> type) {
-        for (Object bean : beans) {
-            if (type.isInstance(bean)) {
+    private Object findBean(Class<?> type)
+    {
+        for(Object bean : beans)
+        {
+            if(type.isInstance(bean))
+            {
                 return bean;
             }
         }

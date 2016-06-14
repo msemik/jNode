@@ -6,7 +6,9 @@ package pl.edu.uj.jnode.userlib;
 public interface TaskExecutor {
     void doAsync(Task task, Callback callback);
 
-    int getAvailableWorkers();
+    long getAvailableWorkers();
+
+    long getTotalWorkers();
 
     Object getBean(Class<?> passwordCrackerContextClass);
 }

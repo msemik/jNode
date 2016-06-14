@@ -1,6 +1,7 @@
 package pl.edu.uj.jnode.jarpath;
 
 import org.apache.commons.lang3.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import static java.util.Optional.of;
  */
 @Service
 public class JarPathServices {
+    private Logger logger = LoggerFactory.getLogger(JarPathServices.class);
     @Autowired
     private JarFactory jarFactory;
     private Path pathToJarPath;
@@ -107,7 +109,7 @@ public class JarPathServices {
 
     public Path getPathSinceJarPath(Path pathToJarInJarPath) {
         Path relativized = getJarPath().relativize(pathToJarInJarPath);
-        System.out.println(pathToJarInJarPath + " since " + getJarPath() + " is " + relativized);
+        logger.debug(pathToJarInJarPath + " since " + getJarPath() + " is " + relativized);
         return relativized;
     }
 
