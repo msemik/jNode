@@ -61,7 +61,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 return;
             }
             try {
-                channel = new JChannel("tcp.xml");
+                channel = new JChannel();
                 if (nodeId != null) {
                     channel.setName(nodeId);
                 }
