@@ -32,5 +32,5 @@ public class ApplicationShutdownEvent extends ApplicationEvent {
         this.shutdownReason = shutdownReason;
     }
 
-    public enum ShutdownReason {UNPARSABLE_OPTIONS, WATCHER_SERVICE_ERROR, INVALID_JAR_FILE;}
+    public enum ShutdownReason {UNPARSABLE_OPTIONS, WATCHER_SERVICE_ERROR, INVALID_JAR_FILE, PRINT_HELP_ONLY;}
 }

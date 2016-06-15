@@ -26,6 +26,7 @@ public class JNodeApplication {
     @Autowired
     private ApplicationContext applicationContext;
     private volatile boolean isInitialized = false;
+    private volatile boolean isShutDown = false;
 
     public static void main(String[] args) {
         JNodeApplication.args = args;
@@ -38,7 +39,8 @@ public class JNodeApplication {
         if (!optionsEventsDispatcher.dispatchOptionsEvents(args)) {
             return;
         }
-
+        if(isShutDown)
+            return;
         applicationContext.publishEvent(new OptionsDispatchedEvent(applicationContext));
         applicationContext.publishEvent(new ApplicationInitializedEvent(applicationContext));
         isInitialized = true;
@@ -51,6 +53,7 @@ public class JNodeApplication {
 
     @EventListener
     public void on(ApplicationShutdownEvent event) {
+        isShutDown = true;
         delayedApplicationContextShutdown();
     }
 
@@ -70,5 +73,9 @@ public class JNodeApplication {
                 logger.error("invalid application context class: " + applicationContext.getClass().getCanonicalName());
             }
         });
+    }
+
+    public boolean isShutDown() {
+        return isShutDown;
     }
 }

@@ -21,15 +21,17 @@ import static java.util.Optional.ofNullable;
 public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFactory {
     private static final String DEFAULT_JNODE_CHANNEL = "DefaultJNodeChannel";
     private Logger logger = LoggerFactory.getLogger(JGroups.class);
-    private JChannel channel;
     private ExecutorService executorService;
     @Autowired
     private Distributor distributor;
+    @Autowired
+    private JNodeApplication jNodeApplication;
     private List<Address> membersInCurrentView = new ArrayList<>();
     private String nodeId;
     private String bindAddress;
     private String port;
     private String initialHosts;
+    private volatile JChannel channel;
 
     public JGroups() {
         executorService = Executors.newSingleThreadExecutor();
@@ -71,6 +73,9 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
             if (channel != null) {
                 return;
             }
+            if (jNodeApplication.isShutDown()) {
+                return;
+            }
             try {
                 if (bindAddress == null && initialHosts == null) {
                     channel = new JChannel();
@@ -80,7 +85,7 @@ public class JGroups extends ReceiverAdapter implements MessageGateway, NodeIdFa
                 } else {
                     System.setProperty("jgroups.bind_addr", bindAddress);
                     System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
-                    if(port != null){
+                    if (port != null) {
                         System.setProperty("jgroups.bind_port", port);
                     }
                     channel = new JChannel("tcp.xml");

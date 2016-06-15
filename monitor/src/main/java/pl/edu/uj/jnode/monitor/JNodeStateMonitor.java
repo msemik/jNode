@@ -1,5 +1,6 @@
 package pl.edu.uj.jnode.monitor;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPool;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class JNodeStateMonitor {
+    private org.slf4j.Logger logger = LoggerFactory.getLogger(JNodeStateMonitor.class);
     public static final int TEN_SECONDS_IN_MILLIS = 10000;
     public static final int THREE_SECONDS_IN_MILLIS = 3000;
     @Autowired
@@ -39,7 +42,7 @@ public class JNodeStateMonitor {
         b.append("nodes:\n" + nodes + "\n");
         b.append("externalTaskRegistry: " + externalTaskRegistry.getTaskIds() + "\n");
         b.append("delegatedTaskRegistry: " + delegatedTaskRegistry.getTaskIds() + "\n");
-        System.out.println(b.toString());
+        logger.info(b.toString());
     }
 
     private List<String> getJars() {
