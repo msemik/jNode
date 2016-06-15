@@ -201,6 +201,24 @@ public class PasswordGeneratorTest {
         assertLastIs(secondPasswordCracker, "acacbbabacbab");
     }
 
+    @Test
+    public void separateJobSet9() throws Exception {
+        passwordCracker = createPasswordCrackerWithInitialSequenceFactorAndLimit("ccccaba", 5, -1);
+        secondPasswordCracker = this.passwordCracker.separateJobSet();
+        assertNextStringsEqual(passwordCracker, "aaaccaba", "aaaccabb");
+        assertNextStringsEqual(secondPasswordCracker, "ccccaba", "ccccabb");
+        assertLastIs(secondPasswordCracker, "aaaccaac");
+    }
+
+    @Test
+    public void separateJobSet10() throws Exception {
+        passwordCracker = createPasswordCrackerWithInitialSequenceFactorAndLimit("abc", 5, -1);
+        secondPasswordCracker = this.passwordCracker.separateJobSet();
+        assertNextStringsEqual(passwordCracker, "aaaabc", "aaaaca");
+        assertNextStringsEqual(secondPasswordCracker, "abc", "aca");
+        assertLastIs(secondPasswordCracker, "aaaabb");
+    }
+
     private void stopAt(PasswordGenerator passwordCracker, String expectedString) {
         int i = 0;
         Set<String> s = new HashSet<>();

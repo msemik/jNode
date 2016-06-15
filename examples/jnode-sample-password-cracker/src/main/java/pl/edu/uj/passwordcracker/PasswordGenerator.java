@@ -9,6 +9,8 @@ import java.util.Arrays;
 
 import static java.lang.Math.abs;
 import static java.math.BigInteger.*;
+import static java.util.Arrays.fill;
+import static org.apache.commons.lang3.ArrayUtils.addAll;
 
 public class PasswordGenerator implements Serializable {
     private static BigInteger NO_LIMIT = BigInteger.valueOf(-1);
@@ -48,9 +50,10 @@ public class PasswordGenerator implements Serializable {
     }
 
     /**
-     * @return separated part of permutations which need to be checked. Permutations are represented as limited PasswordGenerator. number of permutations
-     * is dependant on jobsSeparationFactor parameter. When length of word is already bigger than jobsSeparationFactor, then number of extracted permutations
-     * will be equal to charSet.length() ^ jobsSeparationFactor. Otherwise it may be about twice larger.
+     * @return Separated set of password candidates which need to be checked. Set is represented as limited PasswordGenerator.
+     * Size of set is dependant on jobsSeparationFactor parameter.
+     * When length of word is already greater than jobsSeparationFactor, then number of extracted words
+     * will be equal to charSet.length() ^ jobsSeparationFactor. Otherwise it may be even twice larger.
      */
     public PasswordGenerator separateJobSet() {
         int baseJobsSeparationLimit = ArithmeticUtils.pow(charSet.length(), jobsSeparationFactor);
@@ -58,12 +61,12 @@ public class PasswordGenerator implements Serializable {
 
 
         if (iterationPointers.length <= jobsSeparationFactor) {
-            // when need to extend array there is more jobs, than when array is bigger than separation point (incremented index)
-            // they all will be separated
+            // When need to extend array there is more passwords, than when array is bigger than separation point (incremented index)
+            // All these password will be separated in single job set for convenience.
             for (int i = iterationPointers.length; i < jobsSeparationFactor; i++) {
                 baseJobsSeparationLimit += ArithmeticUtils.pow(charSet.length(), i);
             }
-            iterationPointers = ArrayUtils.addAll(new byte[abs(iterationPointers.length - jobsSeparationFactor) + 1], iterationPointers);
+            iterationPointers = addAll(new byte[abs(iterationPointers.length - jobsSeparationFactor) + 1], iterationPointers);
 
         } else {
             incrementIterationPointers(iterationPointers.length - jobsSeparationFactor - 1);
@@ -92,27 +95,7 @@ public class PasswordGenerator implements Serializable {
                 iterationPointers[i] = 0;
             }
         }
-        int oldIterationPointersLength = iterationPointers.length;
-        iterationPointers = new byte[oldIterationPointersLength + 1];
-        if (startingPosition != oldIterationPointersLength - 1) {
-            //Fix case when array extended during incrementation by factor;
-            //Currently its increased by one, so procedure will can be repeated and then decremented by one.
-            //So final operation will result in incrementing by factor we wanted.
-
-            incrementIterationPointers(startingPosition + 1);
-            decrementIterationPointers();
-        }
-    }
-
-    private void decrementIterationPointers() {
-        for (int i = iterationPointers.length - 1; i >= 0; i--) {
-            if (iterationPointers[i] > 0) {
-                --iterationPointers[i];
-                return;
-            } else {
-                iterationPointers[i] = (byte) (charSet.length() - 1);
-            }
-        }
+        iterationPointers = addAll(new byte[1], iterationPointers);
     }
 
     private String buildValue() {
