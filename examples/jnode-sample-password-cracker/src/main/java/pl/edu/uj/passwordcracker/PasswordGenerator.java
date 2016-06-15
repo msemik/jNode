@@ -52,8 +52,6 @@ public class PasswordGenerator implements Serializable {
     /**
      * @return Separated set of password candidates which need to be checked. Set is represented as limited PasswordGenerator.
      * Size of set is dependant on jobsSeparationFactor parameter.
-     * When length of word is already greater than jobsSeparationFactor, then number of extracted words
-     * will be equal to charSet.length() ^ jobsSeparationFactor. Otherwise it may be even twice larger.
      */
     public PasswordGenerator separateJobSet() {
         int baseJobsSeparationLimit = ArithmeticUtils.pow(charSet.length(), jobsSeparationFactor);
