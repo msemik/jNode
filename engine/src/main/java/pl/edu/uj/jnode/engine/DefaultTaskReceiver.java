@@ -26,7 +26,7 @@ public class DefaultTaskReceiver
     private NodeIdFactory nodeIdFactory;
     @Autowired
     private ComputationResourcesProvider computationResourcesProvider;
-    @Autowired
+    @Autowired(required = false)
     private BeanProvider beanProvider;
 
     public void doAsync(Object task, Object callback)

@@ -15,7 +15,7 @@ public class ContextBeanProvider implements BeanProvider
 {
     @Autowired
     private JarContextRegistry jarContextRegistry;
-    @Autowired
+    @Autowired(required = false)
     private JarFactory jarFactory;
 
     @Override public Optional<Object> getBean(Class<?> cls, Path jarName)
