@@ -24,10 +24,7 @@ public class PasswordCrackerTask implements Task {
             if (++i == 1) {
                 System.out.println(taskId + " starting cracking since " + candidateForPassword);
             }
-            //System.out.println(taskId + " trying " + candidateForPassword);
-
             byte[] digest = DigestUtils.md5(candidateForPassword.getBytes());
-
             if (Arrays.equals(digest, encryptedPassword)) {
                 System.out.println("Found password: " + candidateForPassword);
                 return candidateForPassword;

@@ -2,9 +2,6 @@ package pl.edu.uj.passwordcracker;
 
 import pl.edu.uj.jnode.context.Context;
 
-/**
- * Created by michal on 2016-06-12.
- */
 @Context
 public class PasswordCrackerContext {
     private PasswordGenerator passwordGenerator;

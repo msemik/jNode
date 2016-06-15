@@ -10,9 +10,6 @@ import java.util.Arrays;
 import static java.lang.Math.abs;
 import static java.math.BigInteger.*;
 
-/**
- * Created by michal on 2016-06-12.
- */
 public class PasswordGenerator implements Serializable {
     private static BigInteger NO_LIMIT = BigInteger.valueOf(-1);
     private byte[] iterationPointers;

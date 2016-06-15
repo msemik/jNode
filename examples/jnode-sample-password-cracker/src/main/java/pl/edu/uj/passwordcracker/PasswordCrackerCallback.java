@@ -5,9 +5,6 @@ import pl.edu.uj.jnode.userlib.*;
 
 import java.io.Serializable;
 
-/**
- * Created by michal on 2016-06-12.
- */
 public class PasswordCrackerCallback implements Callback {
     private final TaskExecutor taskExecutor;
     @InjectContext
