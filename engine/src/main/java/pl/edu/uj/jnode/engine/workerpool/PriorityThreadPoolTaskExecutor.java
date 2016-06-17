@@ -4,7 +4,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * Created by alanhawrot on 13.03.2016.
@@ -24,7 +23,7 @@ public class PriorityThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
         };
 
         return queueCapacity > 1 && queueCapacity < Integer.MAX_VALUE ?
-               new PriorityBlockingQueue<>(queueCapacity, priorityComparator) :
-               new PriorityBlockingQueue<>(QUEUE_CAPACITY, priorityComparator);
+               new PriorityBlockingQueue(queueCapacity, priorityComparator) :
+               new PriorityBlockingQueue(QUEUE_CAPACITY, priorityComparator);
     }
 }

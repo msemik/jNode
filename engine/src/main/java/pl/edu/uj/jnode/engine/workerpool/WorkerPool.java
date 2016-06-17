@@ -64,7 +64,7 @@ public class WorkerPool {
     }
 
     public Optional<WorkerPoolTask> pollTask() {
-        Runnable polledItem = getAwaitingTasks().poll();
+        Runnable polledItem = getAwaitingTasks().pollNotClosingAppTask();
         if (polledItem == null) {
             return empty();
         }
@@ -83,11 +83,11 @@ public class WorkerPool {
         return of((WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable"));
     }
 
-    private BlockingQueue<Runnable> getAwaitingTasks() {
+    private PriorityBlockingQueue getAwaitingTasks() {
         if (queue == null) {
             queue = getTaskExecutor().getThreadPoolExecutor().getQueue();
         }
-        return queue;
+        return (PriorityBlockingQueue) queue;
     }
 
     private ThreadPoolTaskExecutor getTaskExecutor() {
