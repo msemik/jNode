@@ -13,6 +13,8 @@ public interface WorkerPoolTask extends Task {
 
     boolean isExternal();
 
+    boolean isClosingApp();
+
     boolean belongToJar(Jar jar);
 
     int getPriority();

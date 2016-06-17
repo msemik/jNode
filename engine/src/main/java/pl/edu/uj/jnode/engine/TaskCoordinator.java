@@ -111,7 +111,7 @@ public class TaskCoordinator {
     @EventListener
     public void on(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
-        if (task.isExternal() || task instanceof CloseAppTask) {
+        if (task.isExternal() || task.isClosingApp()) {
             return;
         }
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());

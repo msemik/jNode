@@ -31,6 +31,11 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     }
 
     @Override
+    public boolean isClosingApp() {
+        return task.isClosingApp();
+    }
+
+    @Override
     public boolean belongToJar(Jar jar) {
         return task.belongToJar(jar);
     }

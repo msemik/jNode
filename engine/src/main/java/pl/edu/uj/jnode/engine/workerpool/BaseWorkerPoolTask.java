@@ -55,6 +55,11 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
     }
 
     @Override
+    public boolean isClosingApp() {
+        return false;
+    }
+
+    @Override
     public boolean belongToJar(Jar jar) {
         return this.jar.equals(jar);
     }

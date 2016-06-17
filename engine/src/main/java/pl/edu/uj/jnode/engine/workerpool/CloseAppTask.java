@@ -32,4 +32,9 @@ public class CloseAppTask extends WorkerPoolTaskDecorator {
         eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJar()));
         return result;
     }
+
+    @Override
+    public boolean isClosingApp() {
+        return true;
+    }
 }
