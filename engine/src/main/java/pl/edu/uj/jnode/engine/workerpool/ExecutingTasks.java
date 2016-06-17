@@ -33,7 +33,8 @@ public class ExecutingTasks {
         boolean result = futures.removeIf(f -> f == future);
         if (futures.isEmpty()) {
             futureMap.remove(jar);
-        }        return result;
+        }
+        return result;
     }
 
     @Override
@@ -77,7 +78,7 @@ public class ExecutingTasks {
                 return;
             }
         }
-        logger.error("No future task found");
+        logger.warn("No future task found");
     }
 
     public synchronized List<WorkerPoolTask> getTasks() {

@@ -86,7 +86,7 @@ public class TaskCoordinator {
             logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
             Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
             if (!eventLoopThread.isPresent()) {
-                logger.error("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
+                logger.warn("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
                 return;
             }
             eventLoopThread.get().registerTask(task, callback);
@@ -111,12 +111,12 @@ public class TaskCoordinator {
     @EventListener
     public void on(TaskFinishedEvent event) {
         WorkerPoolTask task = event.getTask();
-        if (task.isExternal() || task.isClosingApp()) {
+        if (task.isExternal()) {
             return;
         }
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
-            logger.error("Event loop thread missing for given task: " + task);
+            logger.warn("Event loop thread missing for given task: " + task);
             return;
         }
         if (event.isSuccess()) {

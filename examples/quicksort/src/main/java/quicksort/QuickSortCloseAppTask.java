@@ -15,6 +15,6 @@ public class QuickSortCloseAppTask implements Task {
     @Override
     public Serializable call() throws Exception {
         System.out.println("Sorted array: " + resultContext.getResultAsString());
-        return null;
+        return "";
     }
 }

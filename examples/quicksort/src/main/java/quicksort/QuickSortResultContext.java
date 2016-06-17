@@ -13,7 +13,6 @@ import java.util.Arrays;
 public class QuickSortResultContext {
     private int[] array;
     private boolean isSorted = false;
-    private boolean isPrinted = false; // tmp
 
     public void copyResult(int[] array, int begin, int end) {
         if (this.array == null) {
@@ -37,8 +36,7 @@ public class QuickSortResultContext {
     }
 
     public void closeAppIfSorted() {
-        if (isSorted() && !isPrinted) {
-            isPrinted = true;
+        if (isSorted()) {
             TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
             taskExecutor.closeApp(new QuickSortCloseAppTask());
         }

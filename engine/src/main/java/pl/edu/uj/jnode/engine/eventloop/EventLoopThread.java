@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Scope("prototype")
@@ -40,6 +41,7 @@ public class EventLoopThread extends Thread {
     private CallbackStorage callbackStorage;
     private EventLoopQueue eventLoopQueue;
     private Jar jar;
+    private AtomicBoolean isClosing = new AtomicBoolean(false);
 
     @PostConstruct
     public void init() {
@@ -138,8 +140,9 @@ public class EventLoopThread extends Thread {
         }
     }
 
-    public Jar getJar() {
-        return jar;
+    public void startLoop(Jar jar) {
+        this.jar = jar;
+        start();
     }
 
     private void closeLoop() {
@@ -149,14 +152,18 @@ public class EventLoopThread extends Thread {
         logger.info(getJar() + " loop shutdown successfully");
     }
 
-    @Override
-    public String toString() {
-        return "EventLoopThread{" + jar + '}';
+    public boolean closeApp() {
+        boolean isClosingValue = isClosing.getAndSet(true);
+        if (!isClosingValue) {
+            logger.warn("Closing application on demand");
+            eventPublisher.publishEvent(new CancelJarJobsEvent(this, getJar())); // remove elt from registry and other
+            shutDown(); // because closeApp method is executed from other thread in worker pool
+        }
+        return isClosingValue;
     }
 
-    public void startLoop(Jar jar) {
-        this.jar = jar;
-        start();
+    public Jar getJar() {
+        return jar;
     }
 
     public void registerTask(WorkerPoolTask task, Callback callback) {
@@ -175,5 +182,10 @@ public class EventLoopThread extends Thread {
         interrupt();
         yield();
         logger.info(getJar() + " shutdown() method execution finished");
+    }
+
+    @Override
+    public String toString() {
+        return "EventLoopThread{" + jar + '}';
     }
 }
