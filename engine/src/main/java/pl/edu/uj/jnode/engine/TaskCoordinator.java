@@ -82,15 +82,26 @@ public class TaskCoordinator {
     public void on(TaskReceivedEvent event) {
         WorkerPoolTask task = event.getTask();
         Callback callback = event.getCallback();
+        if (!registerTask(task, callback)) {
+            return;
+        }
+        submitTask(task);
+    }
+
+    private boolean registerTask(WorkerPoolTask task, Callback callback) {
         if (!task.isExternal()) {
             logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
             Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
             if (!eventLoopThread.isPresent()) {
                 logger.debug("Missing event loop thread for task: " + task);
-                return;
+                return false;
             }
             eventLoopThread.get().registerTask(task, callback);
         }
+        return true;
+    }
+
+    private void submitTask(WorkerPoolTask task) {
         logger.info("Submitting newly received task " + task + " to pool");
         processors.forEach(processor -> processor.process(task));
         workerPool.submitTask(task);
@@ -103,9 +114,10 @@ public class TaskCoordinator {
             return;
         }
         CloseAppTask closeAppTask = applicationContext.getBean(CloseAppTask.class, task);
-        logger.info("Submitting pre close application task " + closeAppTask + " to pool");
-        processors.forEach(processor -> processor.process(closeAppTask));
-        workerPool.submitTask(closeAppTask);
+        if (!registerTask(closeAppTask, EmptyCallback.INSTANCE)) {
+            return;
+        }
+        submitTask(closeAppTask);
     }
 
     @EventListener
