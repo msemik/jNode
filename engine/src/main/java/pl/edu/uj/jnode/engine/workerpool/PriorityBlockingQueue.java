@@ -32,7 +32,7 @@ public class PriorityBlockingQueue extends java.util.concurrent.PriorityBlocking
                 }
                 FutureTask<Callable> futureTask = (FutureTask<Callable>) item;
                 WorkerPoolTask task = (WorkerPoolTask) ReflectionUtils.readFieldValue(FutureTask.class, futureTask, "callable");
-                if (task.isClosingApp()) {
+                if (!task.isClosingApp()) {
                     iterator.remove();
                     return item;
                 }
