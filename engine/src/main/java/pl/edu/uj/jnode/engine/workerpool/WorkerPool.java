@@ -106,7 +106,9 @@ public class WorkerPool {
 
         ThreadPoolTaskExecutor executor = getTaskExecutor();
         final ListenableFuture<Serializable> taskResultFuture = executor.submitListenable(task);
-        executingTasks.put(task.getJar(), taskResultFuture);
+        if (!(task instanceof CloseAppTask)) {
+            executingTasks.put(task.getJar(), taskResultFuture);
+        }
         taskResultFuture.addCallback(new ListenableFutureCallback<Serializable>() {
             @Override
             public void onFailure(Throwable ex) {
