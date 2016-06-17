@@ -38,7 +38,7 @@ public class TaskExecutorFactory {
         @Override
         public void closeApp(Task preCloseAppTask) {
             try {
-                Method stopAppAsyncMethod = userTaskReceiverClass.getMethod("stopAppAsync", Object.class);
+                Method stopAppAsyncMethod = userTaskReceiverClass.getMethod("closeAppAsync", Object.class);
                 stopAppAsyncMethod.invoke(userTaskReceiverInstance, preCloseAppTask);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
