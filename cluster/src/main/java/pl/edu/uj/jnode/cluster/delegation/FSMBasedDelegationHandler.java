@@ -73,7 +73,9 @@ public class FSMBasedDelegationHandler implements DelegationHandler {
                     prevState = delegationState.get();
                     nextState = event.nextState(this, prevState);
                 } while (!delegationState.compareAndSet(prevState, nextState));
-                logger.info("Changing state from " + prevState + " to " + nextState);
+                if (nextState != prevState) {
+                    logger.info("Changing state from " + prevState + " to " + nextState);
+                }
                 //Executing action after atomically changed state
                 //Action may produce another action.
                 Optional<DelegationEvent> nextEvent = event.executeAction(this, prevState);
