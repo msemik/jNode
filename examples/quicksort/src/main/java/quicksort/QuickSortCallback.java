@@ -16,7 +16,7 @@ public class QuickSortCallback implements Callback {
     public void onSuccess(Serializable taskResult) {
         QuickSortTaskResult result = (QuickSortTaskResult) taskResult;
         resultContext.copyResult(result.getArray(), result.getBegin(), result.getEnd());
-        resultContext.printResultIfSorted();
+        resultContext.closeAppIfSorted();
     }
 
     @Override

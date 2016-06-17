@@ -1,6 +1,8 @@
 package quicksort;
 
 import pl.edu.uj.jnode.context.Context;
+import pl.edu.uj.jnode.userlib.TaskExecutor;
+import pl.edu.uj.jnode.userlib.TaskExecutorFactory;
 
 import java.util.Arrays;
 
@@ -11,13 +13,15 @@ import java.util.Arrays;
 public class QuickSortResultContext {
     private int[] array;
     private boolean isSorted = false;
-    private boolean isPrinted = false;
+    private boolean isPrinted = false; // tmp
 
     public void copyResult(int[] array, int begin, int end) {
         if (this.array == null) {
             this.array = new int[array.length];
+            System.arraycopy(array, 0, this.array, 0, array.length);
+        } else {
+            System.arraycopy(array, begin, this.array, begin, end - begin + 1);
         }
-        System.arraycopy(array, begin, this.array, begin, end - begin + 1);
     }
 
     private boolean isSorted() {
@@ -32,10 +36,15 @@ public class QuickSortResultContext {
         return isSorted = true;
     }
 
-    public void printResultIfSorted() {
+    public void closeAppIfSorted() {
         if (isSorted() && !isPrinted) {
-            System.out.println("Sorted array: " + Arrays.toString(array));
             isPrinted = true;
+            TaskExecutor taskExecutor = TaskExecutorFactory.createTaskExecutor();
+            taskExecutor.closeApp(new QuickSortCloseAppTask());
         }
+    }
+
+    public String getResultAsString() {
+        return Arrays.toString(array);
     }
 }
