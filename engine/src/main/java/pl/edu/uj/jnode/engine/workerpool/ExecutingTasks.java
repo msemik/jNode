@@ -78,7 +78,7 @@ public class ExecutingTasks {
                 return;
             }
         }
-        logger.warn("No future task found");
+        logger.debug("No future task found");
     }
 
     public synchronized List<WorkerPoolTask> getTasks() {

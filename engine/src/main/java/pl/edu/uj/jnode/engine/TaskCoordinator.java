@@ -86,7 +86,7 @@ public class TaskCoordinator {
             logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
             Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
             if (!eventLoopThread.isPresent()) {
-                logger.warn("Event loop thread is missing when received task: " + task + " " + eventLoopThreadRegistry);
+                logger.debug("Missing event loop thread for task: " + task);
                 return;
             }
             eventLoopThread.get().registerTask(task, callback);
@@ -116,7 +116,7 @@ public class TaskCoordinator {
         }
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
-            logger.warn("Event loop thread missing for given task: " + task);
+            logger.debug("Missing event loop thread for task: " + task);
             return;
         }
         if (event.isSuccess()) {

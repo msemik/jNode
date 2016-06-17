@@ -177,7 +177,7 @@ public class DefaultDistributor implements Distributor {
         logger.info("Saving callback " + callback + " in EventLoopThread for task " + task);
         Optional<EventLoopThread> eventLoopThread = eventLoopThreadRegistry.get(task.getJar());
         if (!eventLoopThread.isPresent()) {
-            logger.error("Event loop thread is missing when registering task: " + task + " " + eventLoopThreadRegistry);
+            logger.debug("Missing event loop thread for task: " + task);
             return;
         }
         eventLoopThread.get().registerTask(task, callback);
