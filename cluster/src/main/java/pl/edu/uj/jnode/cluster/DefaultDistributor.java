@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static pl.edu.uj.jnode.engine.event.CancellationEventOrigin.EXTERNAL;
-import static pl.edu.uj.jnode.engine.event.CancellationEventOrigin.INTERNAL;
 
 /**
  * Created by alanhawrot on 01.03.2016.
@@ -182,6 +181,26 @@ public class DefaultDistributor implements Distributor {
             return;
         }
         eventLoopThread.get().registerTask(task, callback);
+    }
+
+    @Override
+    public void on(CloseAppTaskReceivedEvent event) {
+        WorkerPoolTask task = event.getTask();
+        if (!task.isExternal()) {
+            return;
+        }
+        ExternalTask externalTask = new ExternalTask(task, event.getSourceNodeId());
+        logger.info("Sending CloseApp message with task " + externalTask + "to source node");
+        taskService.closeApp(externalTask, externalTask.getSourceNodeId());
+    }
+
+    @Override
+    public void onCloseApp(String sourceNodeId, ExternalTask externalTask) {
+        logger.info("Received CloseApp message from node " + sourceNodeId + " with task " + externalTask);
+        Jar jar = jarFactory.getFor(externalTask.getJarName());
+        externalTask.deserialize(jar);
+        WorkerPoolTask preCloseAppTask = externalTask.getTask();
+        eventPublisher.publishEvent(new CloseAppTaskReceivedEvent(this, preCloseAppTask));
     }
 
     @Override

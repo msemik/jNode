@@ -66,6 +66,13 @@ public abstract class BaseWorkerPoolTask implements WorkerPoolTask {
 
     @Override
     public void incrementPriority() {
-        priority++;
+        if (priority < Integer.MAX_VALUE) {
+            priority++;
+        }
+    }
+
+    @Override
+    public void setMaxPriority() {
+        priority = Integer.MAX_VALUE;
     }
 }

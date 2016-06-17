@@ -1,6 +1,7 @@
 package pl.edu.uj.jnode.cluster.task;
 
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTaskDecorator;
 
 /**
  * Created by alanhawrot on 29.02.2016.

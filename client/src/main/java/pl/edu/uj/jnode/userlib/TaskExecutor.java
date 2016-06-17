@@ -6,6 +6,8 @@ package pl.edu.uj.jnode.userlib;
 public interface TaskExecutor {
     void doAsync(Task task, Callback callback);
 
+    void closeApp(Task preCloseAppTask);
+
     long getAvailableWorkers();
 
     long getTotalWorkers();

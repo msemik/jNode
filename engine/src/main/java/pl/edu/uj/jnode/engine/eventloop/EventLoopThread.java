@@ -50,9 +50,14 @@ public class EventLoopThread extends Thread {
     @Override
     public void run() {
         logger.info("Started to listen for tasks results");
-        while (true) {
-            eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJar()));
+        eventPublisher.publishEvent(new JarJobsExecutionStartedEvent(this, getJar()));
+
+        while (!isInterrupted()) {
             EventLoopResponse eventLoopResponse = eventLoopQueue.take();
+
+            if (isInterrupted()) {
+                break;
+            }
 
             if (eventLoopResponse.getType() == EventLoopResponse.Type.POISON) {
                 logger.info("Received poison, aborting.");
@@ -169,10 +174,6 @@ public class EventLoopThread extends Thread {
     public void shutDown() {
         interrupt();
         yield();
-        if (isAlive()) {
-            eventLoopThreadRegistry.remove(jar);
-            stop();
-        }
         logger.info(getJar() + " shutdown() method execution finished");
     }
 }

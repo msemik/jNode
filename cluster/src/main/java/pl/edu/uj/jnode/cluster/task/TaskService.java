@@ -70,4 +70,8 @@ public class TaskService {
     public void registerDelegatedSubTask(ExternalTask externalTask, SerializableCallbackWrapper callback, String nodeId) {
         messageGateway.send(new RegisterDelegatedSubTask(externalTask, callback), nodeId);
     }
+
+    public void closeApp(ExternalTask externalTask, String nodeId) {
+        messageGateway.send(new CloseApp(externalTask), nodeId);
+    }
 }

@@ -1,6 +1,5 @@
-package pl.edu.uj.jnode.cluster.task;
+package pl.edu.uj.jnode.engine.workerpool;
 
-import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
 import pl.edu.uj.jnode.jarpath.Jar;
 import pl.edu.uj.jnode.userlib.Task;
 
@@ -44,6 +43,11 @@ public class WorkerPoolTaskDecorator implements WorkerPoolTask {
     @Override
     public void incrementPriority() {
         task.incrementPriority();
+    }
+
+    @Override
+    public void setMaxPriority() {
+        task.setMaxPriority();
     }
 
     @Override

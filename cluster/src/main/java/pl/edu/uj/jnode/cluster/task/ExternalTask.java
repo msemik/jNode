@@ -5,6 +5,7 @@ import pl.edu.uj.jnode.cluster.node.Node;
 import pl.edu.uj.jnode.crosscuting.ClassLoaderAwareObjectInputStream;
 import pl.edu.uj.jnode.engine.workerpool.BaseWorkerPoolTask;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
+import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTaskDecorator;
 import pl.edu.uj.jnode.jarpath.Jar;
 
 import java.io.ByteArrayInputStream;
@@ -60,7 +61,9 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
 
     @Override
     public void incrementPriority() {
-        this.priority++;
+        if (this.priority < Integer.MAX_VALUE) {
+            this.priority++;
+        }
         super.incrementPriority();
     }
 
@@ -92,7 +95,7 @@ public class ExternalTask extends WorkerPoolTaskDecorator {
         try (
             ByteArrayInputStream inputStream = new ByteArrayInputStream(serializedTask);
             ClassLoaderAwareObjectInputStream stream = new ClassLoaderAwareObjectInputStream(inputStream, jar.getChildFirstClassLoader())
-        ){
+        ) {
             Object o = stream.readObject();
             if (!(o instanceof WorkerPoolTask)) {
                 throw new IllegalStateException("Invalid task class: " + o.getClass().getSimpleName());

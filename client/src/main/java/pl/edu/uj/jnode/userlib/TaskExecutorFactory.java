@@ -1,8 +1,8 @@
 package pl.edu.uj.jnode.userlib;
 
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-import static org.apache.commons.lang3.reflect.MethodUtils.invokeExactMethod;
 import static org.apache.commons.lang3.reflect.MethodUtils.invokeMethod;
 
 /**
@@ -21,9 +21,7 @@ public class TaskExecutorFactory {
             try {
                 userTaskReceiverClass = ClassLoader.getSystemClassLoader().loadClass("pl.edu.uj.jnode.engine.DefaultTaskReceiver");
                 userTaskReceiverInstance = userTaskReceiverClass.newInstance();
-            }
-            catch(ClassNotFoundException | InstantiationException | IllegalAccessException e)
-            {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -38,31 +36,34 @@ public class TaskExecutorFactory {
         }
 
         @Override
-        public long getAvailableWorkers()
-        {
+        public void closeApp(Task preCloseAppTask) {
+            try {
+                Method stopAppAsyncMethod = userTaskReceiverClass.getMethod("stopAppAsync", Object.class);
+                stopAppAsyncMethod.invoke(userTaskReceiverInstance, preCloseAppTask);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public long getAvailableWorkers() {
             return (long) invokeMethodOnUserTaskReceiver("getAvailableWorkers");
         }
 
         @Override
-        public long getTotalWorkers()
-        {
+        public long getTotalWorkers() {
             return (long) invokeMethodOnUserTaskReceiver("getTotalWorkers");
         }
 
         @Override
-        public Object getBean(Class<?> beanClass)
-        {
-            return invokeMethodOnUserTaskReceiver("getBean", beanClass );
+        public Object getBean(Class<?> beanClass) {
+            return invokeMethodOnUserTaskReceiver("getBean", beanClass);
         }
 
-        private Object invokeMethodOnUserTaskReceiver(String methodName, Object... params)
-        {
-            try
-            {
+        private Object invokeMethodOnUserTaskReceiver(String methodName, Object... params) {
+            try {
                 return invokeMethod(userTaskReceiverInstance, methodName, params);
-            }
-            catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
-            {
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
             return null;

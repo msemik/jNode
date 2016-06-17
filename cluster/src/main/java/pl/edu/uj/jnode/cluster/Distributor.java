@@ -5,6 +5,7 @@ import pl.edu.uj.jnode.cluster.message.PrimaryHeartBeat;
 import pl.edu.uj.jnode.cluster.task.ExternalTask;
 import pl.edu.uj.jnode.cluster.task.SerializableTaskResultWrapper;
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.jnode.engine.event.CloseAppTaskReceivedEvent;
 import pl.edu.uj.jnode.engine.event.ExternalSubTaskReceivedEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolOverflowEvent;
@@ -30,6 +31,10 @@ public interface Distributor {
     void on(ExternalSubTaskReceivedEvent event);
 
     void onRegisterDelegatedSubTask(String sourceNodeId, ExternalTask externalTask, SerializableCallbackWrapper callback);
+
+    void on(CloseAppTaskReceivedEvent event);
+
+    void onCloseApp(String sourceNodeId, ExternalTask externalTask);
 
     void onNodeGone(String nodeId);
 

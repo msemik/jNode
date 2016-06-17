@@ -3,14 +3,17 @@ package pl.edu.uj.jnode.engine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import pl.edu.uj.jnode.engine.event.CancelJarJobsEvent;
+import pl.edu.uj.jnode.engine.event.CloseAppTaskReceivedEvent;
 import pl.edu.uj.jnode.engine.event.TaskFinishedEvent;
 import pl.edu.uj.jnode.engine.event.TaskReceivedEvent;
 import pl.edu.uj.jnode.engine.eventloop.EventLoopThread;
 import pl.edu.uj.jnode.engine.eventloop.EventLoopThreadRegistry;
+import pl.edu.uj.jnode.engine.workerpool.CloseAppTask;
 import pl.edu.uj.jnode.engine.workerpool.MainClassWorkerPoolTask;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPool;
 import pl.edu.uj.jnode.engine.workerpool.WorkerPoolTask;
@@ -29,6 +32,8 @@ import static pl.edu.uj.jnode.jarpath.JarExecutionState.NOT_STARTED;
 @Component
 public class TaskCoordinator {
     private Logger logger = LoggerFactory.getLogger(TaskCoordinator.class);
+    @Autowired
+    private ApplicationContext applicationContext;
     @Autowired
     private WorkerPool workerPool;
     @Autowired
@@ -89,6 +94,18 @@ public class TaskCoordinator {
         logger.info("Submitting newly received task " + task + " to pool");
         processors.forEach(processor -> processor.process(task));
         workerPool.submitTask(task);
+    }
+
+    @EventListener
+    public void on(CloseAppTaskReceivedEvent event) {
+        WorkerPoolTask task = event.getTask();
+        if (task.isExternal()) {
+            return;
+        }
+        CloseAppTask closeAppTask = applicationContext.getBean(CloseAppTask.class, task);
+        logger.info("Submitting pre close application task " + closeAppTask + " to pool");
+        processors.forEach(processor -> processor.process(closeAppTask));
+        workerPool.submitTask(closeAppTask);
     }
 
     @EventListener
