@@ -2,70 +2,84 @@
 
 actor UserApp
 
-UserApp ->> TaskExecutor1: doAsync(task, callback)
-TaskExecutor1 -> DefaultTaskReceiver1: doAsync(task, callback)
-DefaultTaskReceiver1 -> TaskCoordinator1: onTaskReceivedEvent(event)
-TaskCoordinator1 ->> WorkerPool1: submitTask(task)
+UserApp ->> TaskExecutor: doAsync(task, callback)
+TaskExecutor -> DefaultTaskReceiver: doAsync(task, callback)
+DefaultTaskReceiver -> TaskCoordinator: onTaskReceivedEvent(event)
+TaskCoordinator ->> WorkerPool: submitTask(task)
 alt WorkerPoolOverflow
-    WorkerPool1 -> Distributor1: onWorkerPoolOverflowEvent(event)
-    Distributor1 -> DelegationHandler1: handleDuringOnWorkerPoolOverflowEvent()
-    DelegationHandler1 -> DelegationHandler1: delegateTasks()
+    WorkerPool -> Distributor: onWorkerPoolOverflowEvent(event)
+    Distributor -> DelegationHandler: handleDuringOnWorkerPoolOverflowEvent()
+    DelegationHandler -> DelegationHandler: delegateTasks()
     alt task.isExternal()
         alt externalTask.isOriginatedAt(destinationNode) "destinationNode == sourceNode"
-            DelegationHandler1 -> TaskService1: sry(destinationNodeId, taskId)
-            TaskService1 -> MessageGateway1: send(new Sry(taskId), destinationNodeId)
-            MessageGateway1 ->> MessageGateway2: send(message)
-            MessageGateway2 -> Distributor2: onSry(nodeId, taskId)
-            Distributor2 ->> WorkerPool2: submitTask(task)
+            DelegationHandler -> TaskService: sry(destinationNodeId, taskId)
+            TaskService -> MessageGateway: send(new Sry(taskId), destinationNodeId)
+            MessageGateway ->>] : send(message)
         else "destinationNode != sourceNode"
-            DelegationHandler1 -> TaskService1: redirectTask(externalTask, destinationNodeId)
-            TaskService1 -> MessageGateway1: send(new Redirect(destinationNodeId, externalTask.getTaskId()), externalTask.getSourceNodeId())
-            MessageGateway1 ->> MessageGateway2: send(message)
-            MessageGateway2 -> Distributor2: onRedirect(currentNodeId, destinationNodeId, taskId)
-            alt workerPool.hasAvailableThreads()
-                Distributor2 ->> WorkerPool2: submitTask(task)
-            else
-                Distributor2 -> TaskService2: delegateTask(task, destinationNodeId)
-                TaskService2 -> MessageGateway2: send(new TaskDelegation(externalTask), destinationNodeId)
-                MessageGateway2 ->>]: send(message)
-            end
+            DelegationHandler -> TaskService: redirectTask(externalTask, destinationNodeId)
+            TaskService -> MessageGateway: send(new Redirect(destinationNodeId, taskId, sourceNodeId)
+            MessageGateway ->>] : send(message)
         end
     else
-        DelegationHandler1 -> TaskService1: delegateTask(task, destinationNodeId)
-        TaskService1 -> MessageGateway1: send(new TaskDelegation(externalTask), destinationNodeId)
-        MessageGateway1 ->> MessageGateway2: send(message)
-        MessageGateway2 -> Distributor2: onTaskDelegation(externalTask)
-        Distributor2 -> JarHandler2: onTaskDelegation(externalTask)
+        DelegationHandler -> TaskService: delegateTask(task, destinationNodeId)
+        TaskService -> MessageGateway: send(new TaskDelegation(externalTask), destinationNodeId)
+        MessageGateway ->>] : send(message)
         opt notRequestedYet(jar)
-            JarHandler2 -> TaskService2: jarRequest(jar)
-            TaskService2 -> MessageGateway2: send(new JarRequest(jar.getFileNameAsString()), jar.getNodeId())
-            MessageGateway2 ->> MessageGateway1: send(message)
-            MessageGateway1 -> Distributor1: onJarRequest(nodeId, jarFileName)
-            Distributor1 -> JarHandler1: onJarRequest(nodeId, jarFileName)
-            JarHandler1 -> TaskService1: jarDelivery(requesterNodeId, fileName, jarContent)
-            TaskService1 -> MessageGateway1: send(new JarDelivery(jarContent, fileName), requesterNodeId)
-            MessageGateway1 ->> MessageGateway2: send(message)
-            MessageGateway2 -> Distributor2: onJarDelivery(nodeId, jarFileName, jar)
-            Distributor2 -> JarHandler2: onJarDelivery(nodeId, jarFileName, jar)
+            MessageGateway <<-] : receive(message)
+            MessageGateway -> Distributor: onJarRequest(nodeId, jarFileName)
+            Distributor -> JarHandler: onJarRequest(nodeId, jarFileName)
+            JarHandler -> TaskService: jarDelivery(requesterNodeId, fileName, jarContent)
+            TaskService -> MessageGateway: send(new JarDelivery(jarContent, fileName), requesterNodeId)
+            MessageGateway ->>] : send(message)
         end
-        JarHandler2 -> TaskCoordinator2: onTaskReceivedEvent(event)
-        TaskCoordinator2 ->> WorkerPool2: submitTask(task)
-        WorkerPool2 -> Distributor2: onTaskFinishedEvent(event)
-        Distributor2 -> TaskService2: taskExecutionCompleted(externalTask, taskResultOrException)
-        TaskService2 -> MessageGateway2: send(message)
-        MessageGateway2 ->> MessageGateway1: send(message)
-        MessageGateway1 -> Distributor1: onTaskExecutionCompleted(taskId, taskResultOrException)
-        Distributor1 -> TaskCoordinator1: onTaskFinishedEvent(event)
+        MessageGateway <<-] : receive(message)
+        MessageGateway -> Distributor: onTaskExecutionCompleted(taskId, taskResultOrException)
+        Distributor -> TaskCoordinator: onTaskFinishedEvent(event)
     end
 else
-    WorkerPool1 -> TaskCoordinator1: onTaskFinishedEvent(event)
+    WorkerPool -> TaskCoordinator: onTaskFinishedEvent(event)
 end
 alt success
-    TaskCoordinator1 ->> EventLoopThread1: submitTaskResult(taskResult)
-    EventLoopThread1 -> EventLoopThread1: callback.onSuccess(taskResult)
+    TaskCoordinator ->> EventLoopThread: submitTaskResult(taskResult)
+    EventLoopThread -> EventLoopThread: callback.onSuccess(taskResult)
 else failure
-    TaskCoordinator1 ->> EventLoopThread1: submitTaskFailure(exception)
-    EventLoopThread1 -> EventLoopThread1: callback.onFailure(exception)
+    TaskCoordinator ->> EventLoopThread: submitTaskFailure(exception)
+    EventLoopThread -> EventLoopThread: callback.onFailure(exception)
 end
+
+newpage onSry
+[->> MessageGateway : receive(message)
+MessageGateway -> Distributor: onSry(nodeId, taskId)
+Distributor ->> WorkerPool: submitTask(task)
+
+newpage onRedirect
+[->> MessageGateway : receive(message)
+MessageGateway -> Distributor: onRedirect(currentNodeId, destinationNodeId, taskId)
+alt workerPool.hasAvailableThreads()
+    Distributor ->> WorkerPool: submitTask(task)
+else
+    Distributor -> TaskService: delegateTask(task, destinationNodeId)
+    TaskService -> MessageGateway: send(new TaskDelegation(externalTask), destinationNodeId)
+    MessageGateway ->>]: send(message)
+end
+
+newpage onTaskDelegation
+[->> MessageGateway : receive(message)
+MessageGateway -> Distributor: onTaskDelegation(externalTask)
+Distributor -> JarHandler: onTaskDelegation(externalTask)
+opt notRequestedYet(jar)
+    JarHandler -> TaskService: jarRequest(jar)
+    TaskService -> MessageGateway: send(new JarRequest(jarFileName, nodeId)
+    [<<- MessageGateway : send(message)
+    [->> MessageGateway: receive(message)
+    MessageGateway -> Distributor: onJarDelivery(nodeId, jarFileName, jar)
+    Distributor -> JarHandler: onJarDelivery(nodeId, jarFileName, jar)
+end
+JarHandler -> TaskCoordinator: onTaskReceivedEvent(event)
+TaskCoordinator ->> WorkerPool: submitTask(task)
+WorkerPool -> Distributor: onTaskFinishedEvent(event)
+Distributor -> TaskService: taskExecutionCompleted(externalTask, taskResultOrException)
+TaskService -> MessageGateway: send(new TaskExecutionCompleted(taskResult, taskId, sourceNodeId)
+[<<- MessageGateway : send(message)
 
 @enduml
