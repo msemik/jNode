@@ -16,8 +16,10 @@ public class QuickSortResultContext {
     public void copyResult(int[] array, int begin, int end) {
         if (this.array == null) {
             this.array = new int[array.length];
+            System.arraycopy(array, 0, this.array, 0, array.length);
+        } else {
+            System.arraycopy(array, begin, this.array, begin, end - begin + 1);
         }
-        System.arraycopy(array, begin, this.array, begin, end - begin + 1);
     }
 
     private boolean isSorted() {
