@@ -23,4 +23,7 @@
     <logger name="org.springframework" level="WARN" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
+    <logger name="pl.edu.uj.jnode.monitor" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
 </configuration>
