@@ -141,6 +141,7 @@ public class EventLoopThread extends Thread {
         logger.info("No more callbacks to execute, shutting down");
         eventPublisher.publishEvent(new JarJobsCompletedEvent(this, getJar()));
         eventLoopThreadRegistry.remove(jar);
+        jar.close();
         logger.info(getJar() + " loop shutdown successfully");
     }
 

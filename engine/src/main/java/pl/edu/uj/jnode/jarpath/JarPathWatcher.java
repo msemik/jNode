@@ -175,7 +175,7 @@ public class JarPathWatcher extends Thread {
     }
 
     public Kind<Path> getEventAppearingWhenCopyingFileHasFinished() {
-        if (osValidator.isUnix()) {
+        if (osValidator.isUnix() || osValidator.isWindows()) {
             return ENTRY_MODIFY;
         }
         return ENTRY_CREATE;

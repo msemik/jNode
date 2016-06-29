@@ -10,9 +10,7 @@ import pl.edu.uj.jnode.engine.InvalidJarFileException;
 import pl.edu.uj.jnode.engine.NodeIdFactory;
 import pl.edu.uj.jnode.engine.UserApplicationException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,13 +30,9 @@ import static java.util.Optional.of;
 @Scope(scopeName = "prototype")
 public class Jar {
     @Autowired
-    private ApplicationContext applicationContext;
-    @Autowired
     private NodeIdFactory nodeIdFactory;
     @Autowired
     private JarPathServices jarPathServices;
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
     private String nodeId;
     private Path pathRelativeToJarPath;
     private ChildFirstJarClassLoader childFirstJarClassLoader;
@@ -255,5 +249,13 @@ public class Jar {
 
     public boolean isExternal() {
         return nodeIdFactory.getCurrentNodeId().equals(nodeId);
+    }
+
+    public void close() {
+        try {
+            childFirstJarClassLoader.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
