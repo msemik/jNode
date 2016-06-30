@@ -1,6 +1,5 @@
 # jNode
-Platform for asynchronous procedure execution on cluster
-Welcome to the jNode wiki!
+Framework for distributed applications based on nonblocking communication model
 
 ## Description
 
